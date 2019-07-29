@@ -86,7 +86,8 @@ class SolverBase(object):
     Subclasses should define solve_ground_state method.
     """
 
-    def __init__(self, grids, potential_fn, num_electrons=1, k_point=None, end_points=False, n_point_stencil=5):
+    def __init__(self, grids, potential_fn, num_electrons=1, k_point=None, boundary_condition='open',
+                 n_point_stencil=5):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -98,12 +99,17 @@ class SolverBase(object):
           k_point: the k-point in reciprocal space used to evaluate Schrodinger Equation
               for the case of a periodic potential. K should be chosen to be within
               the first Brillouin zone.
-          end_points: if true, forward/backward finite difference methods will be used
+          boundary_condition:
+              'closed': forward/backward finite difference methods will be used
               near the boundaries to ensure the wavefunction is zero at boundaries.
               This should only be used when the grid interval is purposefully small.
-              If false, all ghost points outside of the grid are set to zero. This should
+
+              'open': all ghost points outside of the grid are set to zero. This should
               be used whenever the grid interval is sufficiently large. Setting to false
               also results in a faster computational time due to matrix symmetry.
+
+              'exponential decay': special case for a truncated system. The tails of the
+              wavefunction will be exponentially decaying. IN TESTING
           n_point_stencil: total number of points used in the central finite difference method.
               The default 5-points results in a convergence rate of 4 for most systems. Suggested:
               use 3-point stencil for potentials with cusps as n_point_stencil > 3 will not improve
@@ -115,7 +121,7 @@ class SolverBase(object):
         """
         # 1d grids.
         self.k = k_point
-        self.end_points = end_points
+        self.boundary_condition = boundary_condition
         self.n_point_stencil = n_point_stencil
         self.grids = grids
         self.dx = get_dx(grids)
@@ -153,7 +159,8 @@ class EigenSolver(SolverBase):
     """Represents the Hamiltonian as a matrix and diagonalizes it directly.
     """
 
-    def __init__(self, grids, potential_fn, num_electrons=1, k_point=None, end_points=False, n_point_stencil = 5):
+    def __init__(self, grids, potential_fn, num_electrons=1, k_point=None, boundary_condition='open',
+                 n_point_stencil=5):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -162,7 +169,8 @@ class EigenSolver(SolverBase):
           potential_fn: potential function taking grids as argument.
           num_electrons: Integer, the number of electrons in the system.
         """
-        super(EigenSolver, self).__init__(grids, potential_fn, num_electrons, k_point, end_points, n_point_stencil)
+        super(EigenSolver, self).__init__(grids, potential_fn, num_electrons, k_point, boundary_condition,
+                                          n_point_stencil)
         self._set_matrices()
 
     def _set_matrices(self):
@@ -195,32 +203,40 @@ class EigenSolver(SolverBase):
             A = [-5 / 2, 4 / 3, -1 / 12]
             A_end = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
         elif self.n_point_stencil == 3:
-            A = [-2.,1.]
-            A_end = [2.,-5.,4.,-1.]
+            A = [-2., 1.]
+            A_end = [2., -5., 4., -1.]
         else:
-            raise ValueError('n_point_stencil = %d is not supported'% self.n_point_stencil)
+            raise ValueError('n_point_stencil = %d is not supported' % self.n_point_stencil)
 
         for j, A_n in enumerate(A):
             mat[idx[j:], idx[j:] - j] = A_n
             mat[idx[:-j], idx[:-j] + j] = A_n
 
         # end-point forward/backward difference formulas
-        if (self.end_points):
-
+        if (self.boundary_condition == 'open'):
+            pass
+        elif (self.boundary_condition == 'closed'):
             for i, A_n in enumerate(A_end):
                 mat[0, i] = A_n
-                mat[1, i + 1] = A_n
-
-                mat[-2, -2 - i] = A_n
                 mat[-1, -1 - i] = A_n
 
-            mat[0, 0] = 0
-            mat[1, 0] = 0
-            mat[2, 0] = 0
+                if self.n_point_stencil == 5:
+                    mat[1, i + 1] = A_n
+                    mat[-2, -2 - i] = A_n
 
+            mat[0, 0] = 0
             mat[-1, -1] = 0
-            mat[-2, -1] = 0
-            mat[-3, -1] = 0
+
+            if self.n_point_stencil == 5:
+                mat[1, 0] = 0
+                mat[2, 0] = 0
+                mat[-2, -1] = 0
+                mat[-3, -1] = 0
+
+        elif (self.boundary_condition == 'exponential decay'):
+            pass
+        else:
+            raise ValueError('boundary_condition = %d is not supported' % self.boundary_condition)
 
         mat = -.5 * mat
 
@@ -303,13 +319,13 @@ class EigenSolver(SolverBase):
         Returns:
           self
         """
-        if (self.end_points):
+        if (self.boundary_condition == 'open'):
+            eigenvalues, eigenvectors = np.linalg.eigh(self._h)
+        else:
             eigenvalues, eigenvectors = np.linalg.eig(self._h)
             idx = eigenvalues.argsort()
             eigenvalues = eigenvalues[idx]
             eigenvectors = eigenvectors[:, idx]
-        else:
-            eigenvalues, eigenvectors = np.linalg.eigh(self._h)
 
         return self._update_ground_state(eigenvalues, eigenvectors, quadratic)
 
@@ -322,7 +338,7 @@ class SparseEigenSolver(EigenSolver):
                  grids,
                  potential_fn,
                  num_electrons=1,
-                 additional_levels=5, k_point=None, end_points=False):
+                 additional_levels=5, k_point=None, boundary_condition=False, n_point_stencil=5):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -337,7 +353,8 @@ class SparseEigenSolver(EigenSolver):
         Raises:
           ValueError: If additional_levels is negative.
         """
-        super(SparseEigenSolver, self).__init__(grids, potential_fn, num_electrons, k_point, end_points)
+        super(SparseEigenSolver, self).__init__(grids, potential_fn, num_electrons, k_point, boundary_condition,
+                                                n_point_stencil)
         if additional_levels < 0:
             raise ValueError('additional_levels is expected to be non-negative, but '
                              'got %d.' % additional_levels)
@@ -356,8 +373,17 @@ class SparseEigenSolver(EigenSolver):
           mat: Kinetic matrix.
             (num_grids, num_grids)
         """
-        # n-point formula
-        A = [-5 / 2, 4 / 3, -1 / 12]
+
+        # n-point centered difference formula coefficients
+        if self.n_point_stencil == 5:
+            A = [-5 / 2, 4 / 3, -1 / 12]
+            A_end = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
+        elif self.n_point_stencil == 3:
+            A = [-2., 1.]
+            A_end = [2., -5., 4., -1.]
+        else:
+            raise ValueError('n_point_stencil = %d is not supported' % self.n_point_stencil)
+
         mat = A[0] * sparse.eye(self.num_grids, format="lil")
         for i, A_n in enumerate(A[1:]):
             j = i + 1
@@ -366,22 +392,33 @@ class SparseEigenSolver(EigenSolver):
             mat += sparse.diags(elements, offsets=-j, format="lil")
 
         # end-point forward/backward difference formulas
-        if (self.end_points):
-            A_end = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
+        # end-point forward/backward difference formulas
+        if (self.boundary_condition == 'open'):
+            pass
+        elif (self.boundary_condition == 'closed'):
             for i, A_n in enumerate(A_end):
                 mat[0, i] = A_n
-                mat[1, i + 1] = A_n
-
-                mat[-2, -2 - i] = A_n
                 mat[-1, -1 - i] = A_n
 
-            mat[0, 0] = 0
-            mat[1, 0] = 0
-            mat[2, 0] = 0
+                if self.n_point_stencil == 5:
+                    mat[1, i + 1] = A_n
+                    mat[-2, -2 - i] = A_n
 
+            mat[0, 0] = 0
             mat[-1, -1] = 0
-            mat[-2, -1] = 0
-            mat[-3, -1] = 0
+
+            if self.n_point_stencil == 5:
+                mat[1, 0] = 0
+                mat[2, 0] = 0
+                mat[-2, -1] = 0
+                mat[-3, -1] = 0
+
+        elif (self.boundary_condition == 'exponential decay'):
+            pass
+        else:
+            raise ValueError('boundary_condition = %d is not supported' % self.boundary_condition)
+
+        # periodic not yet implemented in sparse solver
 
         mat = -.5 * mat / (self.dx * self.dx)
 
@@ -425,15 +462,15 @@ class SparseEigenSolver(EigenSolver):
         # eigsh will solve 5 more eigenstates than self.num_electrons to reduce the
         # numerical error for the last few eigenstates.
 
-        if (self.end_points):
+        if (self.boundary_condition == 'open'):
+            eigenvalues, eigenvectors = linalg.eigsh(
+                self._h, k=self.num_electrons + self._additional_levels, which='SM')
+        else:
             eigenvalues, eigenvectors = linalg.eigs(
                 self._h, k=self.num_electrons + self._additional_levels, which='SM')
             idx = eigenvalues.argsort()
             eigenvalues = eigenvalues[idx]
             eigenvectors = eigenvectors[:, idx]
-        else:
-            eigenvalues, eigenvectors = linalg.eigsh(
-                self._h, k=self.num_electrons + self._additional_levels, which='SM')
 
         return self._update_ground_state(
             eigenvalues, eigenvectors, self._sparse_quadratic)

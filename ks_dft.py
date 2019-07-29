@@ -182,7 +182,7 @@ class KS_Solver(SolverBase):
         """
         solver = single_electron.EigenSolver(self.grids, potential_fn=self.v_tot,
                                              num_electrons=self.num_electrons,
-                                             end_points=True)
+                                             boundary_condition='closed')
         solver.solve_ground_state()
 
         return self._update_ground_state(solver)

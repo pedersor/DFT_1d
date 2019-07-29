@@ -50,13 +50,13 @@ for d in d_list:
 
         grids = np.linspace(-L / 2, L / 2, grid)
         solver = single_electron.EigenSolver(grids, potential_fn=functools.partial(
-            ext_potentials.exp_hydro_cont_well, A=A, k=k, d=d, a=0), n_point_stencil=3)
+            ext_potentials.exp_hydro_cont_well, A=A, k=k, d=d, a=0), boundary_condition='closed')
         solver.solve_ground_state()
         E_h2 = solver.eigenvalues[0]
 
         grids = np.linspace(-L / 2, L / 2, ((grid - 1) / 2) + 1)
         solver = single_electron.EigenSolver(grids, potential_fn=functools.partial(
-            ext_potentials.exp_hydro_cont_well, A=A, k=k, d=d, a=0), n_point_stencil=3)
+            ext_potentials.exp_hydro_cont_well, A=A, k=k, d=d, a=0), boundary_condition='closed')
         solver.solve_ground_state()
         E_h = solver.eigenvalues[0]
 

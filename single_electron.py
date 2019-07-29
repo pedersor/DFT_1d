@@ -33,7 +33,9 @@ from scipy import sparse
 from scipy.sparse import linalg
 import six
 from six.moves import range
-#import tensorflow as tf
+
+
+# import tensorflow as tf
 
 
 def get_dx(grids):
@@ -84,7 +86,7 @@ class SolverBase(object):
     Subclasses should define solve_ground_state method.
     """
 
-    def __init__(self, grids, potential_fn, num_electrons=1, k_point=None, end_points=False):
+    def __init__(self, grids, potential_fn, num_electrons=1, k_point=None, end_points=False, n_point_stencil=5):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -102,6 +104,10 @@ class SolverBase(object):
               If false, all ghost points outside of the grid are set to zero. This should
               be used whenever the grid interval is sufficiently large. Setting to false
               also results in a faster computational time due to matrix symmetry.
+          n_point_stencil: total number of points used in the central finite difference method.
+              The default 5-points results in a convergence rate of 4 for most systems. Suggested:
+              use 3-point stencil for potentials with cusps as n_point_stencil > 3 will not improve
+              convergence rates.
 
         Raises:
           ValueError: If num_electrons is less than 1; or num_electrons is not
@@ -110,6 +116,7 @@ class SolverBase(object):
         # 1d grids.
         self.k = k_point
         self.end_points = end_points
+        self.n_point_stencil = n_point_stencil
         self.grids = grids
         self.dx = get_dx(grids)
         self.num_grids = len(grids)
@@ -146,7 +153,7 @@ class EigenSolver(SolverBase):
     """Represents the Hamiltonian as a matrix and diagonalizes it directly.
     """
 
-    def __init__(self, grids, potential_fn, num_electrons=1, k_point=None, end_points=False):
+    def __init__(self, grids, potential_fn, num_electrons=1, k_point=None, end_points=False, n_point_stencil = 5):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -155,7 +162,7 @@ class EigenSolver(SolverBase):
           potential_fn: potential function taking grids as argument.
           num_electrons: Integer, the number of electrons in the system.
         """
-        super(EigenSolver, self).__init__(grids, potential_fn, num_electrons, k_point, end_points)
+        super(EigenSolver, self).__init__(grids, potential_fn, num_electrons, k_point, end_points, n_point_stencil)
         self._set_matrices()
 
     def _set_matrices(self):
@@ -183,8 +190,15 @@ class EigenSolver(SolverBase):
         mat = np.eye(self.num_grids)
         idx = np.arange(self.num_grids)
 
-        # n-point centered difference formula
-        A = [-5 / 2, 4 / 3, -1 / 12]
+        # n-point centered difference formula coefficients
+        if self.n_point_stencil == 5:
+            A = [-5 / 2, 4 / 3, -1 / 12]
+            A_end = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
+        elif self.n_point_stencil == 3:
+            A = [-2.,1.]
+            A_end = [2.,-5.,4.,-1.]
+        else:
+            raise ValueError('n_point_stencil = %d is not supported'% self.n_point_stencil)
 
         for j, A_n in enumerate(A):
             mat[idx[j:], idx[j:] - j] = A_n
@@ -192,7 +206,7 @@ class EigenSolver(SolverBase):
 
         # end-point forward/backward difference formulas
         if (self.end_points):
-            A_end = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
+
             for i, A_n in enumerate(A_end):
                 mat[0, i] = A_n
                 mat[1, i + 1] = A_n

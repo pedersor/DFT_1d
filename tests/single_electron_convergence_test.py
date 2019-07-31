@@ -31,6 +31,8 @@ k_inv = 2.385345
 k = 1. / k_inv
 
 # continuous exponential well ------------------------------
+# see RP_logbook 7/12/19
+
 num_electrons = 4
 d_list = [5, 6, 7, 8, 10]
 

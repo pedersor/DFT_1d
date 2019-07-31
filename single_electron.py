@@ -33,6 +33,7 @@ from scipy import sparse
 from scipy.sparse import linalg
 import six
 from six.moves import range
+import copy
 
 
 # import tensorflow as tf
@@ -87,7 +88,7 @@ class SolverBase(object):
     """
 
     def __init__(self, grids, potential_fn, num_electrons=1, k_point=None, boundary_condition='open',
-                 n_point_stencil=5):
+                 n_point_stencil=5, approx_E=None):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -128,6 +129,7 @@ class SolverBase(object):
         self.num_grids = len(grids)
         # Potential on grid.
         self.vp = potential_fn(grids)
+        self.approx_E = approx_E
 
         if not isinstance(num_electrons, int):
             raise ValueError('num_electrons is not an integer.')
@@ -160,7 +162,7 @@ class EigenSolver(SolverBase):
     """
 
     def __init__(self, grids, potential_fn, num_electrons=1, k_point=None, boundary_condition='open',
-                 n_point_stencil=5):
+                 n_point_stencil=5, approx_E=None):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -170,7 +172,7 @@ class EigenSolver(SolverBase):
           num_electrons: Integer, the number of electrons in the system.
         """
         super(EigenSolver, self).__init__(grids, potential_fn, num_electrons, k_point, boundary_condition,
-                                          n_point_stencil)
+                                          n_point_stencil, approx_E)
         self._set_matrices()
 
     def _set_matrices(self):
@@ -234,7 +236,25 @@ class EigenSolver(SolverBase):
                 mat[-3, -1] = 0
 
         elif (self.boundary_condition == 'exponential decay'):
-            pass
+            if self.n_point_stencil != 3:
+                raise ValueError('please use n_point_stencil = 3 if using boundary_condition == exponential decay')
+
+            # left side of cusp
+            v_left = self.vp[0]
+            k_left = ((2 * np.abs(self.approx_E - v_left)) ** .5)
+
+            mat[0, 0] = self.dx * (-3 / 2) * k_left
+            mat[0, 1] = self.dx * 2. * k_left
+            mat[0, 2] = self.dx * -.5 * k_left
+
+            # right side of cusp
+            v_right = self.vp[-1]
+            k_right = -((2 * np.abs(self.approx_E - v_right)) ** .5)
+
+            mat[-1, -1] = self.dx * (3 / 2) * k_right
+            mat[-1, -2] = self.dx * -2. * k_right
+            mat[-1, -3] = self.dx * .5 * k_right
+
         else:
             raise ValueError('boundary_condition = %d is not supported' % self.boundary_condition)
 
@@ -306,6 +326,30 @@ class EigenSolver(SolverBase):
                 self._t_mat, self.wave_function[i]) * self.dx
             self.potential_energy += quadratic_function(
                 self._v_mat, self.wave_function[i]) * self.dx
+
+        if self.boundary_condition == 'exponential decay':
+            self.extended_wave_function = list(copy.deepcopy(self.wave_function[0]))
+            self.extended_grids = list(copy.deepcopy(self.grids))
+
+            v_left = self.vp[0]
+            k_left = ((2 * np.abs(self.approx_E - v_left)) ** .5)
+            psi_left = self.extended_wave_function[0]
+
+            v_right = self.vp[-1]
+            k_right = -((2 * np.abs(self.approx_E - v_right)) ** .5)
+            psi_right = self.extended_wave_function[-1]
+
+            end_value = max(np.abs(psi_left), np.abs(psi_right))
+            tol = 10 ** -4
+            i = 1
+            while end_value > tol:
+                self.extended_wave_function = [psi_left * np.exp(
+                    -k_left * i * self.dx)] + self.extended_wave_function + [psi_right * np.exp(k_right * i * self.dx)]
+                end_value = max(np.abs(self.extended_wave_function[0]), np.abs(self.extended_wave_function[-1]))
+                self.extended_grids = [self.grids[0] - i * self.dx] + self.extended_grids + [
+                    self.grids[-1] + i * self.dx]
+
+                i += 1
 
         self._solved = True
         return self
@@ -414,7 +458,24 @@ class SparseEigenSolver(EigenSolver):
                 mat[-3, -1] = 0
 
         elif (self.boundary_condition == 'exponential decay'):
-            pass
+            if self.n_point_stencil != 3:
+                raise ValueError('please use n_point_stencil = 3 if using boundary_condition == exponential decay')
+
+            # left side of cusp
+            v_left = self.vp[0]
+            k_left = ((2 * np.abs(self.approx_E - v_left)) ** .5)
+
+            mat[0, 0] = self.dx * (-3 / 2) * k_left
+            mat[0, 1] = self.dx * 2. * k_left
+            mat[0, 2] = self.dx * -.5 * k_left
+
+            # right side of cusp
+            v_right = self.vp[-1]
+            k_right = -((2 * np.abs(self.approx_E - v_right)) ** .5)
+
+            mat[-1, -1] = self.dx * (3 / 2) * k_right
+            mat[-1, -2] = self.dx * -2. * k_right
+            mat[-1, -3] = self.dx * .5 * k_right
         else:
             raise ValueError('boundary_condition = %d is not supported' % self.boundary_condition)
 

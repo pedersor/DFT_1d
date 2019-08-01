@@ -62,7 +62,6 @@ class SolverBase(object):
           ValueError: If num_electrons is less than 1; or num_electrons is not
               an integer.
         """
-        # 1d grids.
         self.k = k_point
         self.end_points = end_points
         self.grids = grids
@@ -154,20 +153,18 @@ class KS_Solver(SolverBase):
         self.eigenvalues = solver.eigenvalues
         self.wave_function = solver.wave_function
 
-        # needs to be modified for polarized electrons
+        # needs to be modified for polarized electrons. Should probably change to n_up and n_down formalism
         num_unpol_states = math.floor(self.num_electrons / 2)
         for i in range(num_unpol_states):
             self.total_energy += 2 * solver.eigenvalues[i]
             self.density += 2 * (self.wave_function[i] ** 2)
-            self.kinetic_energy += 2 * quadratic(solver._t_mat,
-                                                 self.wave_function[i]) * self.dx
+            self.kinetic_energy += 2 * quadratic(solver._t_mat, self.wave_function[i]) * self.dx
 
         # if odd, radical
         if self.num_electrons % 2 == 1:
             self.total_energy += solver.eigenvalues[num_unpol_states]
             self.density += (self.wave_function[num_unpol_states] ** 2)
-            self.kinetic_energy += 2 * quadratic(solver._t_mat,
-                                                 self.wave_function[num_unpol_states]) * self.dx
+            self.kinetic_energy += quadratic(solver._t_mat, self.wave_function[num_unpol_states]) * self.dx
 
         return self
 
@@ -198,6 +195,7 @@ class KS_Solver(SolverBase):
             # update v_tot using new density
             self.update_v_tot()
 
+            # this may not be the best way to determine convergence...
             density_change_integral = np.abs(old_density - self.density).sum() * self.dx
             print(density_change_integral)
 

@@ -25,7 +25,7 @@ class exchange_correlation_functional(object):
         self.k = k
         self.dx = (grids[-1] - grids[0]) / (len(grids) - 1)
 
-    # x potential
+    # exchange potential, derivative of exchange energy per length
     def v_x_exp(self, density):
         pi = np.pi
         return -2 * np.arctan(pi * density / self.k) * self.A / (2 * pi)

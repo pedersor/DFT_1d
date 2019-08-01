@@ -110,7 +110,7 @@ def exp_hydrogenic(grids, A, k, a, Z=1):
     return vp
 
 
-def exp_hydro_cont_well(grids, A, k, a, d, Z=1):
+def exp_hydro_cont_well(grids, A, k, d, Z=1, a=0):
     """Exponential potential in continuous well.
 
     The 1D exp_hydrogenic() potential with a continuous constant potential

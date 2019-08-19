@@ -1,7 +1,7 @@
-import numpy as np
 import single_electron, dft_potentials
-import math
+import numpy as np
 import functools
+import math
 
 
 def get_dx(grids):
@@ -76,10 +76,10 @@ class SolverBase(object):
         if not isinstance(num_electrons, int):
             raise ValueError('num_electrons is not an integer.')
         elif num_electrons < 1:
-            raise ValueError('num_electrons must be greater or equal to 1, but got %d'
-                             % num_electrons)
+            raise ValueError('num_electrons must be greater or equal to 1, but got %d' % num_electrons)
         else:
             self.num_electrons = num_electrons
+
         # Solver is unsolved by default.
         self._solved = False
 
@@ -100,8 +100,7 @@ class SolverBase(object):
 
 
 class KS_Solver(SolverBase):
-    """Represents the Hamiltonian as a matrix and diagonalizes it directly.
-    """
+    """Represents the Hamiltonian as a matrix and diagonalizes it directly."""
 
     def __init__(self, grids, v_ext, v_h, xc, num_electrons=1, k_point=None, end_points=False):
         """Initialize the solver with potential function and grid.
@@ -120,12 +119,26 @@ class KS_Solver(SolverBase):
         self.density = n_0
         return self
 
+    def polarization(self):
+        n_up = 0
+        n_down = 0
+
+        num_unpol_states = math.floor(self.num_electrons / 2)
+        for i in range(num_unpol_states):
+            n_up += self.wave_function[i] ** 2
+            n_down += self.wave_function[i] ** 2
+
+        # if num_electrons is odd, then radical
+        if self.num_electrons % 2 == 1:
+            n_up += self.wave_function[num_unpol_states] ** 2
+
+        zeta = (n_up - n_down) / self.density
+
+        return [n_up, n_down, zeta]
+
     def update_v_tot(self):
         # total potential to be solved self consistently in the Kohn Sham system
-        self.v_tot = functools.partial(dft_potentials.tot_KS_potential, n=self.density,
-                                       v_ext=self.v_ext,
-                                       v_h=self.v_h, v_xc=self.xc.v_x_exp)
-
+        self.v_tot = functools.partial(dft_potentials.tot_KS_potential, n=self.density, v_ext=self.v_ext, v_h=self.v_h, v_xc=self.xc.v_xc_exp, polarization=self.polarization())
         return self
 
     def _update_ground_state(self, solver):
@@ -153,14 +166,13 @@ class KS_Solver(SolverBase):
         self.eigenvalues = solver.eigenvalues
         self.wave_function = solver.wave_function
 
-        # needs to be modified for polarized electrons. Should probably change to n_up and n_down formalism
         num_unpol_states = math.floor(self.num_electrons / 2)
         for i in range(num_unpol_states):
             self.total_energy += 2 * solver.eigenvalues[i]
             self.density += 2 * (self.wave_function[i] ** 2)
             self.kinetic_energy += 2 * quadratic(solver._t_mat, self.wave_function[i]) * self.dx
 
-        # if odd, radical
+        # if num_electrons is odd, then radical
         if self.num_electrons % 2 == 1:
             self.total_energy += solver.eigenvalues[num_unpol_states]
             self.density += (self.wave_function[num_unpol_states] ** 2)
@@ -177,9 +189,7 @@ class KS_Solver(SolverBase):
         Returns:
           self
         """
-        solver = single_electron.EigenSolver(self.grids, potential_fn=self.v_tot,
-                                             num_electrons=self.num_electrons,
-                                             boundary_condition='closed')
+        solver = single_electron.EigenSolver(self.grids, potential_fn=self.v_tot, num_electrons=self.num_electrons, boundary_condition='closed')
         solver.solve_ground_state()
 
         return self._update_ground_state(solver)
@@ -203,19 +213,22 @@ class KS_Solver(SolverBase):
         print('converged successfully')
         print()
 
-        # non-interacting kinetic energy
+        # Non-Interacting Kinetic Energy
         self.T_s = self.kinetic_energy
 
-        # external potential functional
+        # External Potential Energy
         self.V = (self.v_ext(self.grids) * self.density).sum() * self.dx
 
-        # Hartree integral
+        # Hartree Integral
         self.U = .5 * (self.v_h(grids=self.grids, n=self.density) * self.density).sum() * self.dx
 
-        # exchange energy
-        self.E_x = self.xc.E_x(self.density)
+        # Exchange Energy
+        self.E_x = self.xc.E_x(self.density, self.polarization()[2])
 
-        # total energy functional
-        self.E_tot = self.T_s + self.V + self.U + self.E_x
+        # Correlation Energy
+        self.E_c = self.xc.E_c(self.density, self.polarization()[2])
+
+        # Total Energy
+        self.E_tot = self.T_s + self.V + self.U + self.E_x + self.E_c
 
         return self

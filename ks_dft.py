@@ -114,11 +114,34 @@ class KS_Solver(SolverBase):
         self.initialize_density()
 
     def initialize_density(self):
+        '''
         # uniform density
         n_0 = self.num_electrons / (self.num_grids * self.dx) * np.ones(self.num_grids)
         self.density = n_0
-        return self
+        '''
 
+        num_UP_electrons = 0
+        num_DOWN_electrons = 0
+
+        num_unpol_states = math.floor(self.num_electrons / 2)
+        for i in range(num_unpol_states):
+            num_UP_electrons += 1
+            num_DOWN_electrons += 1
+
+        # if num_electrons is odd, then radical
+        if self.num_electrons % 2 == 1:
+            num_UP_electrons += 1
+
+        self.num_UP_electrons = num_UP_electrons
+        self.num_DOWN_electrons = num_DOWN_electrons
+
+        # uniform density
+        self.nUP = self.num_UP_electrons / (self.num_grids * self.dx) * np.ones(self.num_grids)
+        self.nDOWN = self.num_DOWN_electrons / (self.num_grids * self.dx) * np.ones(self.num_grids)
+        self.density = self.nUP + self.nDOWN
+
+        return self
+    '''
     def polarization(self):
         n_up = 0
         n_down = 0
@@ -135,6 +158,7 @@ class KS_Solver(SolverBase):
         zeta = (n_up - n_down) / self.density
 
         return [n_up, n_down, zeta]
+    '''
 
     def update_v_tot(self):
         # total potential to be solved self consistently in the Kohn Sham system

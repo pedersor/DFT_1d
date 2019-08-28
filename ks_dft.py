@@ -72,7 +72,7 @@ class SolverBase(object):
         self.v_h = v_h
         self.xc = xc
         self.v_tot = v_ext
-
+        
         if not isinstance(num_electrons, int):
             raise ValueError('num_electrons is not an integer.')
         elif num_electrons < 1:
@@ -114,21 +114,9 @@ class KS_Solver(SolverBase):
         self.initialize_density()
 
     def initialize_density(self):
-        '''
-        # uniform density
-        n_0 = self.num_electrons / (self.num_grids * self.dx) * np.ones(self.num_grids)
-        self.density = n_0
-        '''
-
-        num_UP_electrons = 0
-        num_DOWN_electrons = 0
-
-        num_unpol_states = math.floor(self.num_electrons / 2)
-        for i in range(num_unpol_states):
-            num_UP_electrons += 1
-            num_DOWN_electrons += 1
-
-        # if num_electrons is odd, then radical
+        # Number of Up/Down Electrons
+        num_UP_electrons = int(self.num_electrons / 2)
+        num_DOWN_electrons = int(self.num_electrons / 2)
         if self.num_electrons % 2 == 1:
             num_UP_electrons += 1
 
@@ -139,9 +127,8 @@ class KS_Solver(SolverBase):
         self.nUP = self.num_UP_electrons / (self.num_grids * self.dx) * np.ones(self.num_grids)
         self.nDOWN = self.num_DOWN_electrons / (self.num_grids * self.dx) * np.ones(self.num_grids)
         self.density = self.nUP + self.nDOWN
-
         return self
-    '''
+
     def polarization(self):
         n_up = 0
         n_down = 0
@@ -158,14 +145,14 @@ class KS_Solver(SolverBase):
         zeta = (n_up - n_down) / self.density
 
         return [n_up, n_down, zeta]
-    '''
 
     def update_v_tot(self):
         # total potential to be solved self consistently in the Kohn Sham system
-        self.v_tot = functools.partial(dft_potentials.tot_KS_potential, n=self.density, v_ext=self.v_ext, v_h=self.v_h, v_xc=self.xc.v_xc_exp, polarization=self.polarization())
+        self.v_tot = functools.partial(dft_potentials.tot_KS_potential, n=self.density, nUP=self.polarization()[0], nDOWN=self.polarization()[1], v_ext=self.v_ext, v_h=self.v_h, v_xc=self.xc.v_xc_exp)
+        #self.v_tot = functools.partial(dft_potentials.tot_KS_potential, n=self.density, nUP=self.nUP, nDOWN=self.nDOWN, v_ext=self.v_ext, v_h=self.v_h, v_xc=self.xc.v_xc_exp)
         return self
 
-    def _update_ground_state(self, solver):
+    def _update_ground_state(self, solver, solverUP, solverDOWN=0):
         """Helper function to solve_ground_state() method.
 
         Updates the attributes total_energy, wave_function, density, kinetic_energy,
@@ -184,11 +171,28 @@ class KS_Solver(SolverBase):
           self
         """
         self.total_energy = 0.
-        self.density = np.zeros(self.num_grids)
         self.kinetic_energy = 0.
         self.potential_energy = 0.
+
+        self.density = np.zeros(self.num_grids)
+        self.nUP = np.zeros(self.num_grids)
+        self.nDOWN = np.zeros(self.num_grids)
+
         self.eigenvalues = solver.eigenvalues
+        self.eigenvaluesUP = solverUP.eigenvalues
+        if solverDOWN != 0:
+            self.eigenvaluesDOWN = solverDOWN.eigenvalues
+
         self.wave_function = solver.wave_function
+        self.wave_functionUP = solverUP.wave_function
+        if solverDOWN != 0:
+            self.wave_functionDOWN = solverDOWN.wave_function
+
+        for i in range(self.num_UP_electrons):
+            self.nUP += self.wave_functionUP[i] ** 2
+
+        for i in range(self.num_DOWN_electrons):
+            self.nDOWN += self.wave_functionDOWN[i] ** 2
 
         num_unpol_states = math.floor(self.num_electrons / 2)
         for i in range(num_unpol_states):
@@ -201,6 +205,9 @@ class KS_Solver(SolverBase):
             self.total_energy += solver.eigenvalues[num_unpol_states]
             self.density += (self.wave_function[num_unpol_states] ** 2)
             self.kinetic_energy += quadratic(solver._t_mat, self.wave_function[num_unpol_states]) * self.dx
+
+        if self.polarization()[0].all() == self.nUP.all():
+            print('NO THE DENSITIES MATCH! BAD!')
 
         return self
 
@@ -216,7 +223,16 @@ class KS_Solver(SolverBase):
         solver = single_electron.EigenSolver(self.grids, potential_fn=self.v_tot, num_electrons=self.num_electrons, boundary_condition='closed')
         solver.solve_ground_state()
 
-        return self._update_ground_state(solver)
+        solverUP = single_electron.EigenSolver(self.grids, potential_fn=self.v_tot, num_electrons=self.num_UP_electrons, boundary_condition='closed')
+        solverUP.solve_ground_state()
+
+        if self.num_DOWN_electrons == 0:
+            return self._update_ground_state(solver, solverUP)
+        else:
+            solverDOWN = single_electron.EigenSolver(self.grids, potential_fn=self.v_tot, num_electrons=self.num_DOWN_electrons, boundary_condition='closed')
+            solverDOWN.solve_ground_state()
+
+        return self._update_ground_state(solver, solverUP, solverDOWN)
 
     def solve_self_consistent_density(self):
 

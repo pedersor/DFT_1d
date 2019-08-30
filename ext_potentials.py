@@ -51,6 +51,7 @@ def harmonic_oscillator(grids, k=1.):
     return vp
 
 def quartic_oscillator(grids, k=1.):
+    # quartic oscillator potential
 
     vp = 0.5 * k * (grids ** 4)
     return vp

@@ -45,8 +45,8 @@ class exchange_correlation_functional(object):
     def v_xc_exp_up(self, n, n_up, n_down):
         # Exchange-Correlation Potential for up electrons
         # v_xc_up = d/dn_up (eps_x + eps_c)
-        pi = np.pi
 
+        pi = np.pi
         firstU, firstP, secondU, secondP = self.set_pade_approx_params(n)
 
         v_x = -(self.A / (pi)) * (np.arctan(2 * pi * n_up / self.k))
@@ -61,7 +61,6 @@ class exchange_correlation_functional(object):
         # v_xc_down = d/dn_down (eps_x + eps_c)
 
         pi = np.pi
-
         firstU, firstP, secondU, secondP = self.set_pade_approx_params(n)
 
         v_x = -(self.A / (pi)) * (np.arctan(2 * pi * n_down / self.k))
@@ -85,28 +84,43 @@ class exchange_correlation_functional(object):
 
     def eps_x(self, n, zeta):
         # Exchange Energy per Length
+
         y = np.pi * n / self.k
         return self.A * self.k * (
                 np.log(1 + (y ** 2) * ((1 + zeta) ** 2)) - 2 * y * (1 + zeta) * np.arctan(y * (1 + zeta)) + np.log(
             1 + (y ** 2) * ((-1 + zeta) ** 2)) - 2 * y * (-1 + zeta) * np.arctan(y * (-1 + zeta))) / (
                        4 * (np.pi ** 2))
 
-    # Correlation Energy per Length
+
     def eps_c(self, n, zeta):
+        # Correlation Energy per Length
+
         unpol = self.corrExpression(n, 2, -1.00077, 6.26099, -11.9041, 9.62614, -1.48334, 1)
         pol = self.corrExpression(n, 180.891, -541.124, 651.615, -356.504, 88.0733, -4.32708, 8)
         return unpol + (zeta ** 2) * (pol - unpol)
 
     def corrExpression(self, n, alpha, beta, gamma, delta, eta, sigma, nu):
+        '''
+        parameters derived in:
+
+        Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
+        and  Steven  R  White. One-dimensional mimicking of electronic structure:
+        The case for exponentials. Physical Review B,91(23):235141, 2015.
+        '''
+
         y = np.pi * n / self.k
         return (-self.A * self.k * (y ** 2) / (np.pi ** 2)) / (
                 alpha + beta * (y ** (1. / 2.)) + gamma * y + delta * (y ** (3. / 2.)) + eta * (y ** 2) + sigma * (
                 y ** (5. / 2.)) + nu * (np.pi * (self.k ** 2) / self.A) * (y ** 3))
 
-    # Total Exchange Energy
+
     def E_x(self, n, zeta):
+        # Total Exchange Energy
+
         return self.eps_x(n, zeta).sum() * self.dx
 
-    # Total Correlation Energy
+
     def E_c(self, n, zeta):
+        # Total Correlation Energy
+
         return self.eps_c(n, zeta).sum() * self.dx

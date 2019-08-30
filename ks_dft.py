@@ -51,12 +51,6 @@ class SolverBase(object):
           k_point: the k-point in reciprocal space used to evaluate Schrodinger Equation
               for the case of a periodic potential. It should be chosen to be within
               the first Brillouin zone.
-          end_points: if true, forward/backward finite difference methods will be used
-              near the boundaries to ensure the wavefunction is zero at boundaries.
-              This should only be used when the grid interval is purposefully small.
-              If false, all ghost points outside of the grid are set to zero. This should
-              be used whenever the grid interval is sufficiently large. Setting to false
-              also results in a faster computational time due to matrix symmetry.
 
         Raises:
           ValueError: If num_electrons is less than 1; or num_electrons is not
@@ -67,7 +61,7 @@ class SolverBase(object):
         self.grids = grids
         self.dx = get_dx(grids)
         self.num_grids = len(grids)
-        # Potential on grid.
+
         self.v_ext = v_ext
         self.v_h = v_h
         self.xc = xc
@@ -115,7 +109,8 @@ class KS_Solver(SolverBase):
         self.initialize_density()
 
     def initialize_density(self):
-        # Number of Up/Down Electrons
+        # Get number of Up/Down Electrons. All unpaired electrons are defaulted to spin-up.
+
         num_UP_electrons = int(self.num_electrons / 2)
         num_DOWN_electrons = int(self.num_electrons / 2)
         if self.num_electrons % 2 == 1:
@@ -133,18 +128,20 @@ class KS_Solver(SolverBase):
 
     def update_v_tot_up(self):
         # total potential to be solved self consistently in the Kohn Sham system
+
         self.v_tot_up = functools.partial(dft_potentials.tot_KS_potential, n=self.density, nUP=self.nUP,
                                           nDOWN=self.nDOWN, v_ext=self.v_ext, v_h=self.v_h, v_xc=self.xc.v_xc_exp_up)
         return self
 
     def update_v_tot_down(self):
         # total potential to be solved self consistently in the Kohn Sham system
+
         self.v_tot_down = functools.partial(dft_potentials.tot_KS_potential, n=self.density, nUP=self.nUP,
                                             nDOWN=self.nDOWN, v_ext=self.v_ext, v_h=self.v_h,
                                             v_xc=self.xc.v_xc_exp_down)
         return self
 
-    def _update_ground_state(self, solverUP, solverDOWN=0):
+    def _update_ground_state(self, solverUP, solverDOWN=None):
         """Helper function to solve_ground_state() method.
 
         Updates the attributes total_energy, wave_function, density, kinetic_energy,
@@ -162,6 +159,7 @@ class KS_Solver(SolverBase):
         Returns:
           self
         """
+
         self.kinetic_energy = 0.
 
         self.density = np.zeros(self.num_grids)
@@ -169,7 +167,7 @@ class KS_Solver(SolverBase):
         self.nDOWN = np.zeros(self.num_grids)
 
         self.wave_functionUP = solverUP.wave_function
-        if solverDOWN != 0:
+        if solverDOWN != None:
             self.wave_functionDOWN = solverDOWN.wave_function
 
         for i in range(self.num_UP_electrons):
@@ -186,26 +184,22 @@ class KS_Solver(SolverBase):
         return self
 
     def solve_ground_state(self):
-        """Solve ground state by diagonalize the Hamiltonian matrix directly.
-
-        Compute attributes:
-        total_energy, kinetic_energy, potential_energy, density, wave_function.
-
-        Returns:
-          self
+        """Solve ground state by diagonalizing the Hamiltonian matrix directly and separately for up and down spins.
         """
+
         solverUP = single_electron.EigenSolver(self.grids, potential_fn=self.v_tot_up,
-                                               num_electrons=self.num_UP_electrons, boundary_condition=self.boundary_condition)
+                                               num_electrons=self.num_UP_electrons,
+                                               boundary_condition=self.boundary_condition)
         solverUP.solve_ground_state()
 
         if self.num_DOWN_electrons == 0:
             return self._update_ground_state(solverUP)
         else:
             solverDOWN = single_electron.EigenSolver(self.grids, potential_fn=self.v_tot_down,
-                                                     num_electrons=self.num_DOWN_electrons, boundary_condition=self.boundary_condition)
+                                                     num_electrons=self.num_DOWN_electrons,
+                                                     boundary_condition=self.boundary_condition)
             solverDOWN.solve_ground_state()
-
-        return self._update_ground_state(solverUP, solverDOWN)
+            return self._update_ground_state(solverUP, solverDOWN)
 
     def solve_self_consistent_density(self):
 
@@ -215,7 +209,8 @@ class KS_Solver(SolverBase):
             old_density = self.density
             # solve KS system -> obtain new new density
             self.solve_ground_state()
-            # update v_tot using new density
+
+            # update total potentials using new density
             self.update_v_tot_up()
             self.update_v_tot_down()
 

@@ -204,7 +204,6 @@ class KS_Solver(SolverBase):
     def solve_self_consistent_density(self):
 
         density_change_integral = 1.0
-        print('|Convergence error| :')
         while density_change_integral > 1e-6:
             old_density = self.density
             # solve KS system -> obtain new new density
@@ -216,11 +215,8 @@ class KS_Solver(SolverBase):
 
             # this may not be the best way to determine convergence...
             density_change_integral = np.abs(old_density - self.density).sum() * self.dx
-            print(density_change_integral)
 
         self._solved = True
-        print('converged successfully')
-        print()
 
         # Non-Interacting Kinetic Energy
         self.T_s = self.kinetic_energy

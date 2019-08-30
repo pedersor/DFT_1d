@@ -50,6 +50,10 @@ def harmonic_oscillator(grids, k=1.):
     vp = 0.5 * k * grids ** 2
     return vp
 
+def quartic_oscillator(grids, k=1.):
+
+    vp = 0.5 * k * (grids ** 4)
+    return vp
 
 def kronig_penney(grids, a, b, v0):
     """Kronig-Penney model potential. For more information, see:

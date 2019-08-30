@@ -2,8 +2,8 @@ import ext_potentials
 import numpy as np
 
 
-def tot_KS_potential(grids, n, v_ext, v_h, v_xc, n_up, n_down):
-    return v_ext(grids) + v_h(grids=grids, n=n) + v_xc(n, n_up, n_down)
+def tot_KS_potential(grids, n, v_ext, v_h, v_xc, nUP, nDOWN):
+    return v_ext(grids) + v_h(grids=grids, n=n) + v_xc(n, nUP, nDOWN)
 
 
 def hartree_potential_exp(grids, n, A, k, a):
@@ -25,75 +25,71 @@ class exchange_correlation_functional(object):
         self.k = k
         self.dx = (grids[-1] - grids[0]) / (len(grids) - 1)
 
-    # Exchange-Correlation Potential
-    def v_xc_exp_up(self, n, n_up, n_down):
-        pi = np.pi
+    def set_pade_approx_params(self, n):
+        '''
+        parameters derived in:
 
+        Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
+        and  Steven  R  White. One-dimensional mimicking of electronic structure:
+        The case for exponentials. Physical Review B,91(23):235141, 2015.
+        '''
+
+        # these expressions are used to compute v_xc in the exponential coulomb potential case
         firstU = self.first(n, 2, -1.00077, 6.26099, -11.9041, 9.62614, -1.48334, 1)
         firstP = self.first(n, 180.891, -541.124, 651.615, -356.504, 88.0733, -4.32708, 8)
         secondU = self.second(n, 2, -1.00077, 6.26099, -11.9041, 9.62614, -1.48334, 1)
         secondP = self.second(n, 180.891, -541.124, 651.615, -356.504, 88.0733, -4.32708, 8)
 
-        # These are the correct exchange/correlation potentials for the fully polarized case (zeta = 1)
-        # v_x = -(self.A/pi) * np.arctan(2*pi*n/self.k)
-        # v_c = self.A*n * (n*secondP - 2*firstP) / ((firstP**2)*self.k)
+        return firstU, firstP, secondU, secondP
 
-        # These are the correct exchange/correlation potentials for the unpolarized case (zeta = 0)
-        # v_x = -(self.A/pi) * np.arctan(pi*n/self.k)
-        # v_c = self.A*n * (n*secondU - 2*firstU) / ((firstU**2)*self.k)
+    def v_xc_exp_up(self, n, n_up, n_down):
+        # Exchange-Correlation Potential for up electrons
+        # v_xc_up = d/dn_up (eps_x + eps_c)
+        pi = np.pi
 
-        # These are the result of differentiating the exchange/correlation energy with respect to n_up and n_down explicitly (Attempt 1)
-        v_x = -(self.A / (pi)) * (np.arctan(2 * pi * n_down / self.k))
-        v_c = (self.A / self.k) * ((((n_down - n_up) ** 2) * secondP / (firstP ** 2)) + (
-                    (4 * n_down * n_up * secondU - 2 * firstU * n) / (firstU ** 2)))
+        firstU, firstP, secondU, secondP = self.set_pade_approx_params(n)
 
-        # These are Attempt 1's UP Potential
-        # v_x = -(self.A/pi) * np.arctan(2*n_up*pi/self.k)
-        # v_c = self.A * (2*firstP*(firstU**2)*(n_down - n_up) + (firstU**2)*((n_down - n_up)**2)*secondP - 4*(firstP**2)*n_down*(firstU - n_up*secondU)) / ((firstP**2)*(firstU**2)*self.k)
-
-        # These are the result of differentiating the exchange/correlation energy with respect to n, treating zeta as a constant (Attempt 2)
-        # v_x = -(self.A/(2*pi)) * ((1+zeta)*np.arctan(pi*n*(1+zeta)/self.k) + (-1+zeta)*np.arctan(pi*n*(-1+zeta)/self.k))
-        # v_c = self.A*n * (-2*firstP*(firstU**2)*(zeta**2) + (firstU**2)*n*secondP*(zeta**2) + (firstP**2)*(2*firstU - n*secondU)*(-1+(zeta**2))) / ((firstP**2)*(firstU**2)*self.k)
-
-        # These are the new DOWN potential from plotting
-        # v_x = (self.A/(2*n*pi))*((n+2*n_down-n*zeta)*np.arctan(n*pi*(-1+zeta)/self.k) - (n-2*n_down+n*zeta)*np.arctan(n*pi*(1+zeta)/self.k))
-        # v_c = self.A * ((firstP**2)*n*(n*secondU - 2*firstU) + 4*firstP*firstU*(firstU-firstP)*n_down*zeta + n*(firstU*(2*firstP*(firstP-firstU) + firstU*n*secondP) - (firstP**2)*n*secondU)*(zeta**2)) / ((firstP**2)*(firstU**2)*self.k)
+        v_x = -(self.A / (pi)) * (np.arctan(2 * pi * n_up / self.k))
+        v_c = (self.A * (2 * firstP * (firstU ** 2) * (n_down - n_up) + (firstU ** 2) * (
+                (n_down - n_up) ** 2) * secondP - 4 * (firstP ** 2) * n_down * (firstU - n_up * secondU))) / (
+                      (firstP ** 2) * (firstU ** 2) * self.k)
 
         return v_x + v_c
 
     def v_xc_exp_down(self, n, n_up, n_down):
+        # Exchange-Correlation Potential for down electrons
+        # v_xc_down = d/dn_down (eps_x + eps_c)
+
         pi = np.pi
 
-        firstU = self.first(n, 2, -1.00077, 6.26099, -11.9041, 9.62614, -1.48334, 1)
-        firstP = self.first(n, 180.891, -541.124, 651.615, -356.504, 88.0733, -4.32708, 8)
-        secondU = self.second(n, 2, -1.00077, 6.26099, -11.9041, 9.62614, -1.48334, 1)
-        secondP = self.second(n, 180.891, -541.124, 651.615, -356.504, 88.0733, -4.32708, 8)
+        firstU, firstP, secondU, secondP = self.set_pade_approx_params(n)
 
-        v_x = -(self.A / (pi)) * (np.arctan(2 * pi * n_up / self.k))
-        v_c = (self.A / self.k) * ((((n_down - n_up) ** 2) * secondP / (firstP ** 2)) + (
-                    (4 * n_down * n_up * secondU - 2 * firstU * n) / (firstU ** 2)))
+        v_x = -(self.A / (pi)) * (np.arctan(2 * pi * n_down / self.k))
+        v_c = (self.A * (2 * firstP * (firstU ** 2) * (-n_down + n_up) + (firstU ** 2) * (
+                (n_down - n_up) ** 2) * secondP - 4 * (firstP ** 2) * n_up * (firstU - n_down * secondU))) / (
+                      (firstP ** 2) * (firstU ** 2) * self.k)
 
         return v_x + v_c
 
     def first(self, n, alpha, beta, gamma, delta, eta, sigma, nu):
         y = np.pi * n / self.k
         return alpha + beta * (y ** (1. / 2.)) + gamma * y + delta * (y ** (3. / 2.)) + eta * (y ** 2) + sigma * (
-                    y ** (5. / 2.)) + nu * (np.pi * (self.k ** 2) / self.A) * (y ** 3)
+                y ** (5. / 2.)) + nu * (np.pi * (self.k ** 2) / self.A) * (y ** 3)
 
     def second(self, n, alpha, beta, gamma, delta, eta, sigma, nu):
         return (6 * (n ** 3) * (np.pi ** 4) * self.k * nu + self.A * np.sqrt(np.pi) * (
-                    4 * (n ** 2) * (np.pi ** (3. / 2.)) * eta + 2 * n * np.sqrt(
-                np.pi) * gamma * self.k + 3 * n * np.pi * delta * np.sqrt(n / self.k) * self.k + beta * np.sqrt(
-                n / self.k) * (self.k ** 2) + 5 * n * (np.pi ** 2) * ((n / self.k) ** (3. / 2.)) * self.k * sigma)) / (
-                           2 * self.A * n * (self.k ** 2))
+                4 * (n ** 2) * (np.pi ** (3. / 2.)) * eta + 2 * n * np.sqrt(
+            np.pi) * gamma * self.k + 3 * n * np.pi * delta * np.sqrt(n / self.k) * self.k + beta * np.sqrt(
+            n / self.k) * (self.k ** 2) + 5 * n * (np.pi ** 2) * ((n / self.k) ** (3. / 2.)) * self.k * sigma)) / (
+                       2 * self.A * n * (self.k ** 2))
 
-    # Exchange Energy per Length
     def eps_x(self, n, zeta):
+        # Exchange Energy per Length
         y = np.pi * n / self.k
         return self.A * self.k * (
-                    np.log(1 + (y ** 2) * ((1 + zeta) ** 2)) - 2 * y * (1 + zeta) * np.arctan(y * (1 + zeta)) + np.log(
-                1 + (y ** 2) * ((-1 + zeta) ** 2)) - 2 * y * (-1 + zeta) * np.arctan(y * (-1 + zeta))) / (
-                           4 * (np.pi ** 2))
+                np.log(1 + (y ** 2) * ((1 + zeta) ** 2)) - 2 * y * (1 + zeta) * np.arctan(y * (1 + zeta)) + np.log(
+            1 + (y ** 2) * ((-1 + zeta) ** 2)) - 2 * y * (-1 + zeta) * np.arctan(y * (-1 + zeta))) / (
+                       4 * (np.pi ** 2))
 
     # Correlation Energy per Length
     def eps_c(self, n, zeta):
@@ -104,8 +100,8 @@ class exchange_correlation_functional(object):
     def corrExpression(self, n, alpha, beta, gamma, delta, eta, sigma, nu):
         y = np.pi * n / self.k
         return (-self.A * self.k * (y ** 2) / (np.pi ** 2)) / (
-                    alpha + beta * (y ** (1. / 2.)) + gamma * y + delta * (y ** (3. / 2.)) + eta * (y ** 2) + sigma * (
-                        y ** (5. / 2.)) + nu * (np.pi * (self.k ** 2) / self.A) * (y ** 3))
+                alpha + beta * (y ** (1. / 2.)) + gamma * y + delta * (y ** (3. / 2.)) + eta * (y ** 2) + sigma * (
+                y ** (5. / 2.)) + nu * (np.pi * (self.k ** 2) / self.A) * (y ** 3))
 
     # Total Exchange Energy
     def E_x(self, n, zeta):

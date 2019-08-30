@@ -5,8 +5,8 @@ import functools
 from absl import app
 from absl import flags
 
-flags.DEFINE_integer('z', 1, 'Nuclear Charge')
-flags.DEFINE_integer('num_electrons', 1, 'Number of electrons in the system.')
+flags.DEFINE_integer('z', 3, 'Nuclear Charge')
+flags.DEFINE_integer('num_electrons', 3, 'Number of electrons in the system.')
 
 FLAGS = flags.FLAGS
 
@@ -17,13 +17,13 @@ def main(argv):
 	A = 1.071295
 	k = 1. / 2.385345
 
-	grids = np.linspace(-10, 10, 200)
+	grids = np.linspace(-10, 10, 201)
 
 	v_ext = functools.partial(ext_potentials.exp_hydrogenic, A=A, k=k, a=0, Z=FLAGS.z)
 	v_h = functools.partial(dft_potentials.hartree_potential_exp, A=A, k=k, a=0)
 	ex_corr = dft_potentials.exchange_correlation_functional(grids=grids, A=A, k=k)
 
-	solver = ks_dft.KS_Solver(grids, v_ext=v_ext, v_h=v_h, xc=ex_corr, num_electrons=FLAGS.num_electrons, end_points=True)
+	solver = ks_dft.KS_Solver(grids, v_ext=v_ext, v_h=v_h, xc=ex_corr, num_electrons=FLAGS.num_electrons)
 	solver.solve_self_consistent_density()
 
 	# Non-Interacting Kinetic Energy
@@ -35,6 +35,7 @@ def main(argv):
 	# Hartree Energy
 	print("U =", solver.U)
 
+
 	# Exchange Energy
 	print("E_x =", solver.E_x)
 
@@ -43,6 +44,7 @@ def main(argv):
 
 	# Total Energy
 	print("E =", solver.E_tot)
+
 
 if __name__ == '__main__':
 	app.run(main)

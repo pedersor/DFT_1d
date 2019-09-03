@@ -378,13 +378,14 @@ def exp_hydro_discont_well_roots(A, k, d, Z=1):
     return root_list
 
 
-def exp_H2plus(grids, A, k, a, d, Z=1):
+def exp_H2plus(grids, A, k, a, d, Z):
     """ Two Exponential potentials separated by a distance d.
 
 
     """
-    vp = exp_hydrogenic(grids - d / 2, A, k, a, Z=1) + exp_hydrogenic(grids + d / 2, A, k, a, Z=1)
-    return vp
+    vp = exp_hydrogenic(grids - d / 2, A, k, a, Z) + exp_hydrogenic(grids + d / 2, A, k, a, Z)
+    repulsion = -exp_hydrogenic(d, A, k, a, Z)
+    return vp + repulsion
 
 
 def poschl_teller(grids, lam, a=1., center=0.):

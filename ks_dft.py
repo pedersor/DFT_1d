@@ -203,9 +203,12 @@ class KS_Solver(SolverBase):
 
     def solve_self_consistent_density(self):
 
-        density_change_integral = 1.0
-        while density_change_integral > 1e-6:
-            old_density = self.density
+        delta_E = 1.0
+        first_iter = True
+        while delta_E > 1e-6:
+            if not first_iter:
+                old_E = self.E_tot
+
             # solve KS system -> obtain new new density
             self.solve_ground_state()
 
@@ -213,27 +216,29 @@ class KS_Solver(SolverBase):
             self.update_v_tot_up()
             self.update_v_tot_down()
 
-            # this may not be the best way to determine convergence...
-            density_change_integral = np.abs(old_density - self.density).sum() * self.dx
+            # Non-Interacting Kinetic Energy
+            self.T_s = self.kinetic_energy
+
+            # External Potential Energy
+            self.V = (self.v_ext(self.grids) * self.density).sum() * self.dx
+
+            # Hartree Integral
+            self.U = .5 * (self.v_h(grids=self.grids, n=self.density) * self.density).sum() * self.dx
+
+            # Exchange Energy
+            self.E_x = self.xc.E_x(self.density, self.zeta)
+
+            # Correlation Energy
+            self.E_c = self.xc.E_c(self.density, self.zeta)
+
+            # Total Energy
+            self.E_tot = self.T_s + self.V + self.U + self.E_x + self.E_c
+
+            if not first_iter:
+                delta_E = np.abs(old_E - self.E_tot).sum() * self.dx
+            else:
+                first_iter = False
 
         self._solved = True
-
-        # Non-Interacting Kinetic Energy
-        self.T_s = self.kinetic_energy
-
-        # External Potential Energy
-        self.V = (self.v_ext(self.grids) * self.density).sum() * self.dx
-
-        # Hartree Integral
-        self.U = .5 * (self.v_h(grids=self.grids, n=self.density) * self.density).sum() * self.dx
-
-        # Exchange Energy
-        self.E_x = self.xc.E_x(self.density, self.zeta)
-
-        # Correlation Energy
-        self.E_c = self.xc.E_c(self.density, self.zeta)
-
-        # Total Energy
-        self.E_tot = self.T_s + self.V + self.U + self.E_x + self.E_c
 
         return self

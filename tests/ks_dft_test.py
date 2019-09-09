@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import functools
 
+A = 1.071295
+k = 1. / 2.385345
+
 def lda_dft_run(grids, N_e, Z):
     # N_e: Number of Electrons
     # Z: Nuclear Charge
-
-    A = 1.071295
-    k = 1. / 2.385345
 
     v_ext = functools.partial(ext_potentials.exp_hydrogenic, A=A, k=k, a=0, Z=Z)
     v_h = functools.partial(dft_potentials.hartree_potential_exp, A=A, k=k, a=0)
@@ -23,8 +23,7 @@ def lda_dft_run(grids, N_e, Z):
 def get_latex_table(grids):
     # "atom/ion": [N_e, Z]
     atom_dict = {"H": [1, 1], "He$^+$": [1, 2], "Li$^{2+}$": [1, 3], "Be$^{3+}$": [1, 4], "He": [2, 2], "Li$^+$": [2, 3],
-                 "Be$^{2+}$": [2, 4], "Li": [3, 3], "Be$^+$": [3, 4]}
-    atom_dict = {"Li": [3, 3]}
+                 "Be$^{2+}$": [2, 4], "Li": [3, 3], "Be$^+$": [3, 4], "Be": [4, 4]}
 
     print("$N_e$", end=" & ")
     print("Atom/Ion", end=" & ")
@@ -53,13 +52,10 @@ def get_latex_table(grids):
         print('\hline')
 
 
-def diatomic_lda_dft(grids, N_e, d, Z):
+def diatomic_lda_dft_run(grids, N_e, d, Z):
     # N_e: Number of Electrons
     # d: Nuclear Distance
     # Z: Nuclear Charge
-
-    A = 1.071295
-    k = 1. / 2.385345
 
     v_ext = functools.partial(ext_potentials.exp_H2plus, A=A, k=k, a=0, d=d, Z=Z)
     v_h = functools.partial(dft_potentials.hartree_potential_exp, A=A, k=k, a=0)
@@ -71,27 +67,18 @@ def diatomic_lda_dft(grids, N_e, d, Z):
     return solver
 
 
-def get_energies(grids):
-    d = np.linspace(0.1, 6, 10)
+def get_energies(grids, d):
     N_e = 1
     Z = 1
-    energies = []
-    
-    i = 0
-    while (i < len(d)):
-        solver = diatomic_lda_dft(grids, N_e, d[i], Z)
-        energies.append(solver.E_tot)
-        print(d[i], energies[i])
-        i += 1
 
-    fig1 = plt.figure(1)
-    ax1 = fig1.add_subplot(111)
-    ax1.set_title('H2+ Dissociation Curve')
-    ax1.set_xlabel('R')
-    ax1.set_ylabel('E0(R)')
-    plt.plot(d, energies, 'r')
-    plt.grid()
-    plt.show()
+    energies = []
+    for i in range(len(d)):
+        solver = diatomic_lda_dft_run(grids, N_e, d[i], Z)
+        repulsion = -ext_potentials.exp_hydrogenic(d[i], A, k, 0, Z)
+        energies.append(solver.E_tot + repulsion)
+        #print(d[i], energies[i])
+
+    return energies
 
 
 def simple_dft_lda_test(grids, N_e, Z):
@@ -117,6 +104,20 @@ def simple_dft_lda_test(grids, N_e, Z):
 
 
 if __name__ == '__main__':
-    grids = np.linspace(-15, 15, 1001)
-    get_latex_table(grids)
-    #energies = get_energies(grids)
+    grids = np.linspace(-10, 10, 201)
+    d = np.linspace(0, 6, 30) # Nuclear Distances (Diatomic)
+
+    #get_latex_table(grids)
+    energies = get_energies(grids, d)
+
+    fig1 = plt.figure(1)
+    ax1 = fig1.add_subplot(111)
+    ax1.set_xlabel('R')
+    ax1.set_ylabel('E0(R)')
+    plt.plot(d, energies, 'r')
+    plt.grid()
+
+    smallest_index = energies.index(min(energies))
+    print('The minimum energy is', min(energies), 'at a distance of', d[smallest_index])
+
+    plt.show()

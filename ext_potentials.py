@@ -384,8 +384,7 @@ def exp_H2plus(grids, A, k, a, d, Z):
 
     """
     vp = exp_hydrogenic(grids - d / 2, A, k, a, Z) + exp_hydrogenic(grids + d / 2, A, k, a, Z)
-    repulsion = -exp_hydrogenic(d, A, k, a, Z)
-    return vp + repulsion
+    return vp
 
 
 def poschl_teller(grids, lam, a=1., center=0.):

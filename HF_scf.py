@@ -1,4 +1,4 @@
-import single_electron, dft_potentials, ext_potentials
+import single_electron, functionals, ext_potentials
 import numpy as np
 import functools
 import math
@@ -132,14 +132,14 @@ class HF_Solver(SolverBase):
     def update_v_tot_up(self):
         # total potential to be solved self consistently in the Kohn Sham system
 
-        self.v_tot_up = functools.partial(dft_potentials.tot_HF_potential, n=self.density, v_ext=self.v_ext,
+        self.v_tot_up = functools.partial(functionals.tot_HF_potential, n=self.density, v_ext=self.v_ext,
                                           v_h=self.v_h)
         return self
 
     def update_v_tot_down(self):
         # total potential to be solved self consistently in the Kohn Sham system
 
-        self.v_tot_down = functools.partial(dft_potentials.tot_HF_potential, n=self.density, v_ext=self.v_ext,
+        self.v_tot_down = functools.partial(functionals.tot_HF_potential, n=self.density, v_ext=self.v_ext,
                                             v_h=self.v_h)
         return self
 
@@ -163,7 +163,6 @@ class HF_Solver(SolverBase):
         self.fock_mat_up = mat
 
         return self
-
 
     def update_fock_matrix_down(self):
 
@@ -200,13 +199,15 @@ class HF_Solver(SolverBase):
 
                     int_ft_of_x = np.zeros(self.num_grids)
                     for x_prime_i, x_prime in enumerate(self.grids):
-                        int_ft_of_x[x_i] += ext_potentials.exp_hydrogenic(x - x_prime, A, k)*self.wave_functionUP[i][x_i]*self.wave_functionUP[j][x_i]*self.wave_functionUP[i][x_prime_i]*self.wave_functionUP[j][x_prime_i]*self.dx
+                        int_ft_of_x[x_i] += ext_potentials.exp_hydrogenic(x - x_prime, A, k) * self.wave_functionUP[i][
+                            x_i] * self.wave_functionUP[j][x_i] * self.wave_functionUP[i][x_prime_i] * \
+                                            self.wave_functionUP[j][x_prime_i] * self.dx
 
-                    int_tot += int_ft_of_x[x_i]*self.dx
+                    int_tot += int_ft_of_x[x_i] * self.dx
                 tot_2 += int_tot
             tot_up += tot_2
 
-        tot_up = -.5*tot_up
+        tot_up = -.5 * tot_up
 
         tot_down = 0
         for i in range(self.num_DOWN_electrons):
@@ -217,8 +218,10 @@ class HF_Solver(SolverBase):
 
                     int_ft_of_x = np.zeros(self.num_grids)
                     for x_prime_i, x_prime in enumerate(self.grids):
-                        int_ft_of_x[x_i] += ext_potentials.exp_hydrogenic(x - x_prime, A, k) * self.wave_functionDOWN[i][
-                            x_i] * self.wave_functionDOWN[j][x_i] * self.wave_functionDOWN[i][x_prime_i] * \
+                        int_ft_of_x[x_i] += ext_potentials.exp_hydrogenic(x - x_prime, A, k) * \
+                                            self.wave_functionDOWN[i][
+                                                x_i] * self.wave_functionDOWN[j][x_i] * self.wave_functionDOWN[i][
+                                                x_prime_i] * \
                                             self.wave_functionDOWN[j][x_prime_i] * self.dx
 
                     int_tot += int_ft_of_x[x_i] * self.dx
@@ -228,7 +231,6 @@ class HF_Solver(SolverBase):
         tot_down = -.5 * tot_down
 
         return tot_up + tot_down
-
 
     def _update_ground_state(self, solverUP, solverDOWN=None):
         """Helper function to solve_ground_state() method.
@@ -256,7 +258,7 @@ class HF_Solver(SolverBase):
         self.nDOWN = np.zeros(self.num_grids)
 
         self.wave_functionUP = solverUP.wave_function
-        if solverDOWN != None:
+        if solverDOWN is not None:
             self.wave_functionDOWN = solverDOWN.wave_function
 
         for i in range(self.num_UP_electrons):
@@ -286,7 +288,8 @@ class HF_Solver(SolverBase):
         else:
             solverDOWN = single_electron.EigenSolver(self.grids, potential_fn=self.v_tot_down,
                                                      num_electrons=self.num_DOWN_electrons,
-                                                     boundary_condition=self.boundary_condition, fock_mat=self.fock_mat_down)
+                                                     boundary_condition=self.boundary_condition,
+                                                     fock_mat=self.fock_mat_down)
             solverDOWN.solve_ground_state()
             return self._update_ground_state(solverUP, solverDOWN)
 
@@ -324,7 +327,6 @@ class HF_Solver(SolverBase):
 
             if not first_iter:
                 delta_E = np.abs(old_E - self.E_tot).sum() * self.dx
-                print(delta_E)
             else:
                 first_iter = False
 

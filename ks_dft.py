@@ -1,7 +1,8 @@
-import single_electron, dft_potentials
+import single_electron, functionals
 import numpy as np
 import functools
 import math
+
 
 def get_dx(grids):
     """Gets the grid spacing from grids array.
@@ -129,14 +130,14 @@ class KS_Solver(SolverBase):
     def update_v_tot_up(self):
         # total potential to be solved self consistently in the Kohn Sham system
 
-        self.v_tot_up = functools.partial(dft_potentials.tot_KS_potential, n=self.density, nUP=self.nUP,
+        self.v_tot_up = functools.partial(functionals.tot_KS_potential, n=self.density, nUP=self.nUP,
                                           nDOWN=self.nDOWN, v_ext=self.v_ext, v_h=self.v_h, v_xc=self.xc.v_xc_exp_up)
         return self
 
     def update_v_tot_down(self):
         # total potential to be solved self consistently in the Kohn Sham system
 
-        self.v_tot_down = functools.partial(dft_potentials.tot_KS_potential, n=self.density, nUP=self.nUP,
+        self.v_tot_down = functools.partial(functionals.tot_KS_potential, n=self.density, nUP=self.nUP,
                                             nDOWN=self.nDOWN, v_ext=self.v_ext, v_h=self.v_h,
                                             v_xc=self.xc.v_xc_exp_down)
         return self
@@ -167,7 +168,7 @@ class KS_Solver(SolverBase):
         self.nDOWN = np.zeros(self.num_grids)
 
         self.wave_functionUP = solverUP.wave_function
-        if solverDOWN != None:
+        if solverDOWN is not None:
             self.wave_functionDOWN = solverDOWN.wave_function
 
         for i in range(self.num_UP_electrons):
@@ -182,7 +183,6 @@ class KS_Solver(SolverBase):
         self.zeta = (self.nUP - self.nDOWN) / (self.density)
 
         return self
-
 
     def solve_ground_state(self):
         """Solve ground state by diagonalizing the Hamiltonian matrix directly and separately for up and down spins.
@@ -264,7 +264,6 @@ class KS_Solver(SolverBase):
                 delta_E = np.abs(old_E - self.E_tot).sum() * self.dx
             else:
                 first_iter = False
-
 
         self._solved = True
 

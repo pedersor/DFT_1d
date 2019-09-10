@@ -1,4 +1,4 @@
-import ks_dft, dft_potentials, ext_potentials
+import ks_dft, functionals, ext_potentials
 import matplotlib.pyplot as plt
 import numpy as np
 import functools
@@ -11,8 +11,8 @@ def lda_dft_run(grids, N_e, Z):
     # Z: Nuclear Charge
 
     v_ext = functools.partial(ext_potentials.exp_hydrogenic, A=A, k=k, a=0, Z=Z)
-    v_h = functools.partial(dft_potentials.hartree_potential_exp, A=A, k=k, a=0)
-    ex_corr = dft_potentials.exchange_correlation_functional(grids=grids, A=A, k=k)
+    v_h = functools.partial(functionals.hartree_potential_exp, A=A, k=k, a=0)
+    ex_corr = functionals.exchange_correlation_functional(grids=grids, A=A, k=k)
 
     solver = ks_dft.KS_Solver(grids, v_ext=v_ext, v_h=v_h, xc=ex_corr, num_electrons=N_e)
     solver.solve_self_consistent_density()
@@ -58,8 +58,8 @@ def diatomic_lda_dft_run(grids, N_e, d, Z, sym):
     # Z: Nuclear Charge
 
     v_ext = functools.partial(ext_potentials.exp_H2plus, A=A, k=k, a=0, d=d, Z=Z)
-    v_h = functools.partial(dft_potentials.hartree_potential_exp, A=A, k=k, a=0)
-    ex_corr = dft_potentials.exchange_correlation_functional(grids=grids, A=A, k=k)
+    v_h = functools.partial(functionals.hartree_potential_exp, A=A, k=k, a=0)
+    ex_corr = functionals.exchange_correlation_functional(grids=grids, A=A, k=k)
 
     solver = ks_dft.KS_Solver(grids, v_ext=v_ext, v_h=v_h, xc=ex_corr, num_electrons=N_e)
     solver.solve_self_consistent_density(sym)

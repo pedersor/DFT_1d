@@ -5,6 +5,7 @@ import numpy as np
 def tot_KS_potential(grids, n, v_ext, v_h, v_xc, nUP, nDOWN):
     return v_ext(grids) + v_h(grids=grids, n=n) + v_xc(n, nUP, nDOWN)
 
+
 def tot_HF_potential(grids, n, v_ext, v_h):
     return v_ext(grids) + v_h(grids=grids, n=n)
 
@@ -94,7 +95,6 @@ class exchange_correlation_functional(object):
             1 + (y ** 2) * ((-1 + zeta) ** 2)) - 2 * y * (-1 + zeta) * np.arctan(y * (-1 + zeta))) / (
                        4 * (np.pi ** 2))
 
-
     def eps_c(self, n, zeta):
         # Correlation Energy per Length
 
@@ -116,12 +116,10 @@ class exchange_correlation_functional(object):
                 alpha + beta * (y ** (1. / 2.)) + gamma * y + delta * (y ** (3. / 2.)) + eta * (y ** 2) + sigma * (
                 y ** (5. / 2.)) + nu * (np.pi * (self.k ** 2) / self.A) * (y ** 3))
 
-
     def E_x(self, n, zeta):
         # Total Exchange Energy
 
         return self.eps_x(n, zeta).sum() * self.dx
-
 
     def E_c(self, n, zeta):
         # Total Correlation Energy

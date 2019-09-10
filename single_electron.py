@@ -115,6 +115,8 @@ class SolverBase(object):
               The default 5-points results in a convergence rate of 4 for most systems. Suggested:
               use 3-point stencil for potentials with cusps as n_point_stencil > 3 will not improve
               convergence rates.
+          approx_E: TESTING ONLY. Use for special case of truncated grid size
+          fock_mat: Provide a Fock matrix if using hartree-fock Hamiltonian
 
         Raises:
           ValueError: If num_electrons is less than 1; or num_electrons is not

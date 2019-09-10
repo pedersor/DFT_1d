@@ -166,7 +166,7 @@ class HF_Solver(SolverBase):
             E_x_down = self.fock_operator.E_x(wave_function=self.wave_functionDOWN[:self.num_DOWN_electrons])
             return E_x_up + E_x_down
 
-    def _update_ground_state(self, solverUP, solverDOWN=None):
+    def _update_ground_state(self, solverUP, first_iter, sym, solverDOWN=None):
         """Helper function to solve_ground_state() method.
 
         Updates the attributes total_energy, wave_function, density, kinetic_energy,
@@ -195,6 +195,22 @@ class HF_Solver(SolverBase):
         if solverDOWN is not None:
             self.wave_functionDOWN = solverDOWN.wave_function
 
+        # MY LISTS:
+        if first_iter == True:
+            self.wave_functionUP_list = []
+            self.wave_functionDOWN_list = []
+
+        if first_iter == True:
+            midpoint = math.floor(self.num_grids / 2)
+            for i in range(midpoint):
+                self.wave_functionUP[0][i] *= sym
+                self.wave_functionDOWN[0][i] *= 1 / sym
+                self.wave_functionDOWN[0][midpoint + i] *= sym
+                self.wave_functionUP[0][midpoint + i] *= 1 / sym
+
+        self.wave_functionUP_list.append(self.wave_functionUP)
+        self.wave_functionDOWN_list.append(self.wave_functionDOWN)
+
         for i in range(self.num_UP_electrons):
             self.nUP += self.wave_functionUP[i] ** 2
             self.kinetic_energy += quadratic(solverUP._t_mat, solverUP.wave_function[i]) * self.dx
@@ -208,7 +224,7 @@ class HF_Solver(SolverBase):
 
         return self
 
-    def solve_ground_state(self):
+    def solve_ground_state(self, first_iter, sym):
         """Solve ground state by diagonalizing the Hamiltonian matrix directly and separately for up and down spins.
         """
 
@@ -218,25 +234,25 @@ class HF_Solver(SolverBase):
         solverUP.solve_ground_state()
 
         if self.num_DOWN_electrons == 0:
-            return self._update_ground_state(solverUP)
+            return self._update_ground_state(solverUP, first_iter, sym)
         else:
             solverDOWN = single_electron.EigenSolver(self.grids, potential_fn=self.v_tot_down,
                                                      num_electrons=self.num_DOWN_electrons,
                                                      boundary_condition=self.boundary_condition,
                                                      fock_mat=self.fock_mat_down)
             solverDOWN.solve_ground_state()
-            return self._update_ground_state(solverUP, solverDOWN)
+            return self._update_ground_state(solverUP, first_iter, sym, solverDOWN)
 
-    def solve_self_consistent_density(self):
+    def solve_self_consistent_density(self, sym):
 
         delta_E = 1.0
         first_iter = True
-        while delta_E > 1e-6:
+        while delta_E > 3e-5:
             if not first_iter:
                 old_E = self.E_tot
 
             # solve KS system -> obtain new new density
-            self.solve_ground_state()
+            self.solve_ground_state(first_iter, sym)
 
             # update total potentials using new density
             self.update_v_tot_up()

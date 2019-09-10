@@ -37,7 +37,7 @@ class SolverBase(object):
     Subclasses should define solve_ground_state method.
     """
 
-    def __init__(self, grids, v_ext, v_h, xc, num_electrons=1, k_point=None, boundary_condition="open"):
+    def __init__(self, grids, v_ext, v_h, fock_operator, num_electrons=1, k_point=None, boundary_condition="open"):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -45,7 +45,7 @@ class SolverBase(object):
               (num_grids,)
           v_ext: Kohn Sham external potential function taking grids as argument.
           v_h: Kohn Sham hartree potential function taking grids as argument.
-          xc: exchange correlation functional class taking density as argument.
+          fock_operator: fock_operator class used to assemble fock matrix and compute exchange
           num_electrons: integer, the number of electrons in the system. Must be
               greater or equal to 1.
           k_point: the k-point in reciprocal space used to evaluate Schrodinger Equation
@@ -64,7 +64,7 @@ class SolverBase(object):
 
         self.v_ext = v_ext
         self.v_h = v_h
-        self.xc = xc
+        self.fock_operator = fock_operator
         self.v_tot_up = v_ext
         self.v_tot_down = v_ext
 
@@ -100,7 +100,7 @@ class SolverBase(object):
 class HF_Solver(SolverBase):
     """Represents the Hamiltonian as a matrix and diagonalizes it directly."""
 
-    def __init__(self, grids, v_ext, v_h, xc, num_electrons=1, k_point=None, boundary_condition='open'):
+    def __init__(self, grids, v_ext, v_h, fock_operator, num_electrons=1, k_point=None, boundary_condition='open'):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -108,7 +108,7 @@ class HF_Solver(SolverBase):
             (num_grids,)
           num_electrons: Integer, the number of electrons in the system.
         """
-        super(HF_Solver, self).__init__(grids, v_ext, v_h, xc, num_electrons, k_point, boundary_condition)
+        super(HF_Solver, self).__init__(grids, v_ext, v_h, fock_operator, num_electrons, k_point, boundary_condition)
         self.initialize_density()
 
     def initialize_density(self):
@@ -144,93 +144,27 @@ class HF_Solver(SolverBase):
         return self
 
     def update_fock_matrix_up(self):
-
-        A = 1.071295
-        k = 1. / 2.385345
-
-        mat = np.zeros((self.num_grids, self.num_grids))
-
-        for j in range(self.num_UP_electrons):
-
-            mat_j = np.zeros((self.num_grids, self.num_grids))
-            for row in range(self.num_grids):
-                for column in range(self.num_grids):
-                    mat_j[row, column] = ext_potentials.exp_hydrogenic(self.grids[row] - self.grids[column], A, k) * \
-                                         self.wave_functionUP[j][column] * self.wave_functionUP[j][row] * self.dx
-
-            mat += mat_j
-
-        self.fock_mat_up = mat
+        self.fock_mat_up = self.fock_operator.update_fock_matrix(
+            wave_function=self.wave_functionUP[:self.num_UP_electrons])
 
         return self
 
     def update_fock_matrix_down(self):
+        if self.num_DOWN_electrons == 0:
+            return self
+        else:
+            self.fock_mat_down = self.fock_operator.update_fock_matrix(
+                wave_function=self.wave_functionDOWN[:self.num_DOWN_electrons])
 
-        A = 1.071295
-        k = 1. / 2.385345
-
-        mat = np.zeros((self.num_grids, self.num_grids))
-
-        for j in range(self.num_DOWN_electrons):
-
-            mat_j = np.zeros((self.num_grids, self.num_grids))
-            for row in range(self.num_grids):
-                for column in range(self.num_grids):
-                    mat_j[row, column] = ext_potentials.exp_hydrogenic(self.grids[row] - self.grids[column], A, k) * \
-                                         self.wave_functionDOWN[j][column] * self.wave_functionDOWN[j][row] * self.dx
-
-            mat += mat_j
-
-        self.fock_mat_down = mat
-
-        return self
+            return self
 
     def get_E_x_HF(self):
-
-        A = 1.071295
-        k = 1. / 2.385345
-
-        tot_up = 0
-        for i in range(self.num_UP_electrons):
-            tot_2 = 0
-            for j in range(self.num_UP_electrons):
-                int_tot = 0
-                for x_i, x in enumerate(self.grids):
-
-                    int_ft_of_x = np.zeros(self.num_grids)
-                    for x_prime_i, x_prime in enumerate(self.grids):
-                        int_ft_of_x[x_i] += ext_potentials.exp_hydrogenic(x - x_prime, A, k) * self.wave_functionUP[i][
-                            x_i] * self.wave_functionUP[j][x_i] * self.wave_functionUP[i][x_prime_i] * \
-                                            self.wave_functionUP[j][x_prime_i] * self.dx
-
-                    int_tot += int_ft_of_x[x_i] * self.dx
-                tot_2 += int_tot
-            tot_up += tot_2
-
-        tot_up = -.5 * tot_up
-
-        tot_down = 0
-        for i in range(self.num_DOWN_electrons):
-            tot_2 = 0
-            for j in range(self.num_DOWN_electrons):
-                int_tot = 0
-                for x_i, x in enumerate(self.grids):
-
-                    int_ft_of_x = np.zeros(self.num_grids)
-                    for x_prime_i, x_prime in enumerate(self.grids):
-                        int_ft_of_x[x_i] += ext_potentials.exp_hydrogenic(x - x_prime, A, k) * \
-                                            self.wave_functionDOWN[i][
-                                                x_i] * self.wave_functionDOWN[j][x_i] * self.wave_functionDOWN[i][
-                                                x_prime_i] * \
-                                            self.wave_functionDOWN[j][x_prime_i] * self.dx
-
-                    int_tot += int_ft_of_x[x_i] * self.dx
-                tot_2 += int_tot
-            tot_down += tot_2
-
-        tot_down = -.5 * tot_down
-
-        return tot_up + tot_down
+        if self.num_DOWN_electrons == 0:
+            return self.fock_operator.E_x(wave_function=self.wave_functionUP[:self.num_UP_electrons])
+        else:
+            E_x_up = self.fock_operator.E_x(wave_function=self.wave_functionUP[:self.num_UP_electrons])
+            E_x_down = self.fock_operator.E_x(wave_function=self.wave_functionDOWN[:self.num_DOWN_electrons])
+            return E_x_up + E_x_down
 
     def _update_ground_state(self, solverUP, solverDOWN=None):
         """Helper function to solve_ground_state() method.

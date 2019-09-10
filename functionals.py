@@ -21,6 +21,57 @@ def hartree_potential_exp(grids, n, A, k, a):
     return v_hartree
 
 
+class fock_operator(object):
+    def __init__(self, grids, A, k):
+        self.grids = grids
+        self.num_grids = len(grids)
+        self.A = A
+        self.k = k
+        self.dx = (grids[-1] - grids[0]) / (len(grids) - 1)
+
+    def update_fock_matrix(self, wave_function):
+        num_electrons = len(wave_function)
+        mat = np.zeros((self.num_grids, self.num_grids))
+
+        for j in range(num_electrons):
+
+            mat_j = np.zeros((self.num_grids, self.num_grids))
+            for row in range(self.num_grids):
+                for column in range(self.num_grids):
+                    mat_j[row, column] = ext_potentials.exp_hydrogenic(self.grids[row] - self.grids[column], self.A,
+                                                                       self.k) * \
+                                         wave_function[j][column] * wave_function[j][row] * self.dx
+
+            mat += mat_j
+
+        return mat
+
+    def E_x(self, wave_function):
+        num_electrons = len(wave_function)
+
+        E_x = 0
+        for i in range(num_electrons):
+            tot_2 = 0
+            for j in range(num_electrons):
+                int_tot = 0
+                for x_i, x in enumerate(self.grids):
+
+                    int_ft_of_x = np.zeros(self.num_grids)
+                    for x_prime_i, x_prime in enumerate(self.grids):
+                        int_ft_of_x[x_i] += ext_potentials.exp_hydrogenic(x - x_prime, self.A, self.k) * \
+                                            wave_function[i][x_i] * wave_function[j][x_i] * wave_function[i][
+                                                x_prime_i] * \
+                                            wave_function[j][x_prime_i] * self.dx
+
+                    int_tot += int_ft_of_x[x_i] * self.dx
+                tot_2 += int_tot
+            E_x += tot_2
+
+        E_x = -.5 * E_x
+
+        return E_x
+
+
 class exchange_correlation_functional(object):
 
     def __init__(self, grids, A, k):

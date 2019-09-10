@@ -88,7 +88,7 @@ class SolverBase(object):
     """
 
     def __init__(self, grids, potential_fn, num_electrons=1, k_point=None, boundary_condition='open',
-                 n_point_stencil=5, approx_E=None):
+                 n_point_stencil=5, approx_E=None, fock_mat = None):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -130,6 +130,8 @@ class SolverBase(object):
         # Potential on grid.
         self.vp = potential_fn(grids)
         self.approx_E = approx_E
+        self.fock_mat = fock_mat
+
 
         if not isinstance(num_electrons, int):
             raise ValueError('num_electrons is not an integer.')
@@ -162,7 +164,7 @@ class EigenSolver(SolverBase):
     """
 
     def __init__(self, grids, potential_fn, num_electrons=1, k_point=None, boundary_condition='open',
-                 n_point_stencil=5, approx_E=None):
+                 n_point_stencil=5, approx_E=None, fock_mat=None):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -172,7 +174,7 @@ class EigenSolver(SolverBase):
           num_electrons: Integer, the number of electrons in the system.
         """
         super(EigenSolver, self).__init__(grids, potential_fn, num_electrons, k_point, boundary_condition,
-                                          n_point_stencil, approx_E)
+                                          n_point_stencil, approx_E, fock_mat)
         self._set_matrices()
 
     def _set_matrices(self):
@@ -189,6 +191,9 @@ class EigenSolver(SolverBase):
         self._v_mat = self.get_potential_matrix()
         # Hamiltonian matrix
         self._h = self._t_mat + self._v_mat
+
+        if self.fock_mat is not None:
+            self._h += self.fock_mat
 
     def get_kinetic_matrix(self):
         """Kinetic matrix.

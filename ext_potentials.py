@@ -50,11 +50,13 @@ def harmonic_oscillator(grids, k=1.):
     vp = 0.5 * k * grids ** 2
     return vp
 
+
 def quartic_oscillator(grids, k=1.):
     # quartic oscillator potential
 
     vp = 0.5 * k * (grids ** 4)
     return vp
+
 
 def kronig_penney(grids, a, b, v0):
     """Kronig-Penney model potential. For more information, see:
@@ -87,7 +89,7 @@ def kronig_penney(grids, a, b, v0):
     return np.asarray(vp)
 
 
-def exp_hydrogenic(grids, A, k, a, Z=1):
+def exp_hydrogenic(grids, A, k, a=0, Z=1):
     """Exponential potential for 1D Hydrogenic atom.
 
     A 1D potential which can be used to mimic corresponding 3D

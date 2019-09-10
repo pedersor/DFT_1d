@@ -52,7 +52,7 @@ def get_latex_table(grids):
         print('\hline')
 
 
-def diatomic_lda_dft_run(grids, N_e, d, Z):
+def diatomic_lda_dft_run(grids, N_e, d, Z, sym):
     # N_e: Number of Electrons
     # d: Nuclear Distance
     # Z: Nuclear Charge
@@ -62,23 +62,32 @@ def diatomic_lda_dft_run(grids, N_e, d, Z):
     ex_corr = dft_potentials.exchange_correlation_functional(grids=grids, A=A, k=k)
 
     solver = ks_dft.KS_Solver(grids, v_ext=v_ext, v_h=v_h, xc=ex_corr, num_electrons=N_e)
-    solver.solve_self_consistent_density()
+    solver.solve_self_consistent_density(sym)
 
     return solver
 
 
 def get_energies(grids, d):
-    N_e = 1
+    N_e = 2
     Z = 1
-
-    energies = []
+    
+    sym = 1
+    energies1 = []
     for i in range(len(d)):
-        solver = diatomic_lda_dft_run(grids, N_e, d[i], Z)
+        solver = diatomic_lda_dft_run(grids, N_e, d[i], Z, sym)
         repulsion = -ext_potentials.exp_hydrogenic(d[i], A, k, 0, Z)
-        energies.append(solver.E_tot + repulsion)
-        #print(d[i], energies[i])
+        energies1.append(solver.E_tot + repulsion)
+        print(d[i], energies1[i])
 
-    return energies
+    sym = 10
+    energies2 = []
+    for i in range(len(d)):
+        solver = diatomic_lda_dft_run(grids, N_e, d[i], Z, sym)
+        repulsion = -ext_potentials.exp_hydrogenic(d[i], A, k, 0, Z)
+        energies2.append(solver.E_tot + repulsion)
+        print(d[i], energies2[i])
+
+    return energies1, energies2 # solver.density_list, solver.nUP_list, solver.nDOWN_list
 
 
 def simple_dft_lda_test(grids, N_e, Z):
@@ -104,20 +113,60 @@ def simple_dft_lda_test(grids, N_e, Z):
 
 
 if __name__ == '__main__':
-    grids = np.linspace(-10, 10, 201)
-    d = np.linspace(0, 6, 30) # Nuclear Distances (Diatomic)
+    grids = np.linspace(-10, 10, 200)
+    d = np.linspace(0.1, 6, 35) # Nuclear Distances (Diatomic)
 
     #get_latex_table(grids)
-    energies = get_energies(grids, d)
+    energies1, energies2 = get_energies(grids, d) # density_list, nUP_list, nDOWN_list = get_energies(grids, d)
 
+    # Molecular Dissociation Curves
     fig1 = plt.figure(1)
     ax1 = fig1.add_subplot(111)
     ax1.set_xlabel('R')
     ax1.set_ylabel('E0(R)')
-    plt.plot(d, energies, 'r')
+    plt.plot(d, energies1, 'r', label='Unperturbed')
+    plt.plot(d, energies2, 'r--', label='Perturbed')
+    plt.legend(loc='best')
     plt.grid()
 
+    '''
+    # R0
     smallest_index = energies.index(min(energies))
     print('The minimum energy is', min(energies), 'at a distance of', d[smallest_index])
+    '''
+
+    '''
+    # Plot ongoing nUP / nDOWN / density
+    fig1 = plt.figure(1)
+    ax1 = fig1.add_subplot(111)
+    ax1.set_xlabel('x')
+    ax1.set_ylabel('n')
+
+    #for i in range(0, len(density_list), 1):
+     #   plt.plot(grids, density_list[i], label= 'Density ' + str(i))
+
+    for i in range(0, len(nUP_list), 1):
+        plt.plot(grids, nUP_list[i], label= 'nUP ' + str(i))
+
+    #for i in range(0, len(nDOWN_list), 1):
+     #   plt.plot(grids, nDOWN_list[i], label= 'nDOWN ' + str(i))
+
+    plt.legend(loc='best')
+    plt.grid()
+    '''
+
+    '''
+    # Plot final nUP / nDOWN / density
+    fig1 = plt.figure(1)
+    ax1 = fig1.add_subplot(111)
+    ax1.set_xlabel('x')
+    ax1.set_ylabel('n')
+    plt.plot(grids, density_list[len(density_list) - 1], 'r', label='Final Density')
+    plt.plot(grids, nUP_list[len(nUP_list) - 1], 'b', label='Final nUP') 
+    plt.plot(grids, nDOWN_list[len(nDOWN_list) - 1] , 'g', label='Final nDOWN') 
+    #plt.plot(grids, nUP_list[len(nUP_list) - 1] - nDOWN_list[len(nDOWN_list) - 1] , 'g', label='Difference') 
+    plt.legend(loc='best')
+    plt.grid()
+    '''
 
     plt.show()

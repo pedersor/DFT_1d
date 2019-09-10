@@ -5,6 +5,9 @@ import numpy as np
 def tot_KS_potential(grids, n, v_ext, v_h, v_xc, nUP, nDOWN):
     return v_ext(grids) + v_h(grids=grids, n=n) + v_xc(n, nUP, nDOWN)
 
+def tot_HF_potential(grids, n, v_ext, v_h):
+    return v_ext(grids) + v_h(grids=grids, n=n)
+
 
 def hartree_potential_exp(grids, n, A, k, a):
     N = len(grids)

@@ -6,7 +6,7 @@ import functools
 A = 1.071295
 k = 1. / 2.385345
 
-def diatomic_LDA(grids, N_e, d, Z, sym):
+def diatomic_lda_run(grids, N_e, d, Z, sym):
     # N_e: Number of Electrons
     # d: Nuclear Distance
     # Z: Nuclear Charge
@@ -20,7 +20,7 @@ def diatomic_LDA(grids, N_e, d, Z, sym):
 
     return solver
 
-def diatomic_HF(grids, N_e, d, Z, sym):
+def diatomic_hf_run(grids, N_e, d, Z, sym):
     # N_e: Number of Electrons
     # d: Nuclear Distance
     # Z: Nuclear Charge
@@ -35,24 +35,18 @@ def diatomic_HF(grids, N_e, d, Z, sym):
     return solver
 
 
-def get_energies(grids, d):
-
+def get_energies(grids, d, N_e, Z):
     HF_Energies = []
     LDA_Energies = []
     P_HF_Energies = []
     P_LDA_Energies = []
-
-    N_e = 2
-    Z = 1
     
     if N_e == 1:
 
         sym = 1
-
         for i in range(len(d)):
-            HF_Solver = diatomic_HF(grids, N_e, d[i], Z, sym)
-            LDA_Solver = diatomic_LDA(grids, N_e, d[i], Z, sym)
-
+            HF_Solver = diatomic_hf_run(grids, N_e, d[i], Z, sym)
+            LDA_Solver = diatomic_lda_run(grids, N_e, d[i], Z, sym)
             repulsion = -ext_potentials.exp_hydrogenic(d[i], A, k, 0, Z)
 
             HF_Energies.append(HF_Solver.E_tot + repulsion)
@@ -65,11 +59,9 @@ def get_energies(grids, d):
     elif N_e == 2:
 
         sym = 1
-
         for i in range(len(d)):
-            HF_Solver = diatomic_HF(grids, N_e, d[i], Z, sym)
-            LDA_Solver = diatomic_LDA(grids, N_e, d[i], Z, sym)
-
+            HF_Solver = diatomic_hf_run(grids, N_e, d[i], Z, sym)
+            LDA_Solver = diatomic_lda_run(grids, N_e, d[i], Z, sym)
             repulsion = -ext_potentials.exp_hydrogenic(d[i], A, k, 0, Z)
 
             HF_Energies.append(HF_Solver.E_tot + repulsion)
@@ -78,12 +70,10 @@ def get_energies(grids, d):
             print(d[i], HF_Energies[i], LDA_Energies[i])
 
         sym = 2
-        sym2 = 10
-
+        sym2 = 100
         for i in range(len(d)):
-            HF_Solver = diatomic_HF(grids, N_e, d[i], Z, sym)
-            LDA_Solver = diatomic_LDA(grids, N_e, d[i], Z, sym2)
-
+            HF_Solver = diatomic_hf_run(grids, N_e, d[i], Z, sym)
+            LDA_Solver = diatomic_lda_run(grids, N_e, d[i], Z, sym2)
             repulsion = -ext_potentials.exp_hydrogenic(d[i], A, k, 0, Z)
 
             P_HF_Energies.append(HF_Solver.E_tot + repulsion)
@@ -95,56 +85,40 @@ def get_energies(grids, d):
 
 
 if __name__ == '__main__':
-    grids = np.linspace(-10, 10, 200)
-    d = np.linspace(0, 6, 50) # Nuclear Distances (Diatomic)
+    grids = np.linspace(-10, 10, 201)
+    d = np.linspace(0, 6, 40) # Nuclear Distances
 
-    #HF_Energies, LDA_Energies, P_HF_Energies, P_LDA_Energies = get_energies(grids, d)
-    HF_Energies, LDA_Energies, P_HF_Energies, P_LDA_Energies  = get_energies(grids, d)
+    N_e = 2
+    Z = 1
 
     # Molecular Dissociation Curves
-    fig1 = plt.figure(1)
-    ax1 = fig1.add_subplot(111)
-    ax1.set_xlabel('R')
-    ax1.set_ylabel('E0(R)')
-    plt.plot(d, LDA_Energies, 'r', label='LDA')
-    plt.plot(d, P_LDA_Energies, '--r')
-    plt.plot(d, HF_Energies, 'b', label='HF')
-    plt.plot(d, P_HF_Energies, '--b')
-    plt.legend(loc='best')
-    plt.grid()
+    if N_e == 1:
+        HF_Energies, LDA_Energies = get_energies(grids, d, N_e, Z)
+        fig1 = plt.figure(1)
+        ax1 = fig1.add_subplot(111)
+        ax1.set_xlabel('R')
+        ax1.set_ylabel('E0(R)')
+        plt.plot(d, LDA_Energies, 'r', label='LDA')
+        plt.plot(d, HF_Energies, 'b', label='HF')
+        plt.legend(loc='best')
+        plt.grid()
+    elif N_e == 2:
+        HF_Energies, LDA_Energies, P_HF_Energies, P_LDA_Energies = get_energies(grids, d, N_e, Z)
+        fig1 = plt.figure(1)
+        ax1 = fig1.add_subplot(111)
+        ax1.set_xlabel('R')
+        ax1.set_ylabel('E0(R)')
+        plt.plot(d, LDA_Energies, 'r', label='LDA')
+        plt.plot(d, P_LDA_Energies, '--r')
+        plt.plot(d, HF_Energies, 'b', label='HF')
+        plt.plot(d, P_HF_Energies, '--b')
+        plt.legend(loc='best')
+        plt.grid()
 
     '''
     # R0
-    smallest_index = energies.index(min(energies))
-    print('The minimum energy is', min(energies), 'at a distance of', d[smallest_index])
-    '''
-
-    '''
-    # Plot ongoing nUP / nDOWN / density
-    fig1 = plt.figure(1)
-    ax1 = fig1.add_subplot(111)
-    ax1.set_xlabel('x')
-    ax1.set_ylabel('wf')
-
-    for i in range(0, len(wave_functionUP_list), 1):
-        plt.plot(grids, wave_functionUP_list[i][0], label= 'wfcUP ' + str(i))
-
-    #for i in range(0, len(wave_functionDOWN_list), 1):
-     #   plt.plot(grids, wave_functionDOWN_list[i][0], label= 'wfDOWN ' + str(i))
-
-    plt.legend(loc='best')
-    plt.grid()
-    '''
-    
-    '''
-    fig1 = plt.figure(1)
-    ax1 = fig1.add_subplot(111)
-    ax1.set_xlabel('x')
-    ax1.set_ylabel('n')
-    plt.plot(grids, wave_functionUP_list[len(wave_functionUP_list) - 1][0] + 1, 'b', label='wfUP') 
-    plt.plot(grids, wave_functionDOWN_list[len(wave_functionDOWN_list) - 1][0] , 'g', label='wfDOWN') 
-    plt.legend(loc='best')
-    plt.grid()
+    smallest_index = HF_Energies.index(min(HF_Energies))
+    print('The minimum energy is', min(HF_Energies), 'at a distance of', d[smallest_index])
     '''
 
     plt.show()

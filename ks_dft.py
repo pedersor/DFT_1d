@@ -204,17 +204,9 @@ class KS_Solver(SolverBase):
 
     def solve_self_consistent_density(self, sym):
 
-        self.density_list = []
-        self.nUP_list = []
-        self.nDOWN_list = []
-
-        self.density_list.append(self.density)
-        self.nUP_list.append(self.nUP)
-        self.nDOWN_list.append(self.nDOWN)
-
         delta_E = 1.0
         first_iter = True
-        while delta_E > 3e-5:
+        while delta_E > 1e-4:
             if not first_iter:
                 old_E = self.E_tot
 
@@ -225,22 +217,19 @@ class KS_Solver(SolverBase):
             self.update_v_tot_up()
             self.update_v_tot_down()
 
+            # perturb spin up/down densities to break symmetry
             if first_iter == True:
                 midpoint = math.floor(self.num_grids / 2)
                 maxUP = max(self.nUP)
                 maxDOWN = max(self.nDOWN)
                 for i in range(midpoint):
-                    if self.nUP[i] > (0.1 * maxUP):
+                    if self.nUP[i] > (0.9 * maxUP):
                         self.nUP[i] *= sym
                         self.nDOWN[i] *= 1 / sym
-                    if self.nDOWN[midpoint + i] > (0.1 * maxDOWN):
+                    if self.nDOWN[midpoint + i] > (0.9 * maxDOWN):
                         self.nDOWN[midpoint + i] *= sym
                         self.nUP[midpoint + i] *= 1 / sym
                 self.density = self.nUP + self.nDOWN
-
-            self.density_list.append(self.density)
-            self.nUP_list.append(self.nUP)
-            self.nDOWN_list.append(self.nDOWN)
 
             # Non-Interacting Kinetic Energy
             self.T_s = self.kinetic_energy

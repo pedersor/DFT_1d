@@ -195,21 +195,15 @@ class HF_Solver(SolverBase):
         if solverDOWN is not None:
             self.wave_functionDOWN = solverDOWN.wave_function
 
-        # MY LISTS:
-        if first_iter == True:
-            self.wave_functionUP_list = []
-            self.wave_functionDOWN_list = []
-
+        # perturb up/down wavefunctions to break symmetry
         if first_iter == True:
             midpoint = math.floor(self.num_grids / 2)
             for i in range(midpoint):
                 self.wave_functionUP[0][i] *= sym
-                self.wave_functionDOWN[0][i] *= 1 / sym
-                self.wave_functionDOWN[0][midpoint + i] *= sym
                 self.wave_functionUP[0][midpoint + i] *= 1 / sym
-
-        self.wave_functionUP_list.append(self.wave_functionUP)
-        self.wave_functionDOWN_list.append(self.wave_functionDOWN)
+                if solverDOWN is not None:
+                    self.wave_functionDOWN[0][i] *= 1 / sym
+                    self.wave_functionDOWN[0][midpoint + i] *= sym
 
         for i in range(self.num_UP_electrons):
             self.nUP += self.wave_functionUP[i] ** 2
@@ -247,7 +241,7 @@ class HF_Solver(SolverBase):
 
         delta_E = 1.0
         first_iter = True
-        while delta_E > 3e-5:
+        while delta_E > 1e-4:
             if not first_iter:
                 old_E = self.E_tot
 

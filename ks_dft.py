@@ -202,7 +202,7 @@ class KS_Solver(SolverBase):
             solverDOWN.solve_ground_state()
             return self._update_ground_state(solverUP, solverDOWN)
 
-    def solve_self_consistent_density(self, sym):
+    def solve_self_consistent_density(self, sym=1):
 
         delta_E = 1.0
         first_iter = True

@@ -380,12 +380,96 @@ def exp_hydro_discont_well_roots(A, k, d, Z=1):
     return root_list
 
 
-def exp_H2plus(grids, A, k, a, d, Z):
-    """ Two Exponential potentials separated by a distance d.
+def exp_H2(grids, A, k, a, d, Z):
+    """ Two exponential potentials separated by a distance d.
 
 
     """
     vp = exp_hydrogenic(grids - d / 2, A, k, a, Z) + exp_hydrogenic(grids + d / 2, A, k, a, Z)
+    return vp
+
+
+def exp_H3(grids, A, k, a, d, Z):
+    """ Three exponential potentials separated by a distance d.
+
+
+    """
+    vp = np.zeros(len(grids))
+    for i in range(3):
+        vp += exp_hydrogenic(grids + ((-1) + i) * d, A, k, a, Z)
+
+    return vp
+
+
+def exp_H4(grids, A, k, a, d, Z):
+    """ Four exponential potentials separated by a distance d.
+
+
+    """
+    vp = np.zeros(len(grids))
+    for i in range(4):
+        vp += exp_hydrogenic(grids + ((-3./2.) + i) * d, A, k, a, Z)
+
+    return vp
+
+
+def exp_H8(grids, A, k, a, d, Z):
+    """ Eight exponential potentials separated by a distance d.
+
+
+    """
+    vp = np.zeros(len(grids))
+    for i in range(8):
+        vp += exp_hydrogenic(grids + ((-7./2.) + i) * d, A, k, a, Z)
+
+    return vp
+
+
+def exp_H10(grids, A, k, a, d, Z):
+    """ Ten exponential potentials separated by a distance d.
+
+
+    """
+    vp = np.zeros(len(grids))
+    for i in range(10):
+        vp += exp_hydrogenic(grids + ((-9./2.) + i) * d, A, k, a, Z)
+
+    return vp
+
+
+def exp_H12(grids, A, k, a, d, Z):
+    """ Twelve exponential potentials separated by a distance d.
+
+
+    """
+    vp = np.zeros(len(grids))
+    for i in range(12):
+        vp += exp_hydrogenic(grids + ((-11./2.) + i) * d, A, k, a, Z)
+
+    return vp
+
+
+def exp_H16(grids, A, k, a, d, Z):
+    """ Sixteen exponential potentials separated by a distance d.
+
+
+    """
+    vp = np.zeros(len(grids))
+    for i in range(16):
+        vp += exp_hydrogenic(grids + ((-15./2.) + i) * d, A, k, a, Z)
+
+    return vp
+
+
+def exp_H20(grids, A, k, a, d, Z):
+    """ Twenty exponential potentials separated by a distance d.
+
+
+    """
+    vp = np.zeros(len(grids))
+    for i in range(20):
+        vp += exp_hydrogenic(grids + ((-19./2.) + i) * d, A, k, a, Z)
+
     return vp
 
 

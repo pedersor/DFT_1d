@@ -166,7 +166,7 @@ class HF_Solver(SolverBase):
             E_x_down = self.fock_operator.E_x(wave_function=self.wave_functionDOWN[:self.num_DOWN_electrons])
             return E_x_up + E_x_down
 
-    def _update_ground_state(self, solverUP, first_iter, sym, solverDOWN=None):
+    def _update_ground_state(self, solverUP, first_iter, sym=1, solverDOWN=None):
         """Helper function to solve_ground_state() method.
 
         Updates the attributes total_energy, wave_function, density, kinetic_energy,
@@ -218,7 +218,7 @@ class HF_Solver(SolverBase):
 
         return self
 
-    def solve_ground_state(self, first_iter, sym):
+    def solve_ground_state(self, first_iter, sym=1):
         """Solve ground state by diagonalizing the Hamiltonian matrix directly and separately for up and down spins.
         """
 

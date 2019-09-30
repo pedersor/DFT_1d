@@ -51,6 +51,17 @@ class SolverBase(object):
           k_point: the k-point in reciprocal space used to evaluate Schrodinger Equation
               for the case of a periodic potential. It should be chosen to be within
               the first Brillouin zone.
+          boundary_condition:
+              'closed': forward/backward finite difference methods will be used
+              near the boundaries to ensure the wavefunction is zero at boundaries.
+              This should only be used when the grid interval is purposefully small.
+
+              'open': all ghost points outside of the grid are set to zero. This should
+              be used whenever the grid interval is sufficiently large. Setting to false
+              also results in a faster computational time due to matrix symmetry.
+
+              'exponential decay': special case for a truncated system. The tails of the
+              wavefunction will be exponentially decaying. IN TESTING
 
         Raises:
           ValueError: If num_electrons is less than 1; or num_electrons is not
@@ -110,6 +121,7 @@ class KS_Solver(SolverBase):
 
     def initialize_density(self):
         # Get number of Up/Down Electrons. All unpaired electrons are defaulted to spin-up.
+
 
         num_UP_electrons = int(self.num_electrons / 2)
         num_DOWN_electrons = int(self.num_electrons / 2)
@@ -202,7 +214,7 @@ class KS_Solver(SolverBase):
             solverDOWN.solve_ground_state()
             return self._update_ground_state(solverUP, solverDOWN)
 
-    def solve_self_consistent_density(self, sym):
+    def solve_self_consistent_density(self, sym=1):
 
         delta_E = 1.0
         first_iter = True

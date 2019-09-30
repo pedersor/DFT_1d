@@ -51,17 +51,6 @@ class SolverBase(object):
           k_point: the k-point in reciprocal space used to evaluate Schrodinger Equation
               for the case of a periodic potential. It should be chosen to be within
               the first Brillouin zone.
-          boundary_condition:
-              'closed': forward/backward finite difference methods will be used
-              near the boundaries to ensure the wavefunction is zero at boundaries.
-              This should only be used when the grid interval is purposefully small.
-
-              'open': all ghost points outside of the grid are set to zero. This should
-              be used whenever the grid interval is sufficiently large. Setting to false
-              also results in a faster computational time due to matrix symmetry.
-
-              'exponential decay': special case for a truncated system. The tails of the
-              wavefunction will be exponentially decaying. IN TESTING
 
         Raises:
           ValueError: If num_electrons is less than 1; or num_electrons is not
@@ -108,7 +97,7 @@ class SolverBase(object):
 class KS_Solver(SolverBase):
     """Represents the Hamiltonian as a matrix and diagonalizes it directly."""
 
-    def __init__(self, grids, v_ext, v_h, xc, num_electrons=1, k_point=None, boundary_condition='open'):
+    def __init__(self, grids, v_ext, v_h, xc, H_n, num_electrons=1, k_point=None, boundary_condition='open'):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -117,16 +106,19 @@ class KS_Solver(SolverBase):
           num_electrons: Integer, the number of electrons in the system.
         """
         super(KS_Solver, self).__init__(grids, v_ext, v_h, xc, num_electrons, k_point, boundary_condition)
-        self.initialize_density()
+        self.initialize_density(H_n)
 
-    def initialize_density(self):
+    def initialize_density(self, H_n):
         # Get number of Up/Down Electrons. All unpaired electrons are defaulted to spin-up.
 
-
-        num_UP_electrons = int(self.num_electrons / 2)
-        num_DOWN_electrons = int(self.num_electrons / 2)
-        if self.num_electrons % 2 == 1:
-            num_UP_electrons += 1
+        if H_n == True:
+            num_UP_electrons = int(self.num_electrons)
+            num_DOWN_electrons = 0
+        else:
+            num_UP_electrons = int(self.num_electrons / 2)
+            num_DOWN_electrons = int(self.num_electrons / 2)
+            if self.num_electrons % 2 == 1:
+                num_UP_electrons += 1
 
         self.num_UP_electrons = num_UP_electrons
         self.num_DOWN_electrons = num_DOWN_electrons
@@ -214,11 +206,18 @@ class KS_Solver(SolverBase):
             solverDOWN.solve_ground_state()
             return self._update_ground_state(solverUP, solverDOWN)
 
-    def solve_self_consistent_density(self, sym=1):
+    def solve_self_consistent_density(self, v_ext, sym):
+
+        self.densityList = []
+
+        self.cuspList = []
+        for i in range(len(v_ext) - 1):
+            if v_ext[i - 1] >= v_ext[i] and v_ext[i + 1] >= v_ext[i]:
+                self.cuspList.append(i)
 
         delta_E = 1.0
         first_iter = True
-        while delta_E > 1e-4:
+        while delta_E >= 1e-4:
             if not first_iter:
                 old_E = self.E_tot
 
@@ -231,17 +230,25 @@ class KS_Solver(SolverBase):
 
             # perturb spin up/down densities to break symmetry
             if first_iter == True:
-                midpoint = math.floor(self.num_grids / 2)
-                maxUP = max(self.nUP)
-                maxDOWN = max(self.nDOWN)
-                for i in range(midpoint):
-                    if self.nUP[i] > (0.9 * maxUP):
-                        self.nUP[i] *= sym
-                        self.nDOWN[i] *= 1 / sym
-                    if self.nDOWN[midpoint + i] > (0.9 * maxDOWN):
-                        self.nDOWN[midpoint + i] *= sym
-                        self.nUP[midpoint + i] *= 1 / sym
+                for i in range(0, len(self.cuspList), 2):
+                    for j in range(0, 10, 1):
+                        self.nUP[self.cuspList[i] - j] *= sym
+                        self.nUP[self.cuspList[i] + j] *= sym
+                        self.nDOWN[self.cuspList[i] - j] *= 1. / sym
+                        self.nDOWN[self.cuspList[i] + j] *= 1. / sym
+                    self.nUP[self.cuspList[i]] *= 1. / sym
+                    self.nDOWN[self.cuspList[i]] *= sym
+                for i in range(1, len(self.cuspList), 2):
+                    for j in range(0, 10, 1):
+                        self.nUP[self.cuspList[i] - j] *= 1. / sym
+                        self.nUP[self.cuspList[i] + j] *= 1. / sym
+                        self.nDOWN[self.cuspList[i] - j] *= sym
+                        self.nDOWN[self.cuspList[i] + j] *= sym
+                    self.nUP[self.cuspList[i]] *= sym
+                    self.nDOWN[self.cuspList[i]] *= 1. / sym
                 self.density = self.nUP + self.nDOWN
+
+            self.densityList.append(self.density)
 
             # Non-Interacting Kinetic Energy
             self.T_s = self.kinetic_energy
@@ -263,6 +270,7 @@ class KS_Solver(SolverBase):
 
             if not first_iter:
                 delta_E = np.abs(old_E - self.E_tot).sum() * self.dx
+                #print(delta_E)
             else:
                 first_iter = False
 

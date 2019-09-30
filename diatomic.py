@@ -115,10 +115,4 @@ if __name__ == '__main__':
         plt.legend(loc='best')
         plt.grid()
 
-    '''
-    # R0
-    smallest_index = HF_Energies.index(min(HF_Energies))
-    print('The minimum energy is', min(HF_Energies), 'at a distance of', d[smallest_index])
-    '''
-
     plt.show()

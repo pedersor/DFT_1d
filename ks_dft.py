@@ -37,7 +37,8 @@ class SolverBase(object):
     Subclasses should define solve_ground_state method.
     """
 
-    def __init__(self, grids, v_ext, v_h, xc, num_electrons=1, k_point=None, boundary_condition="open"):
+    def __init__(self, grids, v_ext, v_h, xc, num_electrons=1, k_point=None,
+                 boundary_condition="open"):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -71,7 +72,8 @@ class SolverBase(object):
         if not isinstance(num_electrons, int):
             raise ValueError('num_electrons is not an integer.')
         elif num_electrons < 1:
-            raise ValueError('num_electrons must be greater or equal to 1, but got %d' % num_electrons)
+            raise ValueError(
+                'num_electrons must be greater or equal to 1, but got %d' % num_electrons)
         else:
             self.num_electrons = num_electrons
 
@@ -97,7 +99,8 @@ class SolverBase(object):
 class KS_Solver(SolverBase):
     """Represents the Hamiltonian as a matrix and diagonalizes it directly."""
 
-    def __init__(self, grids, v_ext, v_h, xc, H_n, num_electrons=1, k_point=None, boundary_condition='open'):
+    def __init__(self, grids, v_ext, v_h, xc, H_n, num_electrons=1,
+                 k_point=None, boundary_condition='open'):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -105,7 +108,8 @@ class KS_Solver(SolverBase):
             (num_grids,)
           num_electrons: Integer, the number of electrons in the system.
         """
-        super(KS_Solver, self).__init__(grids, v_ext, v_h, xc, num_electrons, k_point, boundary_condition)
+        super(KS_Solver, self).__init__(grids, v_ext, v_h, xc, num_electrons,
+                                        k_point, boundary_condition)
         self.initialize_density(H_n)
 
     def initialize_density(self, H_n):
@@ -124,8 +128,10 @@ class KS_Solver(SolverBase):
         self.num_DOWN_electrons = num_DOWN_electrons
 
         # uniform density
-        self.nUP = self.num_UP_electrons / (self.num_grids * self.dx) * np.ones(self.num_grids)
-        self.nDOWN = self.num_DOWN_electrons / (self.num_grids * self.dx) * np.ones(self.num_grids)
+        self.nUP = self.num_UP_electrons / (self.num_grids * self.dx) * np.ones(
+            self.num_grids)
+        self.nDOWN = self.num_DOWN_electrons / (
+                    self.num_grids * self.dx) * np.ones(self.num_grids)
         self.density = self.nUP + self.nDOWN
         self.zeta = (self.nUP - self.nDOWN) / (self.density)
 
@@ -134,15 +140,20 @@ class KS_Solver(SolverBase):
     def update_v_tot_up(self):
         # total potential to be solved self consistently in the Kohn Sham system
 
-        self.v_tot_up = functools.partial(functionals.tot_KS_potential, n=self.density, nUP=self.nUP,
-                                          nDOWN=self.nDOWN, v_ext=self.v_ext, v_h=self.v_h, v_xc=self.xc.v_xc_exp_up)
+        self.v_tot_up = functools.partial(functionals.tot_KS_potential,
+                                          n=self.density, nUP=self.nUP,
+                                          nDOWN=self.nDOWN, v_ext=self.v_ext,
+                                          v_h=self.v_h,
+                                          v_xc=self.xc.v_xc_exp_up)
         return self
 
     def update_v_tot_down(self):
         # total potential to be solved self consistently in the Kohn Sham system
 
-        self.v_tot_down = functools.partial(functionals.tot_KS_potential, n=self.density, nUP=self.nUP,
-                                            nDOWN=self.nDOWN, v_ext=self.v_ext, v_h=self.v_h,
+        self.v_tot_down = functools.partial(functionals.tot_KS_potential,
+                                            n=self.density, nUP=self.nUP,
+                                            nDOWN=self.nDOWN, v_ext=self.v_ext,
+                                            v_h=self.v_h,
                                             v_xc=self.xc.v_xc_exp_down)
         return self
 
@@ -177,11 +188,15 @@ class KS_Solver(SolverBase):
 
         for i in range(self.num_UP_electrons):
             self.nUP += self.wave_functionUP[i] ** 2
-            self.kinetic_energy += quadratic(solverUP._t_mat, solverUP.wave_function[i]) * self.dx
+            self.kinetic_energy += quadratic(solverUP._t_mat,
+                                             solverUP.wave_function[
+                                                 i]) * self.dx
 
         for i in range(self.num_DOWN_electrons):
             self.nDOWN += self.wave_functionDOWN[i] ** 2
-            self.kinetic_energy += quadratic(solverDOWN._t_mat, solverDOWN.wave_function[i]) * self.dx
+            self.kinetic_energy += quadratic(solverDOWN._t_mat,
+                                             solverDOWN.wave_function[
+                                                 i]) * self.dx
 
         self.density = self.nUP + self.nDOWN
         self.zeta = (self.nUP - self.nDOWN) / (self.density)
@@ -192,7 +207,8 @@ class KS_Solver(SolverBase):
         """Solve ground state by diagonalizing the Hamiltonian matrix directly and separately for up and down spins.
         """
 
-        solverUP = single_electron.EigenSolver(self.grids, potential_fn=self.v_tot_up,
+        solverUP = single_electron.EigenSolver(self.grids,
+                                               potential_fn=self.v_tot_up,
                                                num_electrons=self.num_UP_electrons,
                                                boundary_condition=self.boundary_condition)
         solverUP.solve_ground_state()
@@ -200,7 +216,8 @@ class KS_Solver(SolverBase):
         if self.num_DOWN_electrons == 0:
             return self._update_ground_state(solverUP)
         else:
-            solverDOWN = single_electron.EigenSolver(self.grids, potential_fn=self.v_tot_down,
+            solverDOWN = single_electron.EigenSolver(self.grids,
+                                                     potential_fn=self.v_tot_down,
                                                      num_electrons=self.num_DOWN_electrons,
                                                      boundary_condition=self.boundary_condition)
             solverDOWN.solve_ground_state()
@@ -257,20 +274,21 @@ class KS_Solver(SolverBase):
             self.V = (self.v_ext(self.grids) * self.density).sum() * self.dx
 
             # Hartree Integral
-            self.U = .5 * (self.v_h(grids=self.grids, n=self.density) * self.density).sum() * self.dx
+            self.U = .5 * (self.v_h(grids=self.grids,
+                                    n=self.density) * self.density).sum() * self.dx
 
             # Exchange Energy
-            self.E_x = self.xc.E_x(self.density, self.zeta)
+            self.E_x = self.xc.get_E_x(self.density, self.zeta)
 
             # Correlation Energy
-            self.E_c = self.xc.E_c(self.density, self.zeta)
+            self.E_c = self.xc.get_E_c(self.density, self.zeta)
 
             # Total Energy
             self.E_tot = self.T_s + self.V + self.U + self.E_x + self.E_c
 
             if not first_iter:
                 delta_E = np.abs(old_E - self.E_tot).sum() * self.dx
-                #print(delta_E)
+                # print(delta_E)
             else:
                 first_iter = False
 

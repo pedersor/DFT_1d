@@ -10,13 +10,14 @@ def tot_HF_potential(grids, n, v_ext, v_h):
     return v_ext(grids) + v_h(grids=grids, n=n)
 
 
-def hartree_potential_exp(grids, n, A, k, a):
+def hartree_potential_exp(grids, n, A, k, a=0):
     N = len(grids)
     dx = np.abs(grids[1] - grids[0])
     v_hartree = np.zeros(N)
     for i in range(N):
         for j in range(N):
-            v_hartree[i] += n[j] * (-1) * ext_potentials.exp_hydrogenic(grids[i] - grids[j], A, k, a, Z=1)
+            v_hartree[i] += n[j] * (-1) * ext_potentials.exp_hydrogenic(
+                grids[i] - grids[j], A, k, a, Z=1)
     v_hartree *= dx
     return v_hartree
 
@@ -38,15 +39,17 @@ class fock_operator(object):
             mat_j = np.zeros((self.num_grids, self.num_grids))
             for row in range(self.num_grids):
                 for column in range(self.num_grids):
-                    mat_j[row, column] = ext_potentials.exp_hydrogenic(self.grids[row] - self.grids[column], self.A,
-                                                                       self.k) * \
-                                         wave_function[j][column] * wave_function[j][row] * self.dx
+                    mat_j[row, column] = ext_potentials.exp_hydrogenic(
+                        self.grids[row] - self.grids[column], self.A,
+                        self.k) * \
+                                         wave_function[j][column] * \
+                                         wave_function[j][row] * self.dx
 
             mat += mat_j
 
         return mat
 
-    def E_x(self, wave_function):
+    def get_E_x(self, wave_function):
         num_electrons = len(wave_function)
 
         E_x = 0
@@ -58,17 +61,20 @@ class fock_operator(object):
 
                     int_ft_of_x = np.zeros(self.num_grids)
                     for x_prime_i, x_prime in enumerate(self.grids):
-                        int_ft_of_x[x_i] += ext_potentials.exp_hydrogenic(x - x_prime, self.A, self.k) * \
-                                            wave_function[i][x_i] * wave_function[j][x_i] * wave_function[i][
+                        int_ft_of_x[x_i] += -1 * ext_potentials.exp_hydrogenic(
+                            x - x_prime, self.A, self.k) * \
+                                            wave_function[i][x_i] * \
+                                            wave_function[j][x_i] * \
+                                            wave_function[i][
                                                 x_prime_i] * \
-                                            wave_function[j][x_prime_i] * self.dx
+                                            wave_function[j][
+                                                x_prime_i] * self.dx
 
                     int_tot += int_ft_of_x[x_i] * self.dx
                 tot_2 += int_tot
             E_x += tot_2
 
         E_x = -.5 * E_x
-
         return E_x
 
 
@@ -90,12 +96,35 @@ class exchange_correlation_functional(object):
         '''
 
         # these expressions are used to compute v_xc in the exponential coulomb potential case
-        firstU = self.first(n, 2, -1.00077, 6.26099, -11.9041, 9.62614, -1.48334, 1)
-        firstP = self.first(n, 180.891, -541.124, 651.615, -356.504, 88.0733, -4.32708, 8)
-        secondU = self.second(n, 2, -1.00077, 6.26099, -11.9041, 9.62614, -1.48334, 1)
-        secondP = self.second(n, 180.891, -541.124, 651.615, -356.504, 88.0733, -4.32708, 8)
+        firstU = self.first(n, 2, -1.00077, 6.26099, -11.9041, 9.62614,
+                            -1.48334, 1)
+        firstP = self.first(n, 180.891, -541.124, 651.615, -356.504, 88.0733,
+                            -4.32708, 8)
+        secondU = self.second(n, 2, -1.00077, 6.26099, -11.9041, 9.62614,
+                              -1.48334, 1)
+        secondP = self.second(n, 180.891, -541.124, 651.615, -356.504, 88.0733,
+                              -4.32708, 8)
 
         return firstU, firstP, secondU, secondP
+
+    def first(self, n, alpha, beta, gamma, delta, eta, sigma, nu):
+        y = np.pi * n / self.k
+        return alpha + beta * (y ** (1. / 2.)) + gamma * y + delta * (
+                y ** (3. / 2.)) + eta * (y ** 2) + sigma * (
+                       y ** (5. / 2.)) + nu * (
+                       np.pi * (self.k ** 2) / self.A) * (y ** 3)
+
+    def second(self, n, alpha, beta, gamma, delta, eta, sigma, nu):
+        return (6 * (n ** 3) * (np.pi ** 4) * self.k * nu + self.A * np.sqrt(
+            np.pi) * (
+                        4 * (n ** 2) * (
+                        np.pi ** (3. / 2.)) * eta + 2 * n * np.sqrt(
+                    np.pi) * gamma * self.k + 3 * n * np.pi * delta * np.sqrt(
+                    n / self.k) * self.k + beta * np.sqrt(
+                    n / self.k) * (self.k ** 2) + 5 * n * (np.pi ** 2) * (
+                                (n / self.k) ** (
+                                3. / 2.)) * self.k * sigma)) / (
+                       2 * self.A * n * (self.k ** 2))
 
     def v_xc_exp_up(self, n, n_up, n_down):
         # Exchange-Correlation Potential for up electrons
@@ -105,8 +134,11 @@ class exchange_correlation_functional(object):
         firstU, firstP, secondU, secondP = self.set_pade_approx_params(n)
 
         v_x = -(self.A / (pi)) * (np.arctan(2 * pi * n_up / self.k))
-        v_c = (self.A * (2 * firstP * (firstU ** 2) * (n_down - n_up) + (firstU ** 2) * (
-                (n_down - n_up) ** 2) * secondP - 4 * (firstP ** 2) * n_down * (firstU - n_up * secondU))) / (
+        v_c = (self.A * (2 * firstP * (firstU ** 2) * (n_down - n_up) + (
+                firstU ** 2) * (
+                                 (n_down - n_up) ** 2) * secondP - 4 * (
+                                 firstP ** 2) * n_down * (
+                                 firstU - n_up * secondU))) / (
                       (firstP ** 2) * (firstU ** 2) * self.k)
 
         return v_x + v_c
@@ -119,38 +151,33 @@ class exchange_correlation_functional(object):
         firstU, firstP, secondU, secondP = self.set_pade_approx_params(n)
 
         v_x = -(self.A / (pi)) * (np.arctan(2 * pi * n_down / self.k))
-        v_c = (self.A * (2 * firstP * (firstU ** 2) * (-n_down + n_up) + (firstU ** 2) * (
-                (n_down - n_up) ** 2) * secondP - 4 * (firstP ** 2) * n_up * (firstU - n_down * secondU))) / (
+        v_c = (self.A * (2 * firstP * (firstU ** 2) * (-n_down + n_up) + (
+                firstU ** 2) * (
+                                 (n_down - n_up) ** 2) * secondP - 4 * (
+                                 firstP ** 2) * n_up * (
+                                 firstU - n_down * secondU))) / (
                       (firstP ** 2) * (firstU ** 2) * self.k)
 
         return v_x + v_c
 
-    def first(self, n, alpha, beta, gamma, delta, eta, sigma, nu):
-        y = np.pi * n / self.k
-        return alpha + beta * (y ** (1. / 2.)) + gamma * y + delta * (y ** (3. / 2.)) + eta * (y ** 2) + sigma * (
-                y ** (5. / 2.)) + nu * (np.pi * (self.k ** 2) / self.A) * (y ** 3)
-
-    def second(self, n, alpha, beta, gamma, delta, eta, sigma, nu):
-        return (6 * (n ** 3) * (np.pi ** 4) * self.k * nu + self.A * np.sqrt(np.pi) * (
-                4 * (n ** 2) * (np.pi ** (3. / 2.)) * eta + 2 * n * np.sqrt(
-            np.pi) * gamma * self.k + 3 * n * np.pi * delta * np.sqrt(n / self.k) * self.k + beta * np.sqrt(
-            n / self.k) * (self.k ** 2) + 5 * n * (np.pi ** 2) * ((n / self.k) ** (3. / 2.)) * self.k * sigma)) / (
-                       2 * self.A * n * (self.k ** 2))
-
-    def eps_x(self, n, zeta):
+    def e_x(self, n, zeta):
         # Exchange Energy per Length
 
         y = np.pi * n / self.k
         return self.A * self.k * (
-                np.log(1 + (y ** 2) * ((1 + zeta) ** 2)) - 2 * y * (1 + zeta) * np.arctan(y * (1 + zeta)) + np.log(
-            1 + (y ** 2) * ((-1 + zeta) ** 2)) - 2 * y * (-1 + zeta) * np.arctan(y * (-1 + zeta))) / (
+                np.log(1 + (y ** 2) * ((1 + zeta) ** 2)) - 2 * y * (
+                1 + zeta) * np.arctan(y * (1 + zeta)) + np.log(
+            1 + (y ** 2) * ((-1 + zeta) ** 2)) - 2 * y * (
+                        -1 + zeta) * np.arctan(y * (-1 + zeta))) / (
                        4 * (np.pi ** 2))
 
-    def eps_c(self, n, zeta):
+    def e_c(self, n, zeta):
         # Correlation Energy per Length
 
-        unpol = self.corrExpression(n, 2, -1.00077, 6.26099, -11.9041, 9.62614, -1.48334, 1)
-        pol = self.corrExpression(n, 180.891, -541.124, 651.615, -356.504, 88.0733, -4.32708, 8)
+        unpol = self.corrExpression(n, 2, -1.00077, 6.26099, -11.9041, 9.62614,
+                                    -1.48334, 1)
+        pol = self.corrExpression(n, 180.891, -541.124, 651.615, -356.504,
+                                  88.0733, -4.32708, 8)
         return unpol + (zeta ** 2) * (pol - unpol)
 
     def corrExpression(self, n, alpha, beta, gamma, delta, eta, sigma, nu):
@@ -164,15 +191,17 @@ class exchange_correlation_functional(object):
 
         y = np.pi * n / self.k
         return (-self.A * self.k * (y ** 2) / (np.pi ** 2)) / (
-                alpha + beta * (y ** (1. / 2.)) + gamma * y + delta * (y ** (3. / 2.)) + eta * (y ** 2) + sigma * (
-                y ** (5. / 2.)) + nu * (np.pi * (self.k ** 2) / self.A) * (y ** 3))
+                alpha + beta * (y ** (1. / 2.)) + gamma * y + delta * (
+                y ** (3. / 2.)) + eta * (y ** 2) + sigma * (
+                        y ** (5. / 2.)) + nu * (
+                        np.pi * (self.k ** 2) / self.A) * (y ** 3))
 
-    def E_x(self, n, zeta):
+    def get_E_x(self, n, zeta):
         # Total Exchange Energy
 
-        return self.eps_x(n, zeta).sum() * self.dx
+        return self.e_x(n, zeta).sum() * self.dx
 
-    def E_c(self, n, zeta):
+    def get_E_c(self, n, zeta):
         # Total Correlation Energy
 
-        return self.eps_c(n, zeta).sum() * self.dx
+        return self.e_c(n, zeta).sum() * self.dx

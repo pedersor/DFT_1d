@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import functools
 
+
 def lda_run(grids, N_e, Z):
     # N_e: Number of Electrons
     # Z: Nuclear Charge
@@ -16,7 +17,8 @@ def lda_run(grids, N_e, Z):
     v_h = functools.partial(functionals.hartree_potential_exp, A=A, k=k, a=0)
     ex_corr = functionals.exchange_correlation_functional(grids=grids, A=A, k=k)
 
-    solver = ks_dft.KS_Solver(grids, v_ext=v_ext, v_h=v_h, xc=ex_corr, H_n=False, num_electrons=N_e)
+    solver = ks_dft.KS_Solver(grids, v_ext=v_ext, v_h=v_h, xc=ex_corr,
+                              H_n=False, num_electrons=N_e)
     solver.solve_self_consistent_density(v_ext=v_ext(grids), sym=1)
 
     return solver
@@ -24,8 +26,10 @@ def lda_run(grids, N_e, Z):
 
 def get_latex_table(grids):
     # "atom/ion": [N_e, Z]
-    atom_dict = {"H": [1, 1], "He$^+$": [1, 2], "Li$^{2+}$": [1, 3], "Be$^{3+}$": [1, 4], "He": [2, 2], "Li$^+$": [2, 3],
-                 "Be$^{2+}$": [2, 4], "Li": [3, 3], "Be$^+$": [3, 4], "Be": [4, 4]}
+    atom_dict = {"H": [1, 1], "He$^+$": [1, 2], "Li$^{2+}$": [1, 3],
+                 "Be$^{3+}$": [1, 4], "He": [2, 2], "Li$^+$": [2, 3],
+                 "Be$^{2+}$": [2, 4], "Li": [3, 3], "Be$^+$": [3, 4],
+                 "Be": [4, 4]}
 
     print("$N_e$", end=" & ")
     print("Atom/Ion", end=" & ")
@@ -80,4 +84,4 @@ if __name__ == '__main__':
     grids = np.linspace(-10, 10, 201)
 
     single_atom(grids, 3, 3)
-    #get_latex_table(grids)
+    # get_latex_table(grids)

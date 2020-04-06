@@ -3,3 +3,4 @@
 *.xml
 *.iml
 .DS_Store
+.idea/.name

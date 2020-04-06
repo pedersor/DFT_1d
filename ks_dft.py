@@ -128,12 +128,12 @@ class KS_Solver(SolverBase):
         self.num_DOWN_electrons = num_DOWN_electrons
 
         # uniform density
-        self.nUP = self.num_UP_electrons / (self.num_grids * self.dx) * np.ones(
+        self.n_up = self.num_UP_electrons / (self.num_grids * self.dx) * np.ones(
             self.num_grids)
-        self.nDOWN = self.num_DOWN_electrons / (
+        self.n_down = self.num_DOWN_electrons / (
                     self.num_grids * self.dx) * np.ones(self.num_grids)
-        self.density = self.nUP + self.nDOWN
-        self.zeta = (self.nUP - self.nDOWN) / (self.density)
+        self.density = self.n_up + self.n_down
+        self.zeta = (self.n_up - self.n_down) / (self.density)
 
         return self
 
@@ -141,8 +141,8 @@ class KS_Solver(SolverBase):
         # total potential to be solved self consistently in the Kohn Sham system
 
         self.v_tot_up = functools.partial(functionals.tot_KS_potential,
-                                          n=self.density, nUP=self.nUP,
-                                          nDOWN=self.nDOWN, v_ext=self.v_ext,
+                                          n=self.density, n_up=self.n_up,
+                                          n_down=self.n_down, v_ext=self.v_ext,
                                           v_h=self.v_h,
                                           v_xc=self.xc.v_xc_exp_up)
         return self
@@ -151,8 +151,8 @@ class KS_Solver(SolverBase):
         # total potential to be solved self consistently in the Kohn Sham system
 
         self.v_tot_down = functools.partial(functionals.tot_KS_potential,
-                                            n=self.density, nUP=self.nUP,
-                                            nDOWN=self.nDOWN, v_ext=self.v_ext,
+                                            n=self.density, n_up=self.n_up,
+                                            n_down=self.n_down, v_ext=self.v_ext,
                                             v_h=self.v_h,
                                             v_xc=self.xc.v_xc_exp_down)
         return self
@@ -179,27 +179,27 @@ class KS_Solver(SolverBase):
         self.kinetic_energy = 0.
 
         self.density = np.zeros(self.num_grids)
-        self.nUP = np.zeros(self.num_grids)
-        self.nDOWN = np.zeros(self.num_grids)
+        self.n_up = np.zeros(self.num_grids)
+        self.n_down = np.zeros(self.num_grids)
 
-        self.wave_functionUP = solverUP.wave_function
+        self.wave_function_up = solverUP.wave_function
         if solverDOWN is not None:
-            self.wave_functionDOWN = solverDOWN.wave_function
+            self.wave_function_down = solverDOWN.wave_function
 
         for i in range(self.num_UP_electrons):
-            self.nUP += self.wave_functionUP[i] ** 2
+            self.n_up += self.wave_function_up[i] ** 2
             self.kinetic_energy += quadratic(solverUP._t_mat,
                                              solverUP.wave_function[
                                                  i]) * self.dx
 
         for i in range(self.num_DOWN_electrons):
-            self.nDOWN += self.wave_functionDOWN[i] ** 2
+            self.n_down += self.wave_function_down[i] ** 2
             self.kinetic_energy += quadratic(solverDOWN._t_mat,
                                              solverDOWN.wave_function[
                                                  i]) * self.dx
 
-        self.density = self.nUP + self.nDOWN
-        self.zeta = (self.nUP - self.nDOWN) / (self.density)
+        self.density = self.n_up + self.n_down
+        self.zeta = (self.n_up - self.n_down) / (self.density)
 
         return self
 
@@ -249,21 +249,21 @@ class KS_Solver(SolverBase):
             if first_iter == True:
                 for i in range(0, len(self.cuspList), 2):
                     for j in range(0, 10, 1):
-                        self.nUP[self.cuspList[i] - j] *= sym
-                        self.nUP[self.cuspList[i] + j] *= sym
-                        self.nDOWN[self.cuspList[i] - j] *= 1. / sym
-                        self.nDOWN[self.cuspList[i] + j] *= 1. / sym
-                    self.nUP[self.cuspList[i]] *= 1. / sym
-                    self.nDOWN[self.cuspList[i]] *= sym
+                        self.n_up[self.cuspList[i] - j] *= sym
+                        self.n_up[self.cuspList[i] + j] *= sym
+                        self.n_down[self.cuspList[i] - j] *= 1. / sym
+                        self.n_down[self.cuspList[i] + j] *= 1. / sym
+                    self.n_up[self.cuspList[i]] *= 1. / sym
+                    self.n_down[self.cuspList[i]] *= sym
                 for i in range(1, len(self.cuspList), 2):
                     for j in range(0, 10, 1):
-                        self.nUP[self.cuspList[i] - j] *= 1. / sym
-                        self.nUP[self.cuspList[i] + j] *= 1. / sym
-                        self.nDOWN[self.cuspList[i] - j] *= sym
-                        self.nDOWN[self.cuspList[i] + j] *= sym
-                    self.nUP[self.cuspList[i]] *= sym
-                    self.nDOWN[self.cuspList[i]] *= 1. / sym
-                self.density = self.nUP + self.nDOWN
+                        self.n_up[self.cuspList[i] - j] *= 1. / sym
+                        self.n_up[self.cuspList[i] + j] *= 1. / sym
+                        self.n_down[self.cuspList[i] - j] *= sym
+                        self.n_down[self.cuspList[i] + j] *= sym
+                    self.n_up[self.cuspList[i]] *= sym
+                    self.n_down[self.cuspList[i]] *= 1. / sym
+                self.density = self.n_up + self.n_down
 
             self.densityList.append(self.density)
 

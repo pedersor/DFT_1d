@@ -2,12 +2,12 @@ import ext_potentials
 import numpy as np
 
 
-def tot_KS_potential(grids, n, v_ext, v_H, v_xc, n_up, n_down):
-    return v_ext(grids) + v_H(grids=grids, n=n) + v_xc(n, n_up, n_down)
+def tot_KS_potential(grids, n, v_ext, v_h, v_xc, n_up, n_down):
+    return v_ext(grids) + v_h(grids=grids, n=n) + v_xc(n, n_up, n_down)
 
 
-def tot_HF_potential(grids, n, v_ext, v_H):
-    return v_ext(grids) + v_H(grids=grids, n=n)
+def tot_HF_potential(grids, n, v_ext, v_h):
+    return v_ext(grids) + v_h(grids=grids, n=n)
 
 
 def hartree_potential_exp(grids, n, A, k, a=0):

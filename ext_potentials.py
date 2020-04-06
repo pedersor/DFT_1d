@@ -89,7 +89,7 @@ def kronig_penney(grids, a, b, v0):
     return np.asarray(vp)
 
 
-def exp_hydrogenic(grids, A, k, a=0, Z=1):
+def exp_hydrogenic(grids, A=1.071295, k=(1. / 2.385345), a=0, Z=1):
     """Exponential potential for 1D Hydrogenic atom.
 
     A 1D potential which can be used to mimic corresponding 3D
@@ -239,9 +239,10 @@ def exp_hydro_roots(A, k, L, Z=1):
             (special.jv(x, zL) / special.jv(-x, zL)) * special.jv(
         -x, z0))
 
-    even_states = lambda x: special.jvp(x, z0) - ((special.jv(x, zL) / special.jv(-x,
-                                                                                  zL)) * special.jvp(
-        -x, z0))
+    even_states = lambda x: special.jvp(x, z0) - (
+                (special.jv(x, zL) / special.jv(-x,
+                                                zL)) * special.jvp(
+            -x, z0))
 
     lower_bound = 10 * Z
     bracket_list = np.linspace(0, lower_bound + .01, 2 * lower_bound)
@@ -287,16 +288,23 @@ def exp_hydro_cont_well_roots(A, k, d, Z=1):
     V0 = exp_hydrogenic(d / 2, A, k, 0, Z)
     u = lambda x: (np.abs(2 * (((1 / 8) * (x ** 2) * (k ** 2)) + V0))) ** .5
 
-    C2 = lambda x: (special.jvp(x, zL) - (2 * u(x) / (k * zL)) * special.jv(x, zL)) * np.exp(
-        -1 * u(x) * (d / 2)) / (special.jv(-x, zL) * special.jvp(x, zL) - special.jvp(-x,
-                                                                                      zL) * special.jv(
+    C2 = lambda x: (special.jvp(x, zL) - (2 * u(x) / (k * zL)) * special.jv(x,
+                                                                            zL)) * np.exp(
+        -1 * u(x) * (d / 2)) / (special.jv(-x, zL) * special.jvp(x,
+                                                                 zL) - special.jvp(
+        -x,
+        zL) * special.jv(
         x,
         zL))
 
-    C1 = lambda x: (np.exp(-1 * u(x) * (d / 2)) - C2(x) * special.jv(-x, zL)) / special.jv(x, zL)
+    C1 = lambda x: (np.exp(-1 * u(x) * (d / 2)) - C2(x) * special.jv(-x,
+                                                                     zL)) / special.jv(
+        x, zL)
 
-    even_states = lambda x: C1(x) * special.jvp(x, z0) + C2(x) * special.jvp(-x, z0)
-    odd_states = lambda x: C1(x) * special.jv(x, z0) + C2(x) * special.jv(-x, z0)
+    even_states = lambda x: C1(x) * special.jvp(x, z0) + C2(x) * special.jvp(-x,
+                                                                             z0)
+    odd_states = lambda x: C1(x) * special.jv(x, z0) + C2(x) * special.jv(-x,
+                                                                          z0)
 
     lower_bound = 10 * Z
     bracket_list = np.linspace(0, lower_bound + .01, 2 * lower_bound)
@@ -342,14 +350,20 @@ def exp_hydro_discont_well_roots(A, k, d, Z=1):
 
     C2 = lambda x: (special.jvp(x, zL) - (x / zL) * special.jv(x, zL)) * np.exp(
         -(k * x / 2) * d / 2) / (
-                           special.jv(-x, zL) * special.jvp(x, zL) - special.jvp(-x,
-                                                                                 zL) * special.jv(x,
-                                                                                                  zL))
+                           special.jv(-x, zL) * special.jvp(x,
+                                                            zL) - special.jvp(
+                       -x,
+                       zL) * special.jv(x,
+                                        zL))
 
-    C1 = lambda x: (np.exp(-(k * x / 2) * d / 2) - C2(x) * special.jv(-x, zL)) / special.jv(x, zL)
+    C1 = lambda x: (np.exp(-(k * x / 2) * d / 2) - C2(x) * special.jv(-x,
+                                                                      zL)) / special.jv(
+        x, zL)
 
-    even_states = lambda x: C1(x) * special.jvp(x, z0) + C2(x) * special.jvp(-x, z0)
-    odd_states = lambda x: C1(x) * special.jv(x, z0) + C2(x) * special.jv(-x, z0)
+    even_states = lambda x: C1(x) * special.jvp(x, z0) + C2(x) * special.jvp(-x,
+                                                                             z0)
+    odd_states = lambda x: C1(x) * special.jv(x, z0) + C2(x) * special.jv(-x,
+                                                                          z0)
 
     lower_bound = 10 * Z
     bracket_list = np.linspace(0, lower_bound + .01, 2 * lower_bound)
@@ -385,7 +399,8 @@ def exp_H2(grids, A, k, a, d, Z):
 
 
     """
-    vp = exp_hydrogenic(grids - d / 2, A, k, a, Z) + exp_hydrogenic(grids + d / 2, A, k, a, Z)
+    vp = exp_hydrogenic(grids - d / 2, A, k, a, Z) + exp_hydrogenic(
+        grids + d / 2, A, k, a, Z)
     return vp
 
 
@@ -408,7 +423,7 @@ def exp_H4(grids, A, k, a, d, Z):
     """
     vp = np.zeros(len(grids))
     for i in range(4):
-        vp += exp_hydrogenic(grids + ((-3./2.) + i) * d, A, k, a, Z)
+        vp += exp_hydrogenic(grids + ((-3. / 2.) + i) * d, A, k, a, Z)
 
     return vp
 
@@ -420,7 +435,7 @@ def exp_H8(grids, A, k, a, d, Z):
     """
     vp = np.zeros(len(grids))
     for i in range(8):
-        vp += exp_hydrogenic(grids + ((-7./2.) + i) * d, A, k, a, Z)
+        vp += exp_hydrogenic(grids + ((-7. / 2.) + i) * d, A, k, a, Z)
 
     return vp
 
@@ -432,7 +447,7 @@ def exp_H10(grids, A, k, a, d, Z):
     """
     vp = np.zeros(len(grids))
     for i in range(10):
-        vp += exp_hydrogenic(grids + ((-9./2.) + i) * d, A, k, a, Z)
+        vp += exp_hydrogenic(grids + ((-9. / 2.) + i) * d, A, k, a, Z)
 
     return vp
 
@@ -444,7 +459,7 @@ def exp_H12(grids, A, k, a, d, Z):
     """
     vp = np.zeros(len(grids))
     for i in range(12):
-        vp += exp_hydrogenic(grids + ((-11./2.) + i) * d, A, k, a, Z)
+        vp += exp_hydrogenic(grids + ((-11. / 2.) + i) * d, A, k, a, Z)
 
     return vp
 
@@ -456,7 +471,7 @@ def exp_H16(grids, A, k, a, d, Z):
     """
     vp = np.zeros(len(grids))
     for i in range(16):
-        vp += exp_hydrogenic(grids + ((-15./2.) + i) * d, A, k, a, Z)
+        vp += exp_hydrogenic(grids + ((-15. / 2.) + i) * d, A, k, a, Z)
 
     return vp
 
@@ -468,7 +483,7 @@ def exp_H20(grids, A, k, a, d, Z):
     """
     vp = np.zeros(len(grids))
     for i in range(20):
-        vp += exp_hydrogenic(grids + ((-19./2.) + i) * d, A, k, a, Z)
+        vp += exp_hydrogenic(grids + ((-19. / 2.) + i) * d, A, k, a, Z)
 
     return vp
 

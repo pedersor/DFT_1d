@@ -11,7 +11,7 @@ def tot_HF_potential(grids, n, v_ext, v_H):
 
 
 def hartree_potential_exp(grids, n, A, k, a=0):
-    # to do: replace exponential with arbitrary potential (exp as default)
+    # TODO: replace exponential with arbitrary potential (exp as default)
 
     N = len(grids)
     dx = np.abs(grids[1] - grids[0])

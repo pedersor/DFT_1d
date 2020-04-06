@@ -2,24 +2,26 @@ import ext_potentials
 import numpy as np
 
 
-def tot_KS_potential(grids, n, v_ext, v_h, v_xc, nUP, nDOWN):
-    return v_ext(grids) + v_h(grids=grids, n=n) + v_xc(n, nUP, nDOWN)
+def tot_KS_potential(grids, n, v_ext, v_H, v_xc, n_up, n_down):
+    return v_ext(grids) + v_H(grids=grids, n=n) + v_xc(n, n_up, n_down)
 
 
-def tot_HF_potential(grids, n, v_ext, v_h):
-    return v_ext(grids) + v_h(grids=grids, n=n)
+def tot_HF_potential(grids, n, v_ext, v_H):
+    return v_ext(grids) + v_H(grids=grids, n=n)
 
 
 def hartree_potential_exp(grids, n, A, k, a=0):
+    # to do: replace exponential with arbitrary potential (exp as default)
+
     N = len(grids)
     dx = np.abs(grids[1] - grids[0])
-    v_hartree = np.zeros(N)
+    v_H = np.zeros(N)
     for i in range(N):
         for j in range(N):
-            v_hartree[i] += n[j] * (-1) * ext_potentials.exp_hydrogenic(
+            v_H[i] += n[j] * (-1) * ext_potentials.exp_hydrogenic(
                 grids[i] - grids[j], A, k, a, Z=1)
-    v_hartree *= dx
-    return v_hartree
+    v_H *= dx
+    return v_H
 
 
 class fock_operator(object):
@@ -31,6 +33,9 @@ class fock_operator(object):
         self.dx = (grids[-1] - grids[0]) / (len(grids) - 1)
 
     def update_fock_matrix(self, wave_function):
+        # fock matrix will be implemented as fock operator,
+        # see RP logbook 9/6/19
+
         num_electrons = len(wave_function)
         mat = np.zeros((self.num_grids, self.num_grids))
 
@@ -50,18 +55,18 @@ class fock_operator(object):
         return mat
 
     def get_E_x(self, wave_function):
+        # obtain E_x 'exactly' from double integral over HF orbitals
         num_electrons = len(wave_function)
 
         E_x = 0
         for i in range(num_electrons):
-            tot_2 = 0
+            outer_int_tot = 0
             for j in range(num_electrons):
-                int_tot = 0
+                inner_int_tot = 0
                 for x_i, x in enumerate(self.grids):
-
-                    int_ft_of_x = np.zeros(self.num_grids)
+                    int_fn_of_x = np.zeros(self.num_grids)
                     for x_prime_i, x_prime in enumerate(self.grids):
-                        int_ft_of_x[x_i] += -1 * ext_potentials.exp_hydrogenic(
+                        int_fn_of_x[x_i] += -1 * ext_potentials.exp_hydrogenic(
                             x - x_prime, self.A, self.k) * \
                                             wave_function[i][x_i] * \
                                             wave_function[j][x_i] * \
@@ -70,9 +75,9 @@ class fock_operator(object):
                                             wave_function[j][
                                                 x_prime_i] * self.dx
 
-                    int_tot += int_ft_of_x[x_i] * self.dx
-                tot_2 += int_tot
-            E_x += tot_2
+                    inner_int_tot += int_fn_of_x[x_i] * self.dx
+                outer_int_tot += inner_int_tot
+            E_x += outer_int_tot
 
         E_x = -.5 * E_x
         return E_x
@@ -96,16 +101,16 @@ class exchange_correlation_functional(object):
         '''
 
         # these expressions are used to compute v_xc in the exponential coulomb potential case
-        firstU = self.first(n, 2, -1.00077, 6.26099, -11.9041, 9.62614,
+        first_U = self.first(n, 2, -1.00077, 6.26099, -11.9041, 9.62614,
                             -1.48334, 1)
-        firstP = self.first(n, 180.891, -541.124, 651.615, -356.504, 88.0733,
+        first_P = self.first(n, 180.891, -541.124, 651.615, -356.504, 88.0733,
                             -4.32708, 8)
-        secondU = self.second(n, 2, -1.00077, 6.26099, -11.9041, 9.62614,
+        second_U = self.second(n, 2, -1.00077, 6.26099, -11.9041, 9.62614,
                               -1.48334, 1)
-        secondP = self.second(n, 180.891, -541.124, 651.615, -356.504, 88.0733,
+        second_P = self.second(n, 180.891, -541.124, 651.615, -356.504, 88.0733,
                               -4.32708, 8)
 
-        return firstU, firstP, secondU, secondP
+        return first_U, first_P, second_U, second_P
 
     def first(self, n, alpha, beta, gamma, delta, eta, sigma, nu):
         y = np.pi * n / self.k
@@ -131,15 +136,15 @@ class exchange_correlation_functional(object):
         # v_xc_up = d/dn_up (eps_x + eps_c)
 
         pi = np.pi
-        firstU, firstP, secondU, secondP = self.set_pade_approx_params(n)
+        first_U, first_P, second_U, second_P = self.set_pade_approx_params(n)
 
         v_x = -(self.A / (pi)) * (np.arctan(2 * pi * n_up / self.k))
-        v_c = (self.A * (2 * firstP * (firstU ** 2) * (n_down - n_up) + (
-                firstU ** 2) * (
-                                 (n_down - n_up) ** 2) * secondP - 4 * (
-                                 firstP ** 2) * n_down * (
-                                 firstU - n_up * secondU))) / (
-                      (firstP ** 2) * (firstU ** 2) * self.k)
+        v_c = (self.A * (2 * first_P * (first_U ** 2) * (n_down - n_up) + (
+                first_U ** 2) * (
+                                 (n_down - n_up) ** 2) * second_P - 4 * (
+                                 first_P ** 2) * n_down * (
+                                 first_U - n_up * second_U))) / (
+                      (first_P ** 2) * (first_U ** 2) * self.k)
 
         return v_x + v_c
 
@@ -148,15 +153,15 @@ class exchange_correlation_functional(object):
         # v_xc_down = d/dn_down (eps_x + eps_c)
 
         pi = np.pi
-        firstU, firstP, secondU, secondP = self.set_pade_approx_params(n)
+        first_U, first_P, second_U, second_P = self.set_pade_approx_params(n)
 
         v_x = -(self.A / (pi)) * (np.arctan(2 * pi * n_down / self.k))
-        v_c = (self.A * (2 * firstP * (firstU ** 2) * (-n_down + n_up) + (
-                firstU ** 2) * (
-                                 (n_down - n_up) ** 2) * secondP - 4 * (
-                                 firstP ** 2) * n_up * (
-                                 firstU - n_down * secondU))) / (
-                      (firstP ** 2) * (firstU ** 2) * self.k)
+        v_c = (self.A * (2 * first_P * (first_U ** 2) * (-n_down + n_up) + (
+                first_U ** 2) * (
+                                 (n_down - n_up) ** 2) * second_P - 4 * (
+                                 first_P ** 2) * n_up * (
+                                 first_U - n_down * second_U))) / (
+                      (first_P ** 2) * (first_U ** 2) * self.k)
 
         return v_x + v_c
 

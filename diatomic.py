@@ -1,4 +1,4 @@
-import HF_scf, KS_dft, functionals, ext_potentials
+import hf_scf, KS_dft, functionals, ext_potentials
 import matplotlib.pyplot as plt
 import numpy as np
 import functools
@@ -29,7 +29,7 @@ def diatomic_hf_run(grids, N_e, d, Z, sym):
     v_h = functools.partial(functionals.hartree_potential_exp, A=A, k=k, a=0)
     fock_op = functionals.fock_operator(grids=grids,A=A, k=k)
 
-    solver = HF_scf.HF_Solver(grids, v_ext=v_ext, v_h=v_h, fock_operator=fock_op, num_electrons=N_e)
+    solver = hf_scf.HF_Solver(grids, v_ext=v_ext, v_h=v_h, fock_operator=fock_op, num_electrons=N_e)
     solver.solve_self_consistent_density(v_ext(grids), sym)
 
     return solver

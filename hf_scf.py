@@ -237,7 +237,7 @@ class HF_Solver(SolverBase):
             solverDOWN.solve_ground_state()
             return self._update_ground_state(solverUP, first_iter, sym, solverDOWN)
 
-    def solve_self_consistent_density(self, v_ext, sym):
+    def solve_self_consistent_density(self, sym):
 
         delta_E = 1.0
         first_iter = True

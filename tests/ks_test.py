@@ -1,6 +1,6 @@
 # Test of LDA implementation on single atoms/ions
 
-import KS_dft, functionals, ext_potentials
+import ks_dft, functionals, ext_potentials
 import matplotlib.pyplot as plt
 import numpy as np
 import functools
@@ -16,7 +16,7 @@ def lda_run(grids, N_e, Z):
     v_h = functools.partial(functionals.hartree_potential_exp, A=A, k=k, a=0)
     ex_corr = functionals.exchange_correlation_functional(grids=grids, A=A, k=k)
 
-    solver = KS_dft.KS_Solver(grids, v_ext=v_ext, v_h=v_h, xc=ex_corr, H_n=False, num_electrons=N_e)
+    solver = ks_dft.KS_Solver(grids, v_ext=v_ext, v_h=v_h, xc=ex_corr, H_n=False, num_electrons=N_e)
     solver.solve_self_consistent_density(v_ext=v_ext(grids), sym=1)
 
     return solver
@@ -79,5 +79,5 @@ def single_atom(grids, N_e, Z):
 if __name__ == '__main__':
     grids = np.linspace(-10, 10, 201)
 
-    #single_atom(grids, 3, 3)
-    get_latex_table(grids)
+    single_atom(grids, 3, 3)
+    #get_latex_table(grids)

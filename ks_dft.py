@@ -111,6 +111,11 @@ class KS_Solver(SolverBase):
         super(KS_Solver, self).__init__(grids, v_ext, v_h, xc, num_electrons,
                                         k_point, boundary_condition)
         self.initialize_density()
+        self.set_energy_tol_threshold()
+
+    def set_energy_tol_threshold(self, energy_tol_threshold = 1e-6):
+        self.energy_tol_threshold = energy_tol_threshold
+        return self
 
     def initialize_density(self):
         # Get number of Up/Down Electrons. All unpaired electrons are defaulted to spin-up.
@@ -232,8 +237,7 @@ class KS_Solver(SolverBase):
 
         delta_E = 1.0
         first_iter = True
-        energy_tol_threshold = 1e-4
-        while delta_E >= energy_tol_threshold:
+        while delta_E >= self.energy_tol_threshold:
             if not first_iter:
                 old_E = self.E_tot
 

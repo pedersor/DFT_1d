@@ -99,7 +99,7 @@ class SolverBase(object):
 class KS_Solver(SolverBase):
     """Represents the Hamiltonian as a matrix and diagonalizes it directly."""
 
-    def __init__(self, grids, v_ext, v_h, xc, H_n, num_electrons=1,
+    def __init__(self, grids, v_ext, v_h, xc, num_electrons=1,
                  k_point=None, boundary_condition='open'):
         """Initialize the solver with potential function and grid.
 
@@ -110,24 +110,21 @@ class KS_Solver(SolverBase):
         """
         super(KS_Solver, self).__init__(grids, v_ext, v_h, xc, num_electrons,
                                         k_point, boundary_condition)
-        self.initialize_density(H_n)
+        self.initialize_density()
 
-    def initialize_density(self, H_n):
+    def initialize_density(self):
         # Get number of Up/Down Electrons. All unpaired electrons are defaulted to spin-up.
 
-        if H_n == True:
-            num_UP_electrons = int(self.num_electrons)
-            num_DOWN_electrons = 0
-        else:
-            num_UP_electrons = int(self.num_electrons / 2)
-            num_DOWN_electrons = int(self.num_electrons / 2)
-            if self.num_electrons % 2 == 1:
-                num_UP_electrons += 1
+
+        num_UP_electrons = int(self.num_electrons / 2)
+        num_DOWN_electrons = int(self.num_electrons / 2)
+        if self.num_electrons % 2 == 1:
+            num_UP_electrons += 1
 
         self.num_UP_electrons = num_UP_electrons
         self.num_DOWN_electrons = num_DOWN_electrons
 
-        # uniform density
+        # uniform density (unused)
         self.n_up = self.num_UP_electrons / (self.num_grids * self.dx) * np.ones(
             self.num_grids)
         self.n_down = self.num_DOWN_electrons / (

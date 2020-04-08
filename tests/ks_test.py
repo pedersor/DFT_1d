@@ -18,7 +18,7 @@ def lda_run(grids, N_e, Z):
     ex_corr = functionals.exchange_correlation_functional(grids=grids, A=A, k=k)
 
     solver = ks_dft.KS_Solver(grids, v_ext=v_ext, v_h=v_h, xc=ex_corr,
-                              H_n=False, num_electrons=N_e)
+                              num_electrons=N_e)
     solver.solve_self_consistent_density(v_ext=v_ext(grids), sym=1)
 
     return solver

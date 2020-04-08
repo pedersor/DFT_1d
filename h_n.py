@@ -14,7 +14,7 @@ def lda_run(grids, N_e, d, Z, sym):
     # Z: Nuclear Charge
 
     v_ext = functools.partial(ext_potentials.exp_H20, A=A, k=k, a=0, d=d, Z=Z)
-    v_h = functools.partial(functionals.hartree_potential_exp, A=A, k=k, a=0)
+    v_h = functools.partial(functionals.hartree_potential, A=A, k=k, a=0)
     ex_corr = functionals.exchange_correlation_functional(grids=grids, A=A, k=k)
 
     solver = ks_dft.KS_Solver(grids, v_ext=v_ext, v_h=v_h, xc=ex_corr, H_n=True, num_electrons=N_e)

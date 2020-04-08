@@ -1,5 +1,6 @@
 import ext_potentials
 import numpy as np
+import functools
 
 
 def tot_KS_potential(grids, n, v_ext, v_h, v_xc, n_up, n_down):
@@ -10,7 +11,8 @@ def tot_HF_potential(grids, n, v_ext, v_h):
     return v_ext(grids) + v_h(grids=grids, n=n)
 
 
-def hartree_potential_exp(grids, n, A, k, a=0):
+def hartree_potential(grids, n, v_ee=functools.partial(
+    ext_potentials.exp_hydrogenic)):
     # TODO: replace exponential with arbitrary potential (exp as default)
     # test
 
@@ -19,8 +21,7 @@ def hartree_potential_exp(grids, n, A, k, a=0):
     v_H = np.zeros(N)
     for i in range(N):
         for j in range(N):
-            v_H[i] += n[j] * (-1) * ext_potentials.exp_hydrogenic(
-                grids[i] - grids[j], A, k, a, Z=1)
+            v_H[i] += n[j] * (-1) * v_ee(grids[i] - grids[j])
     v_H *= dx
     return v_H
 
@@ -103,13 +104,13 @@ class exchange_correlation_functional(object):
 
         # these expressions are used to compute v_xc in the exponential coulomb potential case
         first_U = self.first(n, 2, -1.00077, 6.26099, -11.9041, 9.62614,
-                            -1.48334, 1)
+                             -1.48334, 1)
         first_P = self.first(n, 180.891, -541.124, 651.615, -356.504, 88.0733,
-                            -4.32708, 8)
+                             -4.32708, 8)
         second_U = self.second(n, 2, -1.00077, 6.26099, -11.9041, 9.62614,
-                              -1.48334, 1)
+                               -1.48334, 1)
         second_P = self.second(n, 180.891, -541.124, 651.615, -356.504, 88.0733,
-                              -4.32708, 8)
+                               -4.32708, 8)
 
         return first_U, first_P, second_U, second_P
 

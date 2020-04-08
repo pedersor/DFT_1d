@@ -115,20 +115,20 @@ class KS_Solver(SolverBase):
     def initialize_density(self):
         # Get number of Up/Down Electrons. All unpaired electrons are defaulted to spin-up.
 
-
-        num_UP_electrons = int(self.num_electrons / 2)
-        num_DOWN_electrons = int(self.num_electrons / 2)
+        num_up_electrons = int(self.num_electrons / 2)
+        num_down_electrons = int(self.num_electrons / 2)
         if self.num_electrons % 2 == 1:
-            num_UP_electrons += 1
+            num_up_electrons += 1
 
-        self.num_UP_electrons = num_UP_electrons
-        self.num_DOWN_electrons = num_DOWN_electrons
+        self.num_up_electrons = num_up_electrons
+        self.num_down_electrons = num_down_electrons
 
         # uniform density (unused)
-        self.n_up = self.num_UP_electrons / (self.num_grids * self.dx) * np.ones(
+        self.n_up = self.num_up_electrons / (
+                self.num_grids * self.dx) * np.ones(
             self.num_grids)
-        self.n_down = self.num_DOWN_electrons / (
-                    self.num_grids * self.dx) * np.ones(self.num_grids)
+        self.n_down = self.num_down_electrons / (
+                self.num_grids * self.dx) * np.ones(self.num_grids)
         self.density = self.n_up + self.n_down
         self.zeta = (self.n_up - self.n_down) / (self.density)
 
@@ -149,12 +149,13 @@ class KS_Solver(SolverBase):
 
         self.v_tot_down = functools.partial(functionals.tot_KS_potential,
                                             n=self.density, n_up=self.n_up,
-                                            n_down=self.n_down, v_ext=self.v_ext,
+                                            n_down=self.n_down,
+                                            v_ext=self.v_ext,
                                             v_h=self.v_h,
                                             v_xc=self.xc.v_xc_exp_down)
         return self
 
-    def _update_ground_state(self, solverUP, solverDOWN=None):
+    def _update_ground_state(self, solver_up, solver_down=None):
         """Helper function to solve_ground_state() method.
 
         Updates the attributes total_energy, wave_function, density, kinetic_energy,
@@ -179,20 +180,20 @@ class KS_Solver(SolverBase):
         self.n_up = np.zeros(self.num_grids)
         self.n_down = np.zeros(self.num_grids)
 
-        self.wave_function_up = solverUP.wave_function
-        if solverDOWN is not None:
-            self.wave_function_down = solverDOWN.wave_function
+        self.wave_function_up = solver_up.wave_function
+        if solver_down is not None:
+            self.wave_function_down = solver_down.wave_function
 
-        for i in range(self.num_UP_electrons):
+        for i in range(self.num_up_electrons):
             self.n_up += self.wave_function_up[i] ** 2
-            self.kinetic_energy += quadratic(solverUP._t_mat,
-                                             solverUP.wave_function[
+            self.kinetic_energy += quadratic(solver_up._t_mat,
+                                             solver_up.wave_function[
                                                  i]) * self.dx
 
-        for i in range(self.num_DOWN_electrons):
+        for i in range(self.num_down_electrons):
             self.n_down += self.wave_function_down[i] ** 2
-            self.kinetic_energy += quadratic(solverDOWN._t_mat,
-                                             solverDOWN.wave_function[
+            self.kinetic_energy += quadratic(solver_down._t_mat,
+                                             solver_down.wave_function[
                                                  i]) * self.dx
 
         self.density = self.n_up + self.n_down
@@ -204,21 +205,21 @@ class KS_Solver(SolverBase):
         """Solve ground state by diagonalizing the Hamiltonian matrix directly and separately for up and down spins.
         """
 
-        solverUP = single_electron.EigenSolver(self.grids,
+        solver_up = single_electron.EigenSolver(self.grids,
                                                potential_fn=self.v_tot_up,
-                                               num_electrons=self.num_UP_electrons,
+                                               num_electrons=self.num_up_electrons,
                                                boundary_condition=self.boundary_condition)
-        solverUP.solve_ground_state()
+        solver_up.solve_ground_state()
 
-        if self.num_DOWN_electrons == 0:
-            return self._update_ground_state(solverUP)
+        if self.num_down_electrons == 0:
+            return self._update_ground_state(solver_up)
         else:
-            solverDOWN = single_electron.EigenSolver(self.grids,
+            solver_down = single_electron.EigenSolver(self.grids,
                                                      potential_fn=self.v_tot_down,
-                                                     num_electrons=self.num_DOWN_electrons,
+                                                     num_electrons=self.num_down_electrons,
                                                      boundary_condition=self.boundary_condition)
-            solverDOWN.solve_ground_state()
-            return self._update_ground_state(solverUP, solverDOWN)
+            solver_down.solve_ground_state()
+            return self._update_ground_state(solver_up, solver_down)
 
     def solve_self_consistent_density(self, v_ext, sym):
 
@@ -231,7 +232,8 @@ class KS_Solver(SolverBase):
 
         delta_E = 1.0
         first_iter = True
-        while delta_E >= 1e-4:
+        energy_tol_threshold = 1e-4
+        while delta_E >= energy_tol_threshold:
             if not first_iter:
                 old_E = self.E_tot
 
@@ -285,7 +287,7 @@ class KS_Solver(SolverBase):
 
             if not first_iter:
                 delta_E = np.abs(old_E - self.E_tot).sum() * self.dx
-                # print(delta_E)
+                # print("delta_E = ", delta_E)
             else:
                 first_iter = False
 

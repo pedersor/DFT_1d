@@ -23,6 +23,7 @@ diagonalizing the Hamiltonian matrix, which are straightforward to understand,
 but not as accurate as other delicate numerical methods, like density matrix
 renormalization group (DMRG).
 """
+# TODO: proper 5-point finite difference method (see purdue thesis fig.)..
 
 from __future__ import absolute_import
 from __future__ import division

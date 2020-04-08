@@ -7,6 +7,8 @@ import functools
 import sys
 
 
+# TODO: add convergence tests folder. Move analytical expressions from ext_potentials.py
+
 def rsquared(x, y):
     """ Return R^2 where x and y are array-like."""
     slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
@@ -51,14 +53,20 @@ for d in d_list:
             L = 50
 
         grids = np.linspace(-L / 2, L / 2, grid)
-        solver = single_electron.EigenSolver(grids, potential_fn=functools.partial(
-            ext_potentials.exp_hydro_cont_well, A=A, k=k, d=d, a=0), boundary_condition='closed')
+        solver = single_electron.EigenSolver(grids,
+                                             potential_fn=functools.partial(
+                                                 ext_potentials.exp_hydro_cont_well,
+                                                 A=A, k=k, d=d, a=0),
+                                             boundary_condition='closed')
         solver.solve_ground_state()
         E_h2 = solver.eigenvalues[0]
 
         grids = np.linspace(-L / 2, L / 2, ((grid - 1) / 2) + 1)
-        solver = single_electron.EigenSolver(grids, potential_fn=functools.partial(
-            ext_potentials.exp_hydro_cont_well, A=A, k=k, d=d, a=0), boundary_condition='closed')
+        solver = single_electron.EigenSolver(grids,
+                                             potential_fn=functools.partial(
+                                                 ext_potentials.exp_hydro_cont_well,
+                                                 A=A, k=k, d=d, a=0),
+                                             boundary_condition='closed')
         solver.solve_ground_state()
         E_h = solver.eigenvalues[0]
 
@@ -86,7 +94,8 @@ for d in d_list:
                      label='d = ' + str(d) + ', $p$ = ' + p
                            + ', $r^2$ = ' + r2,
                      linewidth=3)
-    ax.plot(num_grids_list, E_error, marker='o', linestyle='None', color=linfit[0].get_color())
+    ax.plot(num_grids_list, E_error, marker='o', linestyle='None',
+            color=linfit[0].get_color())
 
 plt.xscale('log')
 plt.yscale('log')

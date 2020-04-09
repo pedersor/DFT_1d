@@ -1,5 +1,5 @@
 import single_electron, ext_potentials
-
+import analytical_results
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.polynomial.polynomial import polyfit
@@ -31,55 +31,55 @@ A = 1.071295
 k_inv = 2.385345
 k = 1. / k_inv
 
-
 # continuous exponential well ------------------------------
 # see RP_logbook 7/29/19
 
 num_electrons = 4
 
-root_list = ext_potentials.exp_hydro_open_roots(A,k)
+root_list = analytical_results.exp_hydro_open_roots(A, k)
 energy_list = [-(1 / 8) * k ** 2 * x ** 2 for x in root_list]
 E_inf_th = energy_list[0]
-print('E_inf_th = ', E_inf_th-E_inf_th) # theoretical/analytical value
+print('E_inf_th = ', E_inf_th - E_inf_th)  # theoretical/analytical value
 
 d = 7
-root_list = ext_potentials.exp_hydro_cont_well_roots(A, k, d=d)
+root_list = analytical_results.exp_hydro_cont_well_roots(A, k, d=d)
 energy_list = [-(1 / 8) * k ** 2 * x ** 2 for x in root_list]
 E_cont_th = energy_list[0]
-print('E_exp_th = ', E_cont_th-E_inf_th) # theoretical/analytical value
-
+print('E_exp_th = ', E_cont_th - E_inf_th)  # theoretical/analytical value
 
 grid = 51
 grids = np.linspace(-d / 2, d / 2, grid)
 solver = single_electron.EigenSolver(grids, potential_fn=functools.partial(
-    ext_potentials.exp_hydro_cont_well, A=A, k=k, d=d, a=0), boundary_condition='closed', n_point_stencil=3)
+    analytical_results.exp_hydro_cont_well, A=A, k=k, d=d, a=0),
+                                     boundary_condition='closed',
+                                     n_point_stencil=3)
 solver.solve_ground_state()
 E_closed = solver.eigenvalues[0]
-print('E_closed = ', E_closed-E_inf_th)
-psi_closed = plt.plot(grids,-solver.wave_function[0], label = 'closed boundary')
-
+print('E_closed = ', E_closed - E_inf_th)
+psi_closed = plt.plot(grids, -solver.wave_function[0], label='closed boundary')
 
 grid = 101
 grids = np.linspace(-d / 2, d / 2, grid)
 solver = single_electron.EigenSolver(grids, potential_fn=functools.partial(
-    ext_potentials.exp_hydro_cont_well, A=A, k=k, d=d, a=0), boundary_condition='exponential decay', n_point_stencil=3, approx_E=E_closed)
+    analytical_results.exp_hydro_cont_well, A=A, k=k, d=d, a=0),
+                                     boundary_condition='exponential decay',
+                                     n_point_stencil=3, approx_E=E_closed)
 solver.solve_ground_state()
 E_exp = solver.eigenvalues[0]
-print('E_exp = ', E_exp-E_inf_th)
-psi_exp = plt.plot(solver.extended_grids,solver.extended_wave_function, label='exp-decay boundary')
-
+print('E_exp = ', E_exp - E_inf_th)
+psi_exp = plt.plot(solver.extended_grids, solver.extended_wave_function,
+                   label='exp-decay boundary')
 
 grid = 101
 grids = np.linspace(-10, 10, grid)
 solver = single_electron.EigenSolver(grids, potential_fn=functools.partial(
-    ext_potentials.exp_hydrogenic, A=A, k=k, a=0), boundary_condition='open', n_point_stencil=3, approx_E=E_exp)
+    ext_potentials.exp_hydrogenic, A=A, k=k, a=0), boundary_condition='open',
+                                     n_point_stencil=3, approx_E=E_exp)
 solver.solve_ground_state()
-psi_open = plt.plot(grids,solver.wave_function[0], label='infinite system')
-
+psi_open = plt.plot(grids, solver.wave_function[0], label='infinite system')
 
 ax.set_xlabel("$x$", fontsize=18)
 ax.set_ylabel("$\psi(x)$", fontsize=18)
-
 
 plt.legend(fontsize=16, loc='upper right')
 plt.show()

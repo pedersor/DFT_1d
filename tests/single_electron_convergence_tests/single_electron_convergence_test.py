@@ -1,4 +1,5 @@
 import single_electron, ext_potentials
+import analytical_results
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.polynomial.polynomial import polyfit
@@ -6,8 +7,6 @@ from scipy import stats
 import functools
 import sys
 
-
-# TODO: add convergence tests folder. Move analytical expressions from ext_potentials.py
 
 def rsquared(x, y):
     """ Return R^2 where x and y are array-like."""
@@ -39,9 +38,10 @@ num_electrons = 4
 d_list = [5, 6, 7, 8, 10]
 
 for d in d_list:
-    root_list = ext_potentials.exp_hydro_cont_well_roots(A, k, d=d)
+    root_list = analytical_results.exp_hydro_cont_well_roots(A, k, d=d)
     energy_list = [-(1 / 8) * k ** 2 * x ** 2 for x in root_list]
-    th_val = energy_list[0]  # theoretical/analytical value
+    # theoretical/analytical value
+    th_val = energy_list[0]
 
     num_grids_list = [40, 80, 120, 160, 200, 400, 600, 800, 1000, 1200]
     num_grids_list = [x + 1 for x in num_grids_list]
@@ -55,16 +55,16 @@ for d in d_list:
         grids = np.linspace(-L / 2, L / 2, grid)
         solver = single_electron.EigenSolver(grids,
                                              potential_fn=functools.partial(
-                                                 ext_potentials.exp_hydro_cont_well,
+                                                 analytical_results.exp_hydro_cont_well,
                                                  A=A, k=k, d=d, a=0),
                                              boundary_condition='closed')
         solver.solve_ground_state()
         E_h2 = solver.eigenvalues[0]
 
-        grids = np.linspace(-L / 2, L / 2, ((grid - 1) / 2) + 1)
+        grids = np.linspace(-L / 2, L / 2, int((grid - 1) / 2) + 1)
         solver = single_electron.EigenSolver(grids,
                                              potential_fn=functools.partial(
-                                                 ext_potentials.exp_hydro_cont_well,
+                                                 analytical_results.exp_hydro_cont_well,
                                                  A=A, k=k, d=d, a=0),
                                              boundary_condition='closed')
         solver.solve_ground_state()

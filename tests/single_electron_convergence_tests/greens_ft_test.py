@@ -3,7 +3,7 @@ import functools
 import matplotlib.pyplot as plt
 from matplotlib import ticker
 import single_electron, ext_potentials
-
+import analytical_results
 from numpy.polynomial.polynomial import polyfit
 from scipy import stats
 import sys
@@ -39,10 +39,10 @@ N = 105
 L = 18
 grids = np.linspace(-L / 2, L / 2, N)
 solver = single_electron.EigenSolver(grids, potential_fn=functools.partial(
-    ext_potentials.exp_hydro_cont_well, A=A, k=k, d=6), boundary_condition='open', n_point_stencil=3)
+    analytical_results.exp_hydro_cont_well, A=A, k=k, d=6), boundary_condition='open', n_point_stencil=3)
 H = solver._h
 
-root_list = ext_potentials.exp_hydro_cont_well_roots(A,k,d=6)
+root_list = analytical_results.exp_hydro_cont_well_roots(A,k,d=6)
 energy_list = [-(1 / 8) * k ** 2 * x ** 2 for x in root_list]
 th_vals = energy_list  # theoretical/analytical values
 print('Htot analytical energy',th_vals)

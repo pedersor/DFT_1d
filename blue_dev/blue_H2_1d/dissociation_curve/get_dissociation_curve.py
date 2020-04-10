@@ -79,12 +79,12 @@ def get_Vee_blue(grids, n_r0_R, n):
 
 
 if __name__ == '__main__':
-    densities = np.load("H2_data/densities.npy")
-    potentials = np.load("H2_data/potentials.npy")
-    locations = np.load("H2_data/locations.npy")
-    nuclear_charges = np.load("H2_data/nuclear_charges.npy")
-    total_energies = np.load("H2_data/total_energies.npy")
-    Vee_energies = np.load("H2_data/Vee_energies.npy")
+    densities = np.load("../H2_data/densities.npy")
+    potentials = np.load("../H2_data/potentials.npy")
+    locations = np.load("../H2_data/locations.npy")
+    nuclear_charges = np.load("../H2_data/nuclear_charges.npy")
+    total_energies = np.load("../H2_data/total_energies.npy")
+    Vee_energies = np.load("../H2_data/Vee_energies.npy")
 
     # blue conditional probability density
     n_r0_R = np.load('n_r0_R.npy')

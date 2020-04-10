@@ -1,4 +1,4 @@
-import single_electron, ext_potentials
+import single_electron, ext_potentials, functionals
 import blue_potentials
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,7 +6,10 @@ from numpy.polynomial.polynomial import polyfit
 from scipy import stats
 import functools
 import sys
+import multiprocessing as mp
+import os
 
+'''
 # plotting parameters
 params = {'mathtext.default': 'default'}
 plt.rcParams.update(params)
@@ -16,11 +19,13 @@ fig_size[0] = 9
 fig_size[1] = 6
 plt.rcParams["figure.figsize"] = fig_size
 fig, ax = plt.subplots()
+'''
 
 
-def get_blue_potential(grids, pot, r0):
-    return pot - ext_potentials.exp_hydrogenic(grids - r0)
-
+def get_v_ext_lambda(grids, blue_potential, lam):
+    # see logbook 4/8/20: 'adabatic connection blue He revisited
+    return blue_potential + 0.5 * (1 - lam) * functionals.hartree_potential(
+        grids, n)
 
 
 if __name__ == '__main__':

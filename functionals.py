@@ -11,9 +11,8 @@ def tot_HF_potential(grids, n, v_ext, v_h):
     return v_ext(grids) + v_h(grids=grids, n=n)
 
 
-def hartree_potential(grids, n, v_ee=functools.partial(
+def hartree_potential(grids, n, lam=1, v_ee=functools.partial(
     ext_potentials.exp_hydrogenic)):
-
     N = len(grids)
     dx = np.abs(grids[1] - grids[0])
     v_H = np.zeros(N)
@@ -21,7 +20,7 @@ def hartree_potential(grids, n, v_ee=functools.partial(
         for j in range(N):
             v_H[i] += n[j] * (-1) * v_ee(grids[i] - grids[j])
     v_H *= dx
-    return v_H
+    return lam*v_H
 
 
 class fock_operator(object):

@@ -20,7 +20,19 @@ def hartree_potential(grids, n, lam=1, v_ee=functools.partial(
         for j in range(N):
             v_H[i] += n[j] * (-1) * v_ee(grids[i] - grids[j])
     v_H *= dx
-    return lam*v_H
+    return lam * v_H
+
+
+def get_v_n_xc(grids, n_xc):
+    N = len(grids)
+    dx = np.abs(grids[1] - grids[0])
+    v_n_xc = np.zeros(N)
+    for i in range(N):
+        for j in range(N):
+            v_n_xc[i] += n_xc[i][j] * (-1) * ext_potentials.exp_hydrogenic(
+                grids[i] - grids[j])
+    v_n_xc *= dx
+    return v_n_xc
 
 
 class fock_operator(object):

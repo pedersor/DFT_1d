@@ -36,7 +36,7 @@ def get_v_n_xc(grids, n_xc):
 
 
 class fock_operator(object):
-    def __init__(self, grids, A, k):
+    def __init__(self, grids, A=1.071295, k=(1. / 2.385345)):
         self.grids = grids
         self.num_grids = len(grids)
         self.A = A

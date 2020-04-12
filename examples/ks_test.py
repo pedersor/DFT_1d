@@ -1,4 +1,8 @@
 # Test of LDA implementation on single atoms/ions
+import sys
+import os
+# linux cluster path
+sys.path.append('/DFS-B/DATA/burke/pedersor/Kohn_Sham_DFT_1d')
 
 import ks_dft, functionals, ext_potentials
 import matplotlib.pyplot as plt

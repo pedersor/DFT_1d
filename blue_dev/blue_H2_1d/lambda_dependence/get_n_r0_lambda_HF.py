@@ -1,4 +1,5 @@
-import single_electron, functionals, hf_scf
+import single_electron, functionals
+import hf_scf
 import blue_potentials
 import matplotlib.pyplot as plt
 import numpy as np

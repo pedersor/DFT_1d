@@ -19,11 +19,13 @@ if __name__ == '__main__':
     h = 0.08
     grids = np.arange(-256, 257) * h
     potentials = np.load("../H2_data/potentials.npy")
-    densities = np.load("../H2_data/densities.npy")
+    dmrg_density = np.load("../H2_data/densities.npy")
+    n_HF = np.load('n_HF.npy')
 
     # get stretched H2 values
     pot = potentials[50]
-    n = densities[50]
+    n = dmrg_density[50]
+    n = n_HF
 
     lambda_list = np.linspace(0, 1, 11)
 
@@ -34,7 +36,7 @@ if __name__ == '__main__':
     U_xc_lam = []
     for i, lam in enumerate(lambda_list):
         print("lam = ", lam)
-        n2_r0 = np.load("n_r0_lambda.npy")[i]
+        n2_r0 = np.load("n_r0_lambda_HF.npy")[i]
 
         v_h_n_ee = functionals.get_v_n_xc(grids,n2_r0)
         V_ee_blue = 0.5*np.sum(v_h_n_ee*n)*h

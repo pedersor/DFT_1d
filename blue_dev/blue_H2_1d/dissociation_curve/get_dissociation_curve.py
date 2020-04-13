@@ -141,12 +141,15 @@ if __name__ == '__main__':
         U_c_error.append((U_c_DMRG[i] - U_c_blue[i]) / U_c_DMRG[i])
 
         # equilibrium values
-        R_eq = 1.52
+        R_eq = 4.00
         if R == R_eq:
-            print('equilibrium (R = ', 1.52, ') values: ')
+            print('R = ', R_eq, ' values: ')
             print("U_c_DMRG = ", U_c_DMRG[i])
             print("U_c_blue = ", U_c_blue[i])
             print("U_c_error = ", U_c_error[i])
+
+            print('T_c_DMRG = ', T_c_DMRG)
+            print('E_c_DMRG = ', T_c_DMRG + U_c_DMRG[i])
 
     Etot_blue = np.asarray(Etot_blue)
     R_separations = np.asarray(R_separations)

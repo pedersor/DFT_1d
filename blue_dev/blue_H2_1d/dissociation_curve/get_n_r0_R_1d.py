@@ -19,7 +19,7 @@ fig, ax = plt.subplots()
 
 def get_blue_potential(grids, pot, r0):
     return pot - ext_potentials.exp_hydrogenic(grids - r0)
-# TODO: clean up .. get lambda dependence + parallel...
+
 if __name__ == '__main__':
     h = 0.08
     grids = np.arange(-256, 257) * h

@@ -91,6 +91,7 @@ def get_n_r0_lambda(lam, grids, pot, n):
     return n_r0
 
 
+pot_idx = 51
 if __name__ == '__main__':
     try:
         slurm_cpus = int(os.environ['SLURM_JOB_CPUS_PER_NODE'])
@@ -102,9 +103,8 @@ if __name__ == '__main__':
 
     h = 0.08
     grids = np.arange(-256, 257) * h
-    pot_idx = 50
 
-    pot = np.load("../H2_data/potentials.npy")[pot_idx]
+    pot = np.load("H2_data/potentials.npy")[pot_idx - 1]
 
     n_HF = get_n_HF(grids, pot)
 

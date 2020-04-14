@@ -9,7 +9,6 @@ import functools
 
 
 def get_plotting_params():
-    # TODO: match latex font
     # plotting parameters
     params = {'mathtext.default': 'default'}
     plt.rcParams.update(params)
@@ -132,6 +131,10 @@ if __name__ == '__main__':
         Vee_blue = get_Vee_blue(grids, n_r0_R[i], n)
         Etot_blue.append(T_s + Vee_blue + V_ext + get_Vpp(R))
 
+        # Blue Vee (HF n + adiabatic connection)
+        n_r0_R_lambda = np.load('R' + str(i + 1) + '/n_r0_lambda_HF.npy')
+
+
         # exact Tc
         Vee_DMRG = Vee_energies[i]
         T_c_DMRG = E_DMRG - T_s - Vee_DMRG - V_ext
@@ -160,20 +163,18 @@ if __name__ == '__main__':
     R_separations = np.asarray(R_separations)
     Etot_DMRG = np.asarray(Etot_DMRG)
 
-    '''
     # plot dissociation curve
     plt.plot(R_separations, Etot_blue, label='Blue')
     plt.plot(R_separations, Etot_HF, label='HF')
     plt.plot(R_separations, Etot_DMRG, label='DMRG')
     plt.plot(R_separations, Etot_blue_Tc_DMRG, label='Blue + $T^*_c$')
+
     '''
-
-    get_plotting_params()
-
     # plot U_c and relative error
     plt.plot(R_separations, U_c_DMRG, label='$U^*_c$')
     plt.plot(R_separations, U_c_blue, label='$U^B_c$')
     plt.plot(R_separations, U_c_error, label='$(U^*_c - U^B_c)/U^*_c$')
+    '''
 
     plt.xlabel("R", fontsize=18)
     plt.ylabel("$E_0(R)$", fontsize=18)

@@ -187,6 +187,11 @@ if __name__ == '__main__':
     Etot_DMRG = np.asarray(Etot_DMRG)
     Etot_blue_corrected = np.asarray(Etot_blue_corrected)
 
+    # save Etot_blue_corrected open in get_dissociation_curve
+    np.save('Etot_blue_corrected', Etot_blue_corrected)
+
+    get_plotting_params()
+
     # plot dissociation curve
     plt.plot(R_separations, Etot_blue, label='Blue')
     plt.plot(R_separations, Etot_HF, label='HF')

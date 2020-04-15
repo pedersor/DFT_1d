@@ -160,20 +160,24 @@ if __name__ == '__main__':
     R_separations = np.asarray(R_separations)
     Etot_DMRG = np.asarray(Etot_DMRG)
 
-    '''
+    get_plotting_params()
+
     # plot dissociation curve
     plt.plot(R_separations, Etot_blue, label='Blue')
     plt.plot(R_separations, Etot_HF, label='HF')
     plt.plot(R_separations, Etot_DMRG, label='DMRG')
     plt.plot(R_separations, Etot_blue_Tc_DMRG, label='Blue + $T^*_c$')
+
+    # corrected blue curve from corrected_dissociation_curve/
+    Etot_blue_corrected = np.load('Etot_blue_corrected.npy')
+    plt.plot(R_separations, Etot_blue_corrected, label='corrected blue')
+
     '''
-
-    get_plotting_params()
-
     # plot U_c and relative error
     plt.plot(R_separations, U_c_DMRG, label='$U^*_c$')
     plt.plot(R_separations, U_c_blue, label='$U^B_c$')
     plt.plot(R_separations, U_c_error, label='$(U^*_c - U^B_c)/U^*_c$')
+    '''
 
     plt.xlabel("R", fontsize=18)
     plt.ylabel("$E_0(R)$", fontsize=18)

@@ -15,18 +15,6 @@ import functools
 import multiprocessing as mp
 import os
 
-'''
-# plotting parameters
-params = {'mathtext.default': 'default'}
-plt.rcParams.update(params)
-plt.rcParams['axes.axisbelow'] = True
-fig_size = plt.rcParams["figure.figsize"]
-fig_size[0] = 9
-fig_size[1] = 6
-plt.rcParams["figure.figsize"] = fig_size
-fig, ax = plt.subplots()
-'''
-
 
 def get_v_ext(grids, potential):
     return potential
@@ -98,6 +86,7 @@ if __name__ == '__main__':
     h = 0.08
     grids = np.arange(-256, 257) * h
 
+    # H2_data/ not on github due to data limits
     pot = np.load("H2_data/potentials.npy")[pot_idx - 1]
 
     n_HF = get_n_HF(grids, pot)

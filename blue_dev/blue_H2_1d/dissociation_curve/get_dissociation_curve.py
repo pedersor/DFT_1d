@@ -159,18 +159,26 @@ if __name__ == '__main__':
     Etot_blue = np.asarray(Etot_blue)
     R_separations = np.asarray(R_separations)
     Etot_DMRG = np.asarray(Etot_DMRG)
+    Etot_HF = np.asarray(Etot_HF)
+    Etot_blue_Tc_DMRG = np.asarray(Etot_blue_Tc_DMRG)
 
     get_plotting_params()
 
     # plot dissociation curve
-    plt.plot(R_separations, Etot_blue, label='Blue')
-    plt.plot(R_separations, Etot_HF, label='HF')
-    plt.plot(R_separations, Etot_DMRG, label='DMRG')
-    plt.plot(R_separations, Etot_blue_Tc_DMRG, label='Blue + $T^*_c$')
+
+    # total energy of H2 at infinite separation = 2E(H)
+    Etot_inf_sep_H2 = 2 * (-0.669778)
+
+    plt.plot(R_separations, Etot_blue - Etot_inf_sep_H2, label='Blue')
+    plt.plot(R_separations, Etot_HF - Etot_inf_sep_H2, label='HF')
+    plt.plot(R_separations, Etot_DMRG - Etot_inf_sep_H2, label='DMRG')
+    plt.plot(R_separations, Etot_blue_Tc_DMRG - Etot_inf_sep_H2,
+             label='Blue + $T^*_c$')
 
     # corrected blue curve from corrected_dissociation_curve/
     Etot_blue_corrected = np.load('Etot_blue_corrected.npy')
-    plt.plot(R_separations, Etot_blue_corrected, label='corrected blue')
+    plt.plot(R_separations, Etot_blue_corrected - Etot_inf_sep_H2,
+             label='corrected blue')
 
     '''
     # plot U_c and relative error

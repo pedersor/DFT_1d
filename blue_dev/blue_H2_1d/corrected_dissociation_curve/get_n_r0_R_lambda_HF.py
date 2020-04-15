@@ -58,13 +58,6 @@ def get_n_HF(grids, potential, DMRG_density=None):
 
     return solver.density
 
-    np.save('n_HF.npy', solver.density)
-
-    plt.plot(grids, solver.density, label='HF')
-    plt.plot(grids, DMRG_density, label='DMRG')
-    plt.legend()
-    plt.show()
-
 
 def get_v_ext_lambda(grids, blue_potential, n, lam):
     # see logbook 4/8/20: 'adabatic connection blue He revisited
@@ -91,6 +84,7 @@ def get_n_r0_lambda(lam, grids, pot, n):
     return n_r0
 
 
+# bash sed problem with indented variables TODO: cleanup
 pot_idx = 51
 if __name__ == '__main__':
     try:

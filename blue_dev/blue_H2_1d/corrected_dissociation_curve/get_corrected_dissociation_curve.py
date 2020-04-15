@@ -1,4 +1,11 @@
 import os, sys
+
+# linux cluster path
+sys.path.append('/DFS-B/DATA/burke/pedersor/Kohn_Sham_DFT_1d')
+sys.path.append('/DFS-B/DATA/burke/pedersor/Kohn_Sham_DFT_1d/blue_dev')
+sys.path.append(
+    '/DFS-B/DATA/burke/pedersor/Kohn_Sham_DFT_1d/blue_dev/blue_H2_1d/corrected_dissociation_curve/')
+
 import single_electron
 import ext_potentials
 import matplotlib.pyplot as plt
@@ -6,6 +13,8 @@ import numpy as np
 from numpy.polynomial.polynomial import polyfit
 from scipy import stats
 import functools
+import get_E_xc_lambda
+import get_n_r0_R_lambda_HF
 
 
 def get_plotting_params():
@@ -56,6 +65,7 @@ def get_T_s(T_mat, n):
 
 
 def get_Vpp(R):
+    # TODO: add general case for N electrons into external_potentials.py (done somewhere in DMRG_1D lib)
     return -1 * ext_potentials.exp_hydrogenic(R)
 
 
@@ -100,6 +110,7 @@ if __name__ == '__main__':
     Etot_blue = []
     Etot_HF = []
     Etot_blue_Tc_DMRG = []
+    Etot_blue_corrected = []
 
     U_c_blue = []
     U_c_DMRG = []
@@ -131,9 +142,21 @@ if __name__ == '__main__':
         Vee_blue = get_Vee_blue(grids, n_r0_R[i], n)
         Etot_blue.append(T_s + Vee_blue + V_ext + get_Vpp(R))
 
-        # Blue Vee (HF n + adiabatic connection)
-        n_r0_R_lambda = np.load('R' + str(i + 1) + '/n_r0_lambda_HF.npy')
+        # Blue Vee (HF n + adiabatic connection) corrected
+        n_HF = get_n_r0_R_lambda_HF.get_n_HF(grids, potentials[i])
+        n_r0_lambda_HF = np.load('R' + str(i + 1) + '/n_r0_lambda_HF.npy')
+        lambda_list = np.linspace(0, 1, 11)
 
+        U_c_HF, T_c_HF, E_c_HF, E_xc_HF = get_E_xc_lambda.get_Exc(grids, n_HF,
+                                                                  n_r0_lambda_HF,
+                                                                  lambda_list)
+        T_s_HF = get_T_s(T_mat, n_HF)
+        U_HF = get_U(grids, n_HF)
+        E_x_HF = -U_HF / 2
+        V_ext_HF = get_v_ext(n_HF, potentials[i])
+
+        Etot_blue_corrected.append(
+            T_s_HF + U_HF + E_x_HF + V_ext_HF + E_c_HF + get_Vpp(R))
 
         # exact Tc
         Vee_DMRG = Vee_energies[i]
@@ -162,12 +185,14 @@ if __name__ == '__main__':
     Etot_blue = np.asarray(Etot_blue)
     R_separations = np.asarray(R_separations)
     Etot_DMRG = np.asarray(Etot_DMRG)
+    Etot_blue_corrected = np.asarray(Etot_blue_corrected)
 
     # plot dissociation curve
     plt.plot(R_separations, Etot_blue, label='Blue')
     plt.plot(R_separations, Etot_HF, label='HF')
     plt.plot(R_separations, Etot_DMRG, label='DMRG')
-    plt.plot(R_separations, Etot_blue_Tc_DMRG, label='Blue + $T^*_c$')
+    plt.plot(R_separations, Etot_blue_Tc_DMRG, label='Blue + exact Tc')
+    plt.plot(R_separations, Etot_blue_corrected, label='corrected blue')
 
     '''
     # plot U_c and relative error
@@ -177,7 +202,8 @@ if __name__ == '__main__':
     '''
 
     plt.xlabel("R", fontsize=18)
-    plt.ylabel("$E_0(R)$", fontsize=18)
+    plt.ylabel("E_0(R)", fontsize=18)
     plt.legend(fontsize=16)
     plt.grid()
-    plt.show()
+    plt.savefig('dissoc_blue_corrected.pdf')
+    # plt.show()

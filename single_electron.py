@@ -23,7 +23,6 @@ diagonalizing the Hamiltonian matrix, which are straightforward to understand,
 but not as accurate as other delicate numerical methods, like density matrix
 renormalization group (DMRG).
 """
-# TODO: proper 5-point finite difference method (see purdue thesis fig.)..
 
 from __future__ import absolute_import
 from __future__ import division
@@ -111,8 +110,11 @@ class SolverBase(object):
               be used whenever the grid interval is sufficiently large. Setting to false
               also results in a faster computational time due to matrix symmetry.
 
-              'exponential decay': special case for a truncated system. The tails of the
-              wavefunction will be exponentially decaying. IN TESTING
+              'exponential decay': (TESTING!) special case for a truncated system. The tails of the
+              wavefunction will be exponentially decaying.
+
+              'periodic':
+
           n_point_stencil: total number of points used in the central finite difference method.
               The default 5-points results in a convergence rate of 4 for most systems. Suggested:
               use 3-point stencil for potentials with cusps as n_point_stencil > 3 will not improve
@@ -212,24 +214,25 @@ class EigenSolver(SolverBase):
         idx = np.arange(self.num_grids)
 
         # n-point centered difference formula coefficients
+        # TODO(Chris): proper end-point formulas, see Thesis. Skype (4/17/20)
         if self.n_point_stencil == 5:
-            A = [-5 / 2, 4 / 3, -1 / 12]
+            A_central = [-5 / 2, 4 / 3, -1 / 12]
             A_end = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
         elif self.n_point_stencil == 3:
-            A = [-2., 1.]
+            A_central = [-2., 1.]
             A_end = [2., -5., 4., -1.]
         else:
             raise ValueError(
                 'n_point_stencil = %d is not supported' % self.n_point_stencil)
 
-        for j, A_n in enumerate(A):
+        for j, A_n in enumerate(A_central):
             mat[idx[j:], idx[j:] - j] = A_n
             mat[idx[:-j], idx[:-j] + j] = A_n
 
-        # end-point forward/backward difference formulas
         if (self.boundary_condition == 'open'):
             pass
-        elif (self.boundary_condition == 'closed'):
+        # append end-point forward/backward difference formulas
+        elif self.boundary_condition == 'closed':
             for i, A_n in enumerate(A_end):
                 mat[0, i] = A_n
                 mat[-1, -1 - i] = A_n
@@ -247,7 +250,7 @@ class EigenSolver(SolverBase):
                 mat[-2, -1] = 0
                 mat[-3, -1] = 0
 
-        elif (self.boundary_condition == 'exponential decay'):
+        elif self.boundary_condition == 'exponential decay':
             if self.n_point_stencil != 3:
                 raise ValueError(
                     'please use n_point_stencil = 3 if using boundary_condition == exponential decay')
@@ -269,13 +272,14 @@ class EigenSolver(SolverBase):
             mat[-1, -3] = self.dx * .5 * k_right
 
         else:
+            # TODO(Ryan): fix ordering of everything
             raise ValueError(
                 'boundary_condition = %d is not supported' % self.boundary_condition)
 
         mat = -.5 * mat
 
-        # periodic
-        if (self.k != None):
+        # periodic (no end point formulas needed)
+        if self.boundary_condition == 'periodic' and self.k is not None:
             k = self.k
 
             mat[0, -1] = -.5
@@ -383,7 +387,7 @@ class EigenSolver(SolverBase):
         Returns:
           self
         """
-        if (self.boundary_condition == 'open'):
+        if (self.boundary_condition == 'open' or self.boundary_condition == 'periodic'):
             eigenvalues, eigenvectors = np.linalg.eigh(self._h)
         else:
             eigenvalues, eigenvectors = np.linalg.eig(self._h)
@@ -394,6 +398,7 @@ class EigenSolver(SolverBase):
         return self._update_ground_state(eigenvalues, eigenvectors, quadratic)
 
 
+# TODO(Chris): repeat everything for sparse matrices
 class SparseEigenSolver(EigenSolver):
     """Represents the Hamiltonian as a matrix and solve with sparse eigensolver.
     """

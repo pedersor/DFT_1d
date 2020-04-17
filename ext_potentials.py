@@ -90,6 +90,7 @@ def kronig_penney(grids, a, b, v0):
 
 
 def exp_hydrogenic(grids, A=1.071295, k=(1. / 2.385345), a=0, Z=1):
+    # TODO: want: cusps at grid points...
     """Exponential potential for 1D Hydrogenic atom.
 
     A 1D potential which can be used to mimic corresponding 3D
@@ -116,14 +117,16 @@ def exp_hydrogenic(grids, A=1.071295, k=(1. / 2.385345), a=0, Z=1):
     vp = -Z * A * np.exp(-k * (grids ** 2 + a ** 2) ** .5)
     return vp
 
+
 def exp_H2(grids, A, k, a, d, Z):
     """ Two exponential potentials separated by a distance d.
-
+        # TODO: want: cusps at grid points... use other code
 
     """
     vp = exp_hydrogenic(grids - d / 2, A, k, a, Z) + exp_hydrogenic(
         grids + d / 2, A, k, a, Z)
     return vp
+
 
 def poschl_teller(grids, lam, a=1., center=0.):
     r"""Poschl-Teller potential.

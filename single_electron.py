@@ -230,7 +230,8 @@ class EigenSolver(SolverBase):
             mat[idx[:-j], idx[:-j] + j] = A_n
 
         if (self.boundary_condition == 'open'):
-            pass
+            mat = -0.5 * mat / (self.dx * self.dx)
+            return mat
         # append end-point forward/backward difference formulas
         elif self.boundary_condition == 'closed':
             for i, A_n in enumerate(A_end):
@@ -249,6 +250,9 @@ class EigenSolver(SolverBase):
                 mat[2, 0] = 0
                 mat[-2, -1] = 0
                 mat[-3, -1] = 0
+
+            mat = -0.5 * mat / (self.dx * self.dx)
+            return mat
 
         elif self.boundary_condition == 'exponential decay':
             if self.n_point_stencil != 3:
@@ -271,15 +275,11 @@ class EigenSolver(SolverBase):
             mat[-1, -2] = self.dx * -2. * k_right
             mat[-1, -3] = self.dx * .5 * k_right
 
-        else:
-            # TODO(Ryan): fix ordering of everything
-            raise ValueError(
-                'boundary_condition = %d is not supported' % self.boundary_condition)
-
-        mat = -.5 * mat
+            mat = -0.5 * mat / (self.dx * self.dx)
+            return mat
 
         # periodic (no end point formulas needed)
-        if self.boundary_condition == 'periodic' and self.k is not None:
+        elif self.boundary_condition == 'periodic' and self.k is not None:
             k = self.k
 
             mat[0, -1] = -.5
@@ -296,10 +296,12 @@ class EigenSolver(SolverBase):
 
             mat = mat / (self.dx * self.dx)
             mat = mat + mat1
-        else:
-            mat = mat / (self.dx * self.dx)
 
-        return mat
+            return mat
+
+        else:
+            raise ValueError(
+                'boundary_condition = %d is not supported' % self.boundary_condition)
 
     def get_potential_matrix(self):
         """Potential matrix.
@@ -387,7 +389,8 @@ class EigenSolver(SolverBase):
         Returns:
           self
         """
-        if (self.boundary_condition == 'open' or self.boundary_condition == 'periodic'):
+        if (
+                self.boundary_condition == 'open' or self.boundary_condition == 'periodic'):
             eigenvalues, eigenvectors = np.linalg.eigh(self._h)
         else:
             eigenvalues, eigenvectors = np.linalg.eig(self._h)

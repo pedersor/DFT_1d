@@ -3,7 +3,6 @@ from scipy import special
 from scipy import integrate
 from scipy import optimize
 import math
-import warnings
 
 
 def gaussian_dips(grids, coeff, sigma, mu):
@@ -117,9 +116,6 @@ def exp_hydrogenic(grids, A=1.071295, k=(1. / 2.385345), a=0, Z=1):
       vp: Potential on grid.
         (num_grid,)
     """
-    if 0 not in grids:
-        warnings.warn("grids does not contain 0.0, no cusp on grid point.")
-
     vp = -Z * A * np.exp(-k * (grids ** 2 + a ** 2) ** .5)
     return vp
 

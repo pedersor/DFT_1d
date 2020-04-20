@@ -3,6 +3,7 @@ from scipy import special
 from scipy import integrate
 from scipy import optimize
 import math
+import warnings
 
 
 def gaussian_dips(grids, coeff, sigma, mu):
@@ -90,7 +91,6 @@ def kronig_penney(grids, a, b, v0):
 
 
 def exp_hydrogenic(grids, A=1.071295, k=(1. / 2.385345), a=0, Z=1):
-    # TODO: want: cusps at grid points...
     """Exponential potential for 1D Hydrogenic atom.
 
     A 1D potential which can be used to mimic corresponding 3D
@@ -101,6 +101,9 @@ def exp_hydrogenic(grids, A=1.071295, k=(1. / 2.385345), a=0, Z=1):
     Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
     and  Steven  R  White. One-dimensional mimicking of electronic structure:
     The case for exponentials. Physical Review B,91(23):235141, 2015.
+
+    The cusp should lie exactly on a grid point to avoid missing any
+    kinetic energy.
 
     Args:
       grids: numpy array of grid points for evaluating 1d potential.
@@ -114,18 +117,29 @@ def exp_hydrogenic(grids, A=1.071295, k=(1. / 2.385345), a=0, Z=1):
       vp: Potential on grid.
         (num_grid,)
     """
+    if 0 not in grids:
+        warnings.warn("grids does not contain 0.0, no cusp on grid point.")
+
     vp = -Z * A * np.exp(-k * (grids ** 2 + a ** 2) ** .5)
     return vp
 
 
-def exp_H2(grids, A, k, a, d, Z):
-    """ Two exponential potentials separated by a distance d.
-        # TODO: want: cusps at grid points... use other code
+def get_potential_from_npy_file(grids, potential):
+    '''
+    If a potential .npy file has already been generated on a grid. Necessary
+    for utilizing ks_dft.py and hf_scf.py where potential(grids) is assumed.
+    This should always be called using
+    functools.partial(get_potential_from_npy_file, potential=potential)
 
-    """
-    vp = exp_hydrogenic(grids - d / 2, A, k, a, Z) + exp_hydrogenic(
-        grids + d / 2, A, k, a, Z)
-    return vp
+    Args:
+        potential: numpy array of potential values already evaluated on grid
+        points
+
+    Returns:
+        potential: the same potential inputted. See above for reasoning.
+    '''
+
+    return potential
 
 
 def poschl_teller(grids, lam, a=1., center=0.):

@@ -235,8 +235,8 @@ if __name__ == '__main__':
     plt.plot(R_separations, U_c_DMRG, label='$U^*_c$')
     plt.plot(R_separations, U_c_blue, label='$U^B_c[n^{DMRG}]$')
     plt.plot(R_separations, U_c_blue_HF, label='$U^B_c[n^{HF}]$')
-    U_c_error = (U_c_DMRG - U_c_blue_HF) / U_c_DMRG
-    plt.plot(R_separations, U_c_error, label='$(U^*_c - U^B_c[n^{HF}])/U^*_c$')
+    U_c_error = (U_c_DMRG - U_c_blue_HF)
+    plt.plot(R_separations, U_c_error, label='$U^*_c - U^B_c[n^{HF}]$')
 
     plt.xlabel("R", fontsize=18)
     plt.ylabel("$E_0(R)$", fontsize=18)
@@ -248,8 +248,8 @@ if __name__ == '__main__':
     # plot T_c and relative error
     plt.plot(R_separations, T_c_DMRG, label='$T^*_c$')
     plt.plot(R_separations, T_c_blue_HF, label='$T^B_c[n^{HF}]$')
-    T_c_error = (T_c_DMRG - T_c_blue_HF) / T_c_DMRG
-    plt.plot(R_separations, T_c_error, label='$(T^*_c - T^B_c[n^{HF}])/T^*_c$')
+    T_c_error = (T_c_DMRG - T_c_blue_HF)
+    plt.plot(R_separations, T_c_error, label='$T^*_c - T^B_c[n^{HF}]$')
 
     plt.xlabel("R", fontsize=18)
     plt.ylabel("$E_0(R)$", fontsize=18)
@@ -261,8 +261,8 @@ if __name__ == '__main__':
     # plot E_c and relative error
     plt.plot(R_separations, E_c_DMRG, label='$E^*_c$')
     plt.plot(R_separations, E_c_blue_HF, label='$E^B_c[n^{HF}]$')
-    E_c_error = (E_c_DMRG - E_c_blue_HF) / E_c_DMRG
-    plt.plot(R_separations, E_c_error, label='$(E^*_c - E^B_c[n^{HF}])/E^*_c$')
+    E_c_error = (E_c_DMRG - E_c_blue_HF)
+    plt.plot(R_separations, E_c_error, label='$E^*_c - E^B_c[n^{HF}]$')
 
     plt.xlabel("R", fontsize=18)
     plt.ylabel("$E_0(R)$", fontsize=18)

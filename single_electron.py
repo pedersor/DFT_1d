@@ -217,10 +217,11 @@ class EigenSolver(SolverBase):
         # TODO(Chris): proper end-point formulas, see Thesis. Skype (4/17/20)
         if self.n_point_stencil == 5:
             A_central = [-5 / 2, 4 / 3, -1 / 12]
-            A_end = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
+            A_end_0 = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
+            A_end_1 = [6 / 5, -5 / 4, -1 / 3, 7 / 6, -1 / 2, 1 / 12]
         elif self.n_point_stencil == 3:
             A_central = [-2., 1.]
-            A_end = [2., -5., 4., -1.]
+            A_end_0 = [2., -5., 4., -1.]
         else:
             raise ValueError(
                 'n_point_stencil = %d is not supported' % self.n_point_stencil)

@@ -46,7 +46,6 @@ def get_avg_xc_hole(u, grids, interp_n_xc, n):
 
 
 if __name__ == '__main__':
-    pi = np.pi
     L = 20
     grid_size = 1000
     grids = np.linspace(0.018435, L, grid_size)
@@ -63,10 +62,9 @@ if __name__ == '__main__':
 
     n_x = []
     for n_r0 in n_r0_r:
-        n_x.append(-n_HF/2.)
+        n_x.append(-n_HF / 2.)
 
     n_x = np.asarray(n_x)
-
 
     # interpolated n_xc and n_x
     interp_n_xc = get_interp_n_xc(grids, n_xc)
@@ -78,7 +76,7 @@ if __name__ == '__main__':
     avg_xc_hole_ontop = get_avg_xc_hole(0, grids, interp_n_xc, n_HF)
     print('avg ontop hole = ', avg_xc_hole_ontop)
 
-    u_grids = np.linspace(0, 3, 30)
+    u_grids = np.linspace(0, 3, 200)
     avg_xc_hole_u = []
     avg_x_hole_u = []
     for u in u_grids:
@@ -88,10 +86,8 @@ if __name__ == '__main__':
     avg_xc_hole_u = np.asarray(avg_xc_hole_u)
     avg_x_hole_u = np.asarray(avg_x_hole_u)
 
-    plt.plot(u_grids, 2 * np.pi * u_grids * (avg_xc_hole_u - avg_x_hole_u),
-             label=r'$2\pi u \left\langle n^B_{c}(u) \right\rangle$')
-
-
+    plt.plot(u_grids, (avg_xc_hole_u - avg_x_hole_u),
+             label=r'$\left\langle n^B_{c}(u) \right\rangle$')
 
     # plot exact xc hole --------
 
@@ -99,10 +95,12 @@ if __name__ == '__main__':
 
     u_exact_grids, xc_hole_exact = txt_file_to_array('Exact_xc_hole')
 
-    plt.plot(u_exact_grids, xc_hole_exact - x_hole_exact,
-             label=r'$2\pi u \left\langle n_{c}(u) \right\rangle$')
+    plt.plot(u_exact_grids,
+             (xc_hole_exact - x_hole_exact) / (2 * np.pi * u_exact_grids),
+             label=r'$\left\langle n_{c}(u) \right\rangle$')
 
-    plt.xlabel('u')
-    plt.legend()
+    plt.title('Blue He averaged correlation hole density', fontsize=16)
+    plt.xlabel('u', fontsize=16)
+    plt.legend(fontsize=16)
     plt.grid(alpha=0.4)
     plt.show()

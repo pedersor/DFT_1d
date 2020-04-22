@@ -217,6 +217,7 @@ class EigenSolver(SolverBase):
         # TODO(Chris): proper end-point formulas, see Thesis. Skype (4/17/20)
         if self.n_point_stencil == 5:
             A_central = [-5 / 2, 4 / 3, -1 / 12]
+            #0 means the first row, 1 means the second row
             A_end_0 = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
             A_end_1 = [6 / 5, -5 / 4, -1 / 3, 7 / 6, -1 / 2, 1 / 12]
         elif self.n_point_stencil == 3:
@@ -239,7 +240,7 @@ class EigenSolver(SolverBase):
         # append end-point forward/backward difference formulas
         elif self.boundary_condition == 'closed':
             
-            #replace sides with forward/backword
+            #replace two ends of the matrix with forward/backword formulas
             mat[0, :6] = A_end_0
             mat[-1, -6:] = A_end_0[::-1]
             mat[0, :6] = A_end_1

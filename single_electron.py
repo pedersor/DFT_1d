@@ -224,32 +224,25 @@ class EigenSolver(SolverBase):
         else:
             raise ValueError(
                 'n_point_stencil = %d is not supported' % self.n_point_stencil)
-
-        for j, A_n in enumerate(A_central):
-            mat[idx[j:], idx[j:] - j] = A_n
-            mat[idx[:-j], idx[:-j] + j] = A_n
+        
+        #get pentadiagonal KE matrix
+        for i in range(len(A_central)):
+            mat += np.diag(np.full(self.num_grids-i, A_central[i]), i)
+            if i != 0:
+                mat += np.diag(np.full(self.num_grids-i, A_central[i]), -i)
 
         if (self.boundary_condition == 'open'):
             mat = -0.5 * mat / (self.dx * self.dx)
             return mat
+        
         # append end-point forward/backward difference formulas
         elif self.boundary_condition == 'closed':
-            for i, A_n in enumerate(A_end):
-                mat[0, i] = A_n
-                mat[-1, -1 - i] = A_n
-
-                if self.n_point_stencil == 5:
-                    mat[1, i + 1] = A_n
-                    mat[-2, -2 - i] = A_n
-
-            mat[0, 0] = 0
-            mat[-1, -1] = 0
-
-            if self.n_point_stencil == 5:
-                mat[1, 0] = 0
-                mat[2, 0] = 0
-                mat[-2, -1] = 0
-                mat[-3, -1] = 0
+            
+            #replace sides with forward/backword
+            mat[0, :6] = A_end_0
+            mat[-1, -6:] = A_end_0[::-1]
+            mat[0, :6] = A_end_1
+            mat[-2, -6:] = A_end_1[::-1]
 
             mat = -0.5 * mat / (self.dx * self.dx)
             return mat

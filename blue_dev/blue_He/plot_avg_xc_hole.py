@@ -85,8 +85,9 @@ if __name__ == '__main__':
 
     avg_xc_hole_u = np.asarray(avg_xc_hole_u)
     avg_x_hole_u = np.asarray(avg_x_hole_u)
+    avg_c_hole_u = (avg_xc_hole_u - avg_x_hole_u)
 
-    plt.plot(u_grids, (avg_xc_hole_u - avg_x_hole_u),
+    plt.plot(u_grids, avg_c_hole_u,
              label=r'$\left\langle n^B_{c}(u) \right\rangle$')
 
     # plot exact xc hole --------
@@ -95,9 +96,14 @@ if __name__ == '__main__':
 
     u_exact_grids, xc_hole_exact = txt_file_to_array('Exact_xc_hole')
 
-    plt.plot(u_exact_grids,
-             (xc_hole_exact - x_hole_exact) / (2 * np.pi * u_exact_grids),
+    c_hole_exact = (xc_hole_exact - x_hole_exact) / (2 * np.pi * u_exact_grids)
+    plt.plot(u_exact_grids, c_hole_exact,
              label=r'$\left\langle n_{c}(u) \right\rangle$')
+
+    ontop_c_abs_error = avg_c_hole_u[0] - c_hole_exact[1]
+    ontop_c_rel_error = 100 * ontop_c_abs_error / c_hole_exact[1]
+    print('on-top hole, blue - exact = ', ontop_c_abs_error)
+    print('on-top error = ', ontop_c_rel_error)
 
     plt.title('Blue He averaged correlation hole density', fontsize=16)
     plt.xlabel('u', fontsize=16)

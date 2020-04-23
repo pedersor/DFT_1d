@@ -117,6 +117,7 @@ if __name__ == '__main__':
     Etot_HF = []
     Etot_blue_Tc_DMRG = []
     Etot_blue_corrected = []
+    Etot_blue_match_b = []
 
     U_c_blue = []
     U_c_DMRG = []
@@ -124,9 +125,11 @@ if __name__ == '__main__':
 
     E_c_DMRG = []
     E_c_blue_HF = []
+    E_c_match_b = []
 
     T_c_DMRG = []
     T_c_blue_HF = []
+    T_c_match_b = []
 
     R_separations = []
 
@@ -175,19 +178,30 @@ if __name__ == '__main__':
 
         # exact Tc
         Vee_DMRG = Vee_energies[i]
-        T_c_DMRG.append(E_DMRG - T_s - Vee_DMRG - V_ext)
+        T_c_exact = E_DMRG - T_s - Vee_DMRG - V_ext
+        T_c_DMRG.append(T_c_exact)
         Etot_blue_Tc_DMRG.append(
             T_s + Vee_blue + V_ext + get_Vpp(R) + T_c_DMRG[i])
 
         # exact Uc
-        U_c_DMRG.append(Vee_DMRG - U - E_x)
+        U_c_exact = Vee_DMRG - U - E_x
+        U_c_DMRG.append(U_c_exact)
 
         # exact Ec
-        E_c_DMRG.append(T_c_DMRG[i]+U_c_DMRG[i])
+        E_c_DMRG.append(T_c_DMRG[i] + U_c_DMRG[i])
 
+        # exact b = T_c/|U_c| <= 0.5
+        b_exact = T_c_exact / np.abs(U_c_exact)
 
         # blue U_c
         U_c_blue.append(Vee_blue - U - E_x)
+
+        # blue w/ correct b
+        T_c_blue_match_b = b_exact * np.abs(Vee_blue - U - E_x)
+        T_c_match_b.append(T_c_blue_match_b)
+        E_c_match_b.append(T_c_blue_match_b + (Vee_blue - U - E_x))
+        Etot_blue_match_b.append(
+            T_s + Vee_blue + V_ext + T_c_blue_match_b + get_Vpp(R))
 
         # equilibrium values
         R_eq = 4.00
@@ -204,6 +218,7 @@ if __name__ == '__main__':
     Etot_blue = np.asarray(Etot_blue)
     Etot_DMRG = np.asarray(Etot_DMRG)
     Etot_blue_corrected = np.asarray(Etot_blue_corrected)
+    Etot_blue_match_b = np.asarray(Etot_blue_match_b)
 
     U_c_DMRG = np.asarray(U_c_DMRG)
     U_c_blue = np.asarray(U_c_blue)
@@ -211,9 +226,11 @@ if __name__ == '__main__':
 
     E_c_DMRG = np.asarray(E_c_DMRG)
     E_c_blue_HF = np.asarray(E_c_blue_HF)
+    E_c_match_b = np.asarray(E_c_match_b)
 
     T_c_DMRG = np.asarray(T_c_DMRG)
     T_c_blue_HF = np.asarray(T_c_blue_HF)
+    T_c_match_b = np.asarray(T_c_match_b)
 
     R_separations = np.asarray(R_separations)
 
@@ -222,50 +239,58 @@ if __name__ == '__main__':
 
     get_plotting_params()
 
-    '''
     # plot dissociation curve
-    plt.plot(R_separations, Etot_blue, label='Blue')
-    plt.plot(R_separations, Etot_HF, label='HF')
+    plt.plot(R_separations, Etot_blue, label='Blue[$n^{dmrg}$]')
+    # plt.plot(R_separations, Etot_HF, label='HF')
     plt.plot(R_separations, Etot_DMRG, label='DMRG')
-    plt.plot(R_separations, Etot_blue_Tc_DMRG, label='Blue + exact Tc')
-    plt.plot(R_separations, Etot_blue_corrected, label='corrected blue')
-    '''
+    plt.plot(R_separations, Etot_blue_Tc_DMRG,
+             label='Blue[$n^{dmrg}$] + $T^{DMRG}_c$')
+    plt.plot(R_separations, Etot_blue_corrected,
+             label='Blue[$n^{HF}$] + $T^B_c[n^{HF}]$')
+    plt.plot(R_separations, Etot_blue_match_b,
+             label='Blue[$n^{dmrg}$] + $b|U^B_c[n^{dmrg}]|$')
+
+    plt.xlabel("R", fontsize=18)
+    plt.ylabel("$E_0(R)$", fontsize=18)
+    plt.legend(fontsize=14)
+    plt.grid()
+    plt.savefig('dissociation.pdf')
+    plt.close()
 
     # plot U_c and relative error
-    plt.plot(R_separations, U_c_DMRG, label='$U^*_c$')
     plt.plot(R_separations, U_c_blue, label='$U^B_c[n^{DMRG}]$')
+    plt.plot(R_separations, U_c_DMRG, label='$U^*_c$')
     plt.plot(R_separations, U_c_blue_HF, label='$U^B_c[n^{HF}]$')
     U_c_error = (U_c_DMRG - U_c_blue_HF)
     plt.plot(R_separations, U_c_error, label='$U^*_c - U^B_c[n^{HF}]$')
 
     plt.xlabel("R", fontsize=18)
-    plt.ylabel("$E_0(R)$", fontsize=18)
     plt.legend(fontsize=16)
     plt.grid()
     plt.savefig('U_c_blue_corrected.pdf')
     plt.close()
 
     # plot T_c and relative error
-    plt.plot(R_separations, T_c_DMRG, label='$T^*_c$')
     plt.plot(R_separations, T_c_blue_HF, label='$T^B_c[n^{HF}]$')
+    plt.plot(R_separations, T_c_match_b, label='$b|U^B_c[n^{dmrg}]|$')
+    plt.plot(R_separations, T_c_DMRG, label='$T^*_c$')
     T_c_error = (T_c_DMRG - T_c_blue_HF)
     plt.plot(R_separations, T_c_error, label='$T^*_c - T^B_c[n^{HF}]$')
 
     plt.xlabel("R", fontsize=18)
-    plt.ylabel("$E_0(R)$", fontsize=18)
     plt.legend(fontsize=16)
     plt.grid()
     plt.savefig('T_c_blue_corrected.pdf')
     plt.close()
 
     # plot E_c and relative error
-    plt.plot(R_separations, E_c_DMRG, label='$E^*_c$')
     plt.plot(R_separations, E_c_blue_HF, label='$E^B_c[n^{HF}]$')
+    plt.plot(R_separations, E_c_match_b, label='$(1+b)|U^B_c[n^{dmrg}]|$')
+    plt.plot(R_separations, E_c_DMRG, label='$E^*_c$')
     E_c_error = (E_c_DMRG - E_c_blue_HF)
     plt.plot(R_separations, E_c_error, label='$E^*_c - E^B_c[n^{HF}]$')
 
     plt.xlabel("R", fontsize=18)
-    plt.ylabel("$E_0(R)$", fontsize=18)
     plt.legend(fontsize=16)
     plt.grid()
     plt.savefig('E_c_blue_corrected.pdf')

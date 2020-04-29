@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import sys
 
 
 def get_plotting_params():
@@ -55,9 +56,23 @@ def array_to_file(datafile_path, x_column, y_column, header):
 
     return
 
-def array_to_plot(datafile_path, x, y, xlabel, ylabel):
 
+def array_to_plot(datafile_path, x, y, xlabel, ylabel):
     return
+
+
+def table_print(to_print, round_to_dec=4, last_in_row=False):
+    rounded_to_print = format(to_print, '.' + str(round_to_dec) + 'f')
+    if last_in_row:
+        end = ' '
+        print(rounded_to_print, end=end)
+        print(r'\\')
+        print('\hline')
+
+    else:
+        end = ' & '
+        print(rounded_to_print, end=end)
+
 
 if __name__ == '__main__':
     R, T = txt_file_to_array('H2_from_srwhite/T.dat')
@@ -74,10 +89,20 @@ if __name__ == '__main__':
     E_c = E_xc - (-U_plus_Ex)
     U_xc = (-U_plus_Ex) + U_c
 
+    # preliminary results from steve
+    R_idx_steve = [0, 2, 5, 10, 15]
+    Vee_blue = np.array([0.4116, 0.3764, 0.3374, 0.2825, 0.2307])
 
+    for i, R_idx_val in enumerate(R_idx_steve):
+        print(R[R_idx_val], end=" & ")
+        table_print(Vee_blue[i])
+        table_print(Vee[R_idx_val])
 
+        U_c_blue = Vee_blue[i] - U_plus_Ex[R_idx_val]
+        U_xc_blue = (-U_plus_Ex[R_idx_val]) + U_c_blue
 
+        table_print(U_xc_blue)
+        table_print(U_xc[R_idx_val])
 
-    plt.xlabel('R')
-    plt.legend()
-    plt.show()
+        table_print(U_c_blue)
+        table_print(U_c[R_idx_val], last_in_row=True)

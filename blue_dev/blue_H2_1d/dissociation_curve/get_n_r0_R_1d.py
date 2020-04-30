@@ -20,11 +20,16 @@ fig, ax = plt.subplots()
 def get_blue_potential(grids, pot, r0):
     return pot - ext_potentials.exp_hydrogenic(grids - r0)
 
+
+def get_He_pot(grids):
+    return ext_potentials.exp_hydrogenic(grids, Z=2)
+
+
 if __name__ == '__main__':
     h = 0.08
     grids = np.arange(-256, 257) * h
-    potentials = np.load("H2_data/potentials.npy")
-    potentials = potentials[:40]
+    #potentials = np.load("H2_data/potentials.npy")
+    potentials = [get_He_pot(grids)]
 
     n_r0_R = []
     for i, potential in enumerate(potentials):
@@ -50,4 +55,5 @@ if __name__ == '__main__':
         n_r0_R.append(n_r0)
 
     n_r0_R = np.asarray(n_r0_R)
-    np.save('n_r0_R', n_r0_R)
+    np.save('n_r0_0', n_r0_R)
+    #np.save('n_r0_R', n_r0_R)

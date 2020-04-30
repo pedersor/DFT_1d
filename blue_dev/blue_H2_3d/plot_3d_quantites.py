@@ -61,7 +61,7 @@ def array_to_plot(datafile_path, x, y, xlabel, ylabel):
     return
 
 
-def table_print(to_print, round_to_dec=4, last_in_row=False):
+def table_print(to_print, round_to_dec=3, last_in_row=False):
     rounded_to_print = format(to_print, '.' + str(round_to_dec) + 'f')
     if last_in_row:
         end = ' '

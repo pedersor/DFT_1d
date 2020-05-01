@@ -4,3 +4,6 @@
 *.iml
 .DS_Store
 .idea/.name
+.project
+.pydevproject
+*.prefs

@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
+import two_el_exact
+import ext_potentials
 
 
 def txt_file_to_array(file, start=0, end=-1):
@@ -53,7 +55,10 @@ if __name__ == '__main__':
     P_r_rp = np.load('P_r_rp.npy')
     n_dmrg = np.load('densities.npy')[0]
 
-    x_idx = 256  # e.g. (x = 0)
+    x_value = 1.04
+    x_idx = np.where(grids == x_value)[0][0]
+    print(x_idx)
+
     P_r_rp_idx = get_P_r_rp_idx(P_r_rp, n=n_dmrg, x_idx=x_idx, h=h)
 
     print('n_dmrg[x_idx] ', n_dmrg[x_idx])
@@ -69,66 +74,45 @@ if __name__ == '__main__':
     print('integral check: (P_r_rp_idx / n_dmrg[x_idx]) = ',
           np.sum((P_r_rp_idx / n_dmrg[x_idx])) * h)
 
-    plt.plot(grids, (P_r_rp_idx / n_dmrg[x_idx]), label='$P^{exact}(0,u)/n(0)$')
-    plt.plot(grids, (n2_r0), label='$n^{Blue}_0(u)$')
-    plt.xlabel('u', fontsize=16)
+    plt.plot(grids, (n2_r0), label='$n^{Blue}_0(x\prime)$')
+    plt.plot(grids, (P_r_rp_idx / n_dmrg[x_idx]),
+             label='$P^{exact}(' + str(x_value) + ',x\prime)/n(' + str(
+                 x_value) + ')$')
+    plt.xlabel('$x\prime$', fontsize=16)
     plt.legend(fontsize=16)
     plt.grid(alpha=0.4)
     plt.show()
 
+    plt.plot(grids, (n2_r0) - n_dmrg,
+             label='$n^{Blue}_{xc}(' + str(x_value) + ',x\prime)$')
     plt.plot(grids, (P_r_rp_idx / n_dmrg[x_idx]) - n_dmrg,
-             label='$n_{xc}(0,u)$')
-    plt.plot(grids, (n2_r0) - n_dmrg, label='$n^{Blue}_{xc}(0,u)$')
-    plt.xlabel('u', fontsize=16)
+             label='$n_{xc}(' + str(x_value) + ',x\prime)$')
+    plt.xlabel('$x\prime$', fontsize=16)
     plt.legend(fontsize=16)
     plt.grid(alpha=0.4)
     plt.show()
 
+    plt.plot(grids, (n2_r0) - n_dmrg / 2,
+             label='$n^{Blue}_{c}(' + str(x_value) + ',x\prime)$')
     plt.plot(grids, (P_r_rp_idx / n_dmrg[x_idx]) - n_dmrg / 2,
-             label='$n_{c}(0,u)$')
-    plt.plot(grids, (n2_r0) - n_dmrg / 2, label='$n^{Blue}_{c}(0,u)$')
-    plt.xlabel('u', fontsize=16)
+             label='$n_{c}(' + str(x_value) + ',x\prime)$')
+    plt.xlabel('$x\prime$', fontsize=16)
     plt.legend(fontsize=16)
     plt.grid(alpha=0.4)
     plt.show()
-
-    sys.exit()
 
     # compare v_s of CP
 
-    # on-top holes (x = x') --------------------
-    P_r_rp = np.load('P_r_rp.npy')
-    n_dmrg = np.load('densities.npy')[0]
+    v_s_CP_blue = two_el_exact.v_s_extention(grids, n2_r0, h)
+    v_s_CP_exact = two_el_exact.v_s_extention(grids,
+                                              (P_r_rp_idx / n_dmrg[x_idx]), h,
+                                              tol=1.1 * (10 ** (-4)))
+    plt.plot(grids, v_s_CP_blue,
+             label='$v^{CP, Blue}_s(' + str(x_value) + ',x\prime)$')
+    plt.plot(grids, v_s_CP_exact,
+             label='$v^{CP, Exact}_s(' + str(x_value) + ',x\prime)$')
 
-    P_r_rp_ontop = []
-    for x_idx in range(len(grids)):
-        P_r_rp_idx = P_r_rp[x_idx]
-
-        P_r_rp_idx[x_idx] = P_r_rp_idx[x_idx] - n_dmrg[x_idx] * h
-
-        P_r_rp_idx = P_r_rp_idx / (h * h)
-
-        P_r_rp_ontop.append(P_r_rp_idx[x_idx])
-
-    P_r_rp_ontop = np.asarray(P_r_rp_ontop)
-
-    plt.plot(grids, P_r_rp_ontop / (n_dmrg * n_dmrg))
-    plt.show()
-    sys.exit()
-
-    # blue ----------------------------
-
-    n2_r0 = np.load('n_r0_0.npy')[0][x_idx]
-
-    print('integral check: n2_r0 = ', np.sum(n2_r0) * h)
-    print('integral check: (P_r_rp_idx / n_dmrg[x_idx]) = ',
-          np.sum((P_r_rp_idx / n_dmrg[x_idx])) * h)
-
-    plt.plot(grids, (P_r_rp_idx / n_dmrg[x_idx]), label='$P^{exact}(0,x)/n(0)$')
-    plt.plot(grids, (n2_r0), label='$n^{Blue}_0(x)$')
-    plt.xlabel('x', fontsize=16)
+    plt.xlabel('$x\prime$', fontsize=16)
     plt.legend(fontsize=16)
     plt.grid(alpha=0.4)
     plt.show()
-
-    sys.exit()

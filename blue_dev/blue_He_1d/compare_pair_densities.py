@@ -35,6 +35,15 @@ def txt_file_to_2d_array(file, grids):
     return array_2d
 
 
+def get_P_r_rp_idx(P_r_rp, n, x_idx, h):
+    P_r_rp_idx = P_r_rp[x_idx]
+
+    P_r_rp_idx[x_idx] = P_r_rp_idx[x_idx] - n[x_idx] * h
+
+    P_r_rp_idx = P_r_rp_idx / (h * h)
+    return P_r_rp_idx
+
+
 if __name__ == '__main__':
     h = 0.08
     grids = np.arange(-256, 257) * h
@@ -45,11 +54,7 @@ if __name__ == '__main__':
     n_dmrg = np.load('densities.npy')[0]
 
     x_idx = 256  # e.g. (x = 0)
-    P_r_rp_idx = np.load('P_r_rp.npy')[x_idx]
-
-    P_r_rp_idx[x_idx] = P_r_rp_idx[x_idx] - n_dmrg[x_idx] * h
-
-    P_r_rp_idx = P_r_rp_idx / (h * h)
+    P_r_rp_idx = get_P_r_rp_idx(P_r_rp, n=n_dmrg, x_idx=x_idx, h=h)
 
     print('n_dmrg[x_idx] ', n_dmrg[x_idx])
     print('integral check: n_dmrg = ', np.sum(n_dmrg) * h)
@@ -64,30 +69,32 @@ if __name__ == '__main__':
     print('integral check: (P_r_rp_idx / n_dmrg[x_idx]) = ',
           np.sum((P_r_rp_idx / n_dmrg[x_idx])) * h)
 
-    plt.plot(grids, (P_r_rp_idx / n_dmrg[x_idx]), label='$P^{exact}(0,x)/n(0)$')
-    plt.plot(grids, (n2_r0), label='$n^{Blue}_0(x)$')
-    plt.xlabel('x', fontsize=16)
+    plt.plot(grids, (P_r_rp_idx / n_dmrg[x_idx]), label='$P^{exact}(0,u)/n(0)$')
+    plt.plot(grids, (n2_r0), label='$n^{Blue}_0(u)$')
+    plt.xlabel('u', fontsize=16)
     plt.legend(fontsize=16)
     plt.grid(alpha=0.4)
     plt.show()
 
     plt.plot(grids, (P_r_rp_idx / n_dmrg[x_idx]) - n_dmrg,
-             label='$n_{xc}(0,x)$')
-    plt.plot(grids, (n2_r0) - n_dmrg, label='$n^{Blue}_{xc}(0,x)$')
-    plt.xlabel('x', fontsize=16)
+             label='$n_{xc}(0,u)$')
+    plt.plot(grids, (n2_r0) - n_dmrg, label='$n^{Blue}_{xc}(0,u)$')
+    plt.xlabel('u', fontsize=16)
     plt.legend(fontsize=16)
     plt.grid(alpha=0.4)
     plt.show()
 
     plt.plot(grids, (P_r_rp_idx / n_dmrg[x_idx]) - n_dmrg / 2,
-             label='$n_{c}(0,x)$')
-    plt.plot(grids, (n2_r0) - n_dmrg / 2, label='$n^{Blue}_{c}(0,x)$')
-    plt.xlabel('x', fontsize=16)
+             label='$n_{c}(0,u)$')
+    plt.plot(grids, (n2_r0) - n_dmrg / 2, label='$n^{Blue}_{c}(0,u)$')
+    plt.xlabel('u', fontsize=16)
     plt.legend(fontsize=16)
     plt.grid(alpha=0.4)
     plt.show()
 
     sys.exit()
+
+    # compare v_s of CP
 
     # on-top holes (x = x') --------------------
     P_r_rp = np.load('P_r_rp.npy')
@@ -95,7 +102,6 @@ if __name__ == '__main__':
 
     P_r_rp_ontop = []
     for x_idx in range(len(grids)):
-
         P_r_rp_idx = P_r_rp[x_idx]
 
         P_r_rp_idx[x_idx] = P_r_rp_idx[x_idx] - n_dmrg[x_idx] * h
@@ -106,7 +112,7 @@ if __name__ == '__main__':
 
     P_r_rp_ontop = np.asarray(P_r_rp_ontop)
 
-    plt.plot(grids, P_r_rp_ontop/(n_dmrg*n_dmrg))
+    plt.plot(grids, P_r_rp_ontop / (n_dmrg * n_dmrg))
     plt.show()
     sys.exit()
 
@@ -125,6 +131,4 @@ if __name__ == '__main__':
     plt.grid(alpha=0.4)
     plt.show()
 
-
     sys.exit()
-

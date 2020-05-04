@@ -88,6 +88,7 @@ if __name__ == '__main__':
     T_c = 2 * T - 2 * T_s
     E_c = E_xc - (-U_plus_Ex)
     U_xc = (-U_plus_Ex) + U_c
+    E_x = -U_plus_Ex
 
     # preliminary results from steve
     R_idx_steve = [0, 2, 5, 10, 15]
@@ -95,6 +96,7 @@ if __name__ == '__main__':
 
     for i, R_idx_val in enumerate(R_idx_steve):
         print(R[R_idx_val], end=" & ")
+        table_print(E_x[i])
         table_print(Vee_blue[i])
         table_print(Vee[R_idx_val])
 

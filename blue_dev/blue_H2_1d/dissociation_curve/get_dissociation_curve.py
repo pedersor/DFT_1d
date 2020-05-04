@@ -83,6 +83,19 @@ def get_Vee_blue(grids, n_r0_R, n):
     return Vee_blue
 
 
+def table_print(to_print, round_to_dec=3, last_in_row=False):
+    rounded_to_print = format(to_print, '.' + str(round_to_dec) + 'f')
+    if last_in_row:
+        end = ' '
+        print(rounded_to_print, end=end)
+        print(r'\\')
+        print('\hline')
+
+    else:
+        end = ' & '
+        print(rounded_to_print, end=end)
+
+
 if __name__ == '__main__':
     densities = np.load("../H2_data/densities.npy")
     potentials = np.load("../H2_data/potentials.npy")
@@ -111,10 +124,11 @@ if __name__ == '__main__':
     T_mat = get_T_mat(grids)
 
     for i, location in enumerate(locations):
-        print('iter: ', i)
-
         R = np.abs(location[0] - location[1])
         R_separations.append(R)
+
+        #print('R = ', R)
+
 
         # DMRG
         E_DMRG = total_energies[i]
@@ -138,23 +152,32 @@ if __name__ == '__main__':
         Etot_blue_Tc_DMRG.append(T_s + Vee_blue + V_ext + get_Vpp(R) + T_c_DMRG)
 
         # exact Uc
-        U_c_DMRG.append(Vee_DMRG - U - E_x)
+        U_c_DMRG_val = Vee_DMRG - U - E_x
+        U_c_DMRG.append(U_c_DMRG_val)
 
         # blue U_c
-        U_c_blue.append(Vee_blue - U - E_x)
+        U_c_blue_val = Vee_blue - U - E_x
+        U_c_blue.append(U_c_blue_val)
 
         U_c_error.append((U_c_DMRG[i] - U_c_blue[i]) / U_c_DMRG[i])
 
-        # equilibrium values
-        R_eq = 4.00
-        if R == R_eq:
-            print('R = ', R_eq, ' values: ')
-            print("U_c_DMRG = ", U_c_DMRG[i])
-            print("U_c_blue = ", U_c_blue[i])
-            print("U_c_error = ", U_c_error[i])
+        # table values
+        R_table = [0.0, 1.04, 1.44, 2.0, 3.04, 4.0]
+        if R in R_table:
+            print(R, end=" & ")
+            table_print(E_x)
 
-            print('T_c_DMRG = ', T_c_DMRG)
-            print('E_c_DMRG = ', T_c_DMRG + U_c_DMRG[i])
+            table_print(Vee_blue)
+            table_print(Vee_DMRG)
+
+            U_xc_blue_val = E_x + U_c_blue_val
+            U_xc_dmrg_val = E_x + U_c_DMRG_val
+
+            table_print(U_xc_blue_val)
+            table_print(U_xc_dmrg_val)
+
+            table_print(U_c_blue_val)
+            table_print(U_c_DMRG_val, last_in_row=True)
 
     Etot_blue = np.asarray(Etot_blue)
     R_separations = np.asarray(R_separations)
@@ -175,10 +198,12 @@ if __name__ == '__main__':
     plt.plot(R_separations, Etot_blue_Tc_DMRG - Etot_inf_sep_H2,
              label='Blue + $T^*_c$')
 
+    '''
     # corrected blue curve from corrected_dissociation_curve/
     Etot_blue_corrected = np.load('Etot_blue_corrected.npy')
     plt.plot(R_separations, Etot_blue_corrected - Etot_inf_sep_H2,
              label='corrected blue')
+    '''
 
     '''
     # plot U_c and relative error

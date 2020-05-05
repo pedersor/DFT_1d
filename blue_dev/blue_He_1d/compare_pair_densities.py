@@ -142,16 +142,27 @@ if __name__ == '__main__':
 
     # avg_n_xc weighted with Vee
     plt.plot(u_grids, avg_n_xc_blue * -1 * ext_potentials.exp_hydrogenic(
-        u_grids), label=r'$\left\langle n^{Blue}_{xc}(|u|) \right\rangle v_{ee}(|u|)$')
+        u_grids),
+             label=r'$\left\langle n^{Blue}_{xc}(|u|) \right\rangle v_{ee}(|u|)$')
     plt.plot(u_grids, avg_n_xc_exact * -1 * ext_potentials.exp_hydrogenic(
-        u_grids), label=r'$\left\langle n^{Exact}_{xc}(|u|) \right\rangle v_{ee}(|u|)$')
+        u_grids),
+             label=r'$\left\langle n^{Exact}_{xc}(|u|) \right\rangle v_{ee}(|u|)$')
+    do_plot()
+
+    # avg_n_c
+    plt.plot(u_grids, avg_n_c_blue,
+             label=r'$\left\langle n^{Blue}_{c}(|u|) \right\rangle$')
+    plt.plot(u_grids, avg_n_c_exact,
+             label=r'$\left\langle n^{Exact}_{c}(|u|) \right\rangle$')
     do_plot()
 
     # avg_n_c weighted with Vee
     plt.plot(u_grids, avg_n_c_blue * -1 * ext_potentials.exp_hydrogenic(
-        u_grids), label=r'$\left\langle n^{Blue}_{c}(|u|) \right\rangle v_{ee}(|u|)$')
+        u_grids),
+             label=r'$\left\langle n^{Blue}_{c}(|u|) \right\rangle v_{ee}(|u|)$')
     plt.plot(u_grids, avg_n_c_exact * -1 * ext_potentials.exp_hydrogenic(
-        u_grids), label=r'$\left\langle n^{Exact}_{c}(|u|) \right\rangle v_{ee}(|u|)$')
+        u_grids),
+             label=r'$\left\langle n^{Exact}_{c}(|u|) \right\rangle v_{ee}(|u|)$')
     do_plot()
 
     # U_c check:

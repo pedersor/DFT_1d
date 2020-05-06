@@ -75,6 +75,7 @@ def table_print(to_print, round_to_dec=3, last_in_row=False):
 
 
 if __name__ == '__main__':
+    # exact results
     R, T = txt_file_to_array('H2_from_srwhite/T.dat')
     R, T_s = txt_file_to_array('H2_from_srwhite/T_s.dat')
     R, V_ext_plus_T = txt_file_to_array('H2_from_srwhite/H1en.dat')
@@ -90,6 +91,39 @@ if __name__ == '__main__':
     U_xc = (-U_plus_Ex) + U_c
     E_x = -U_plus_Ex
 
+    # blue results
+    R, V_ee_blue = txt_file_to_array('H2_from_srwhite/Vee_blue.dat')
+
+    U_c_blue = V_ee_blue - U_plus_Ex
+
+
+    # plots --------
+    def do_plot():
+        plt.xlabel('$R$', fontsize=18)
+        plt.legend(fontsize=16)
+        plt.grid(alpha=0.4)
+        plt.show()
+
+
+    # total energy dissociation
+    plt.plot(R, 2 * T_s + V_ee_blue + V_ext + get_Vpp(R),
+             label='$E_0[V^{Blue}_{ee}(R)]$')
+    plt.plot(R, 2 * T + V_ee_blue + V_ext + get_Vpp(R),
+             label='$E_0[V^{Blue}_{ee}(R)] + T^{Exact}_c[n(R)]$')
+    plt.plot(R, E + get_Vpp(R),
+             label='$E_0[V^{Exact}_{ee}(R)]$')
+
+    do_plot()
+
+    # U_c plot
+    plt.plot(R, U_c_blue, label='$U^{Blue}_c(R)$')
+    plt.plot(R, U_c, label='$U^{Exact}_c(R)$')
+
+    do_plot()
+
+    sys.exit()
+
+    '''
     # preliminary results from steve
     R_idx_steve = [0, 2, 5, 10, 15]
     Vee_blue = np.array([0.4116, 0.3764, 0.3374, 0.2825, 0.2307])
@@ -108,3 +142,4 @@ if __name__ == '__main__':
 
         table_print(U_c_blue)
         table_print(U_c[R_idx_val], last_in_row=True)
+    '''

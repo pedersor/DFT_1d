@@ -9,18 +9,6 @@ import sys
 import multiprocessing as mp
 import os
 
-'''
-# plotting parameters
-params = {'mathtext.default': 'default'}
-plt.rcParams.update(params)
-plt.rcParams['axes.axisbelow'] = True
-fig_size = plt.rcParams["figure.figsize"]
-fig_size[0] = 9
-fig_size[1] = 6
-plt.rcParams["figure.figsize"] = fig_size
-fig, ax = plt.subplots()
-'''
-
 
 def get_v_ext_lambda(grids, blue_potential, n, lam):
     # see logbook 4/8/20: 'adabatic connection blue He revisited
@@ -32,7 +20,9 @@ def get_n_r0_lambda(lam, grids, pot, n):
     n_r0 = []
     print("lambda = ", str(lam), flush=True)
     for r0 in grids:
-        blue_potential = blue_potentials.blue_H2_1d(grids, pot, r0, lam)
+        new_factor = 0.5
+        blue_potential = blue_potentials.blue_H2_1d(grids, pot, r0,
+                                                    lam=new_factor)
         solver = single_electron.EigenSolver(grids,
                                              potential_fn=functools.partial(
                                                  get_v_ext_lambda,
@@ -48,8 +38,7 @@ def get_n_r0_lambda(lam, grids, pot, n):
 
 
 if __name__ == '__main__':
-
-    slurm_cpus = 1#int(os.environ['SLURM_JOB_CPUS_PER_NODE'])
+    slurm_cpus = 1  # int(os.environ['SLURM_JOB_CPUS_PER_NODE'])
     print("Using %s cores" % slurm_cpus, flush=True)
     pool = mp.Pool(slurm_cpus)
 
@@ -58,15 +47,16 @@ if __name__ == '__main__':
     potentials = np.load("../H2_data/potentials.npy")
     densities = np.load("../H2_data/densities.npy")
 
-    # get stretched H2 values
-    pot = potentials[50]
-    n = densities[50]
+    # get H2 values
+    pot = potentials[0]
+    n = densities[0]
 
     lambda_list = np.linspace(0, 1, 11)
+    lambda_list = np.array([1])
 
     n_r0 = functools.partial(get_n_r0_lambda, grids=grids, pot=pot, n=n)
 
     n_r0_lambda = pool.map(n_r0, lambda_list)
 
     n_r0_lambda = np.asarray(n_r0_lambda)
-    np.save("n_r0_lambda.npy", n_r0_lambda)
+    np.save("n_r0_1D_He.npy", n_r0_lambda)

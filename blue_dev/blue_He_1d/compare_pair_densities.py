@@ -97,6 +97,7 @@ if __name__ == '__main__':
 
     # blue ------
     blue_CP = np.load('n_r0_0.npy')[0]
+    blue_CP = np.load('n_r0_1D_He_half.npy')[0]
     n_xc_blue = blue_CP_to_n_xc(blue_CP, n_dmrg)
     n_xc_blue_interp = get_interp_n_xc(grids, n_xc_blue)
 
@@ -197,7 +198,7 @@ if __name__ == '__main__':
     x_idx = np.where(grids == x_value)[0][0]
     print(x_idx)
 
-    P_r_rp_idx = blue_pair_density.get_P_r_rp(P_r_rp, n=n_dmrg, x_idx=x_idx,
+    P_r_rp_idx = blue_pair_density.get_P_r_rp_idx(P_r_rp, n=n_dmrg, x_idx=x_idx,
                                               h=h)
 
     print('n_dmrg[x_idx] ', n_dmrg[x_idx])
@@ -255,3 +256,5 @@ if __name__ == '__main__':
     plt.legend(fontsize=16)
     plt.grid(alpha=0.4)
     plt.show()
+
+    sys.exit()

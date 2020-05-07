@@ -106,6 +106,7 @@ if __name__ == '__main__':
 
     # blue conditional probability density
     n_r0_R = np.load('n_r0_R.npy')
+    n_r0_R = np.load('n_r0_1D_He_half.npy')
 
     h = 0.08
     grids = np.arange(-256, 257) * h

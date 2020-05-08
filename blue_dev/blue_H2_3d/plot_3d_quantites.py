@@ -92,7 +92,7 @@ if __name__ == '__main__':
     E_x = -U_plus_Ex
 
     # blue results
-    R, V_ee_blue = txt_file_to_array('H2_from_srwhite/Vee_blue.dat')
+    R, V_ee_blue = txt_file_to_array('H2_from_srwhite/Vee_blue_half.dat')
 
     U_c_blue = V_ee_blue - U_plus_Ex
 

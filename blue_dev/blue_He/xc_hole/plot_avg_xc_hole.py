@@ -52,6 +52,8 @@ if __name__ == '__main__':
     extrap_grids = np.linspace(0, L, grid_size)
 
     n_r0_r = np.load('n_r0.npy')
+    # new cusp
+    n_r0_r = np.load('n_r0_Z_2.npy')[0]
     n_HF = np.load('n_HF.npy')
 
     n_xc = []

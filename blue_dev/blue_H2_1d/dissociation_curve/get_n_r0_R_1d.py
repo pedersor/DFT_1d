@@ -17,10 +17,10 @@ import sys
 if __name__ == '__main__':
     h = 0.08
     grids = np.arange(-256, 257) * h
-    # if on linux cluster: /H2_data/potentials.npy
-    # potentials = np.load("/H2_data/potentials.npy")
+    # if on linux cluster:
+    potentials = np.load("H2_data/potentials.npy")
     # local:
-    potentials = np.load("../H2_data/potentials.npy")
+    # potentials = np.load("../H2_data/potentials.npy")
 
     # gets cusp condition right (previously off by factor of 2)
     new_cusp_cond = 0.5

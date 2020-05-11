@@ -89,6 +89,9 @@ if __name__ == '__main__':
     avg_x_hole_u = np.asarray(avg_x_hole_u)
     avg_c_hole_u = (avg_xc_hole_u - avg_x_hole_u)
 
+    print('U_c blue = ',
+          2 * np.trapz(2 * np.pi * u_grids * avg_c_hole_u, u_grids))
+
     plt.plot(u_grids, avg_c_hole_u,
              label=r'$\left\langle n^B_{c}(u) \right\rangle$')
 
@@ -97,6 +100,9 @@ if __name__ == '__main__':
     u_exact_grids, x_hole_exact = txt_file_to_array('Exact_x_Hole')
 
     u_exact_grids, xc_hole_exact = txt_file_to_array('Exact_xc_hole')
+
+    c_hole_exact = xc_hole_exact - x_hole_exact
+    print('U_c exact = ', 2 * np.trapz(c_hole_exact, u_exact_grids))
 
     c_hole_exact = (xc_hole_exact - x_hole_exact) / (2 * np.pi * u_exact_grids)
     plt.plot(u_exact_grids, c_hole_exact,

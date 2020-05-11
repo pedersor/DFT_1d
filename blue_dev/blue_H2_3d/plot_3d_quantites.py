@@ -121,20 +121,17 @@ if __name__ == '__main__':
 
     do_plot()
 
-    sys.exit()
-
-    '''
-    # preliminary results from steve
+    # new e/2 blue results from steve
     R_idx_steve = [0, 2, 5, 10, 15]
-    Vee_blue = np.array([0.4116, 0.3764, 0.3374, 0.2825, 0.2307])
+
 
     for i, R_idx_val in enumerate(R_idx_steve):
         print(R[R_idx_val], end=" & ")
-        table_print(E_x[i])
-        table_print(Vee_blue[i])
+        table_print(E_x[R_idx_val])
+        table_print(V_ee_blue[R_idx_val])
         table_print(Vee[R_idx_val])
 
-        U_c_blue = Vee_blue[i] - U_plus_Ex[R_idx_val]
+        U_c_blue = V_ee_blue[R_idx_val] - U_plus_Ex[R_idx_val]
         U_xc_blue = (-U_plus_Ex[R_idx_val]) + U_c_blue
 
         table_print(U_xc_blue)
@@ -142,4 +139,5 @@ if __name__ == '__main__':
 
         table_print(U_c_blue)
         table_print(U_c[R_idx_val], last_in_row=True)
-    '''
+
+    sys.exit()

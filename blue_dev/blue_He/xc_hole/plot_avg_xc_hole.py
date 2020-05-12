@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     n_r0_r = np.load('n_r0.npy')
     # new cusp
-    n_r0_r = np.load('n_r0_Z_2.npy')[0]
+    n_r0_r = np.load('n_r0_Z_2_erf.npy')[0]
     n_HF = np.load('n_HF.npy')
 
     n_xc = []

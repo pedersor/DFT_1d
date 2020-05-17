@@ -82,7 +82,7 @@ def get_v_s_trunc(n, grids, tol):
     return v_s_trunc[2:-2]
 
 
-def v_s_extention(grids, n, h, tol=10 ** (-4)):
+def v_s_extension(grids, n, h, tol=10 ** (-4)):
     v_s_trunc = get_v_s_trunc(n, grids, tol=tol)
     v_s_full_out = v_s_derivs(v_s_trunc, n, grids, h, tol)
 
@@ -133,7 +133,7 @@ if __name__ == '__main__':
 
     v_s_out = []
     for n in densities:
-        v_s_out.append(v_s_extention(grids, n, h))
+        v_s_out.append(v_s_extension(grids, n, h))
 
     v_s_out = np.asarray(v_s_out)
     np.save(dir + "/exact_v_s_extrapolated.npy", v_s_out)

@@ -4,7 +4,9 @@ import sys
 import two_el_exact
 import ext_potentials
 import blue_pair_density
+import single_electron
 import functionals
+import functools
 import copy
 
 from scipy.interpolate import InterpolatedUnivariateSpline
@@ -89,7 +91,7 @@ if __name__ == '__main__':
     P_r_rp = np.load('P_r_rp.npy')
     n_dmrg = np.load('densities.npy')[0]
 
-    x_value = 0.0
+    x_value = -1.6
     x_idx = np.where(grids == x_value)[0][0]
     print(x_idx)
 
@@ -144,13 +146,15 @@ if __name__ == '__main__':
     ax1.plot(grids, blue_CP)
     ax1.plot(grids, (P_r_rp_idx / n_dmrg[x_idx]))
 
-    v_s_CP_blue = two_el_exact.v_s_extention(grids, blue_CP, h)
-    v_s_CP_exact = two_el_exact.v_s_extention(grids,
+    # with extension
+    v_s_CP_blue = two_el_exact.v_s_extension(grids, blue_CP, h)
+    v_s_CP_exact = two_el_exact.v_s_extension(grids,
                                               (P_r_rp_idx / n_dmrg[x_idx]), h,
                                               tol=1.1 * (10 ** (-4)))
-    ax2.plot(grids, v_s_CP_blue,
+
+    ax2.plot(grids, v_s_CP_blue - ext_potentials.exp_hydrogenic(grids, Z=2),
              label='$v^{CP, Blue}_s(' + str(x_value) + ',x\prime)$')
-    ax2.plot(grids, v_s_CP_exact,
+    ax2.plot(grids, v_s_CP_exact - ext_potentials.exp_hydrogenic(grids, Z=2),
              label='$v^{CP, Exact}_s(' + str(x_value) + ',x\prime)$')
 
     plt.xlabel('$x\prime$', fontsize=16)
@@ -160,6 +164,35 @@ if __name__ == '__main__':
     ax1.grid(alpha=0.4)
     ax2.grid(alpha=0.4)
     plt.show()
+
+    # check complimentary condition ----------
+
+    solver = single_electron.EigenSolver(grids,
+                                         potential_fn=functools.partial(
+                                             ext_potentials.get_gridded_potential,
+                                             potential=v_s_CP_exact),
+                                         boundary_condition='open',
+                                         num_electrons=1)
+    solver.solve_ground_state()
+    eps_r = solver.eigenvalues[0]
+    print('eps_r = ', eps_r)
+
+    idx_0 = 256
+    idx_104 = 269
+    idx_run = idx_0
+
+    v_ext_0 = ext_potentials.exp_hydrogenic(0.0, Z=2)
+    v_ext_104 = ext_potentials.exp_hydrogenic(1.04, Z=2)
+    E = -2.237
+
+    print('v_s_CP: ')
+    print(v_s_CP_exact[idx_run])
+
+    print('v_s_CP - v_ext')
+    print(v_s_CP_exact[idx_run] - v_ext_104)
+
+    print('v_ee(r-rp) - E + eps_r + eps_rp = ',
+          -1 * ext_potentials.exp_hydrogenic(1.04) - E + (-0.76955 - 0.7741))
 
     sys.exit()
 

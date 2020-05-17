@@ -116,8 +116,8 @@ if __name__ == '__main__':
     # get KS orbitals
     solver = single_electron.EigenSolver(grids,
                                          potential_fn=functools.partial(
-                                             grided_potential,
-                                             pot=v_s_full),
+                                             ext_potentials.get_gridded_potential,
+                                             potential=v_s_full),
                                          boundary_condition='open',
                                          num_electrons=4)
     solver.solve_ground_state()

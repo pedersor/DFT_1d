@@ -57,6 +57,22 @@ def quartic_oscillator(grids, k=1.):
     vp = 0.5 * k * (grids ** 4)
     return vp
 
+def get_gridded_potential(grids, potential):
+    '''
+    If a potential .npy file has already been generated on a grid. Necessary
+    for utilizing ks_dft.py and hf_scf.py where potential(grids) is assumed.
+    This should always be called using
+    functools.partial(get_potential_from_npy_file, potential=potential)
+
+    Args:
+        potential: numpy array of potential values already evaluated on grid
+        points
+
+    Returns:
+        potential: the same potential inputted. See above for reasoning.
+    '''
+
+    return potential
 
 def kronig_penney(grids, a, b, v0):
     """Kronig-Penney model potential. For more information, see:

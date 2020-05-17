@@ -72,8 +72,8 @@ if __name__ == '__main__':
 
     # compare v_s of CP
 
-    v_s_CP_blue = two_el_exact.v_s_extention(grids, blue_n2_r0, h)
-    v_s_CP_exact = two_el_exact.v_s_extention(grids,
+    v_s_CP_blue = two_el_exact.v_s_extension(grids, blue_n2_r0, h)
+    v_s_CP_exact = two_el_exact.v_s_extension(grids,
                                               (P_r_rp_idx / n_dmrg[x_idx]), h,
                                               tol=1.5 * (10 ** (-4)))
     plt.plot(grids, v_s_CP_blue,

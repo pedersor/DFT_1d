@@ -82,6 +82,61 @@ def get_avg_n_xc(u, grids, n_xc_interp, n):
     return avg_n_xc
 
 
+def do_plot():
+    plt.legend(fontsize=16)
+    plt.grid(alpha=0.4)
+    plt.show()
+
+
+def get_M_measure(grids, n_xc):
+    # M(r) measure, see logbook 5/25/20
+    M = []
+    for i, n_xc_r in enumerate(n_xc):
+        M_r = np.trapz(
+            n_xc_r * -1 * ext_potentials.exp_hydrogenic(grids - grids[i]),
+            grids)
+        M.append(M_r)
+    M = np.asarray(M)
+    return M
+
+
+if __name__ == '__main__':
+    # plot M(r) measure, see logbook 5/25/20
+    h = 0.08
+    grids = np.arange(-256, 257) * h
+
+    # exact ----------------
+    P_r_rp_raw = np.load('P_r_rp.npy')
+    n_dmrg = np.load('densities.npy')[0]
+    P_r_rp = get_P_r_rp(P_r_rp_raw, n_dmrg, grids)
+    n_x_exact = get_two_el_n_x(n_dmrg)
+    n_xc_exact = pair_density_to_n_xc(P_r_rp, n_dmrg)
+
+    # blue ------
+    blue_CP = np.load('n_r0_0.npy')[0]
+    n_xc_blue = blue_CP_to_n_xc(blue_CP, n_dmrg)
+    # e/2 charge
+    blue_CP_half = np.load('n_r0_1D_He_half.npy')[0]
+    n_xc_blue_half = blue_CP_to_n_xc(blue_CP_half, n_dmrg)
+
+    M_exact = get_M_measure(grids, n_xc_exact) - get_M_measure(grids, n_x_exact)
+    M_blue = get_M_measure(grids, n_xc_blue) - get_M_measure(grids, n_x_exact)
+    M_blue_half = get_M_measure(grids, n_xc_blue_half) - get_M_measure(grids, n_x_exact)
+
+    Uc = 0.5*np.trapz(M_exact*n_dmrg, grids)
+    print(Uc)
+
+    plt.plot(grids, M_blue_half, label='blue ($e^B = 1/2$)')
+    plt.plot(grids, M_blue, label='blue ($e^B = 1$)')
+    plt.plot(grids, M_exact, label='exact')
+
+    plt.xlim(-0.01, 6)
+
+    do_plot()
+
+
+    sys.exit()
+
 if __name__ == '__main__':
     h = 0.08
     grids = np.arange(-256, 257) * h
@@ -91,7 +146,7 @@ if __name__ == '__main__':
     P_r_rp = np.load('P_r_rp.npy')
     n_dmrg = np.load('densities.npy')[0]
 
-    x_value = -1.6
+    x_value = -0.72
     x_idx = np.where(grids == x_value)[0][0]
     print(x_idx)
 
@@ -118,27 +173,21 @@ if __name__ == '__main__':
              label='$P^{exact}(' + str(x_value) + ',x\prime)/n(' + str(
                  x_value) + ')$')
     plt.xlabel('$x\prime$', fontsize=16)
-    plt.legend(fontsize=16)
-    plt.grid(alpha=0.4)
-    plt.show()
+    do_plot()
 
     plt.plot(grids, (blue_CP) - n_dmrg,
              label='$n^{Blue}_{xc}(' + str(x_value) + ',x\prime)$')
     plt.plot(grids, (P_r_rp_idx / n_dmrg[x_idx]) - n_dmrg,
              label='$n_{xc}(' + str(x_value) + ',x\prime)$')
     plt.xlabel('$x\prime$', fontsize=16)
-    plt.legend(fontsize=16)
-    plt.grid(alpha=0.4)
-    plt.show()
+    do_plot()
 
     plt.plot(grids, (blue_CP) - n_dmrg / 2,
              label='$n^{Blue}_{c}(' + str(x_value) + ',x\prime)$')
     plt.plot(grids, (P_r_rp_idx / n_dmrg[x_idx]) - n_dmrg / 2,
              label='$n_{c}(' + str(x_value) + ',x\prime)$')
     plt.xlabel('$x\prime$', fontsize=16)
-    plt.legend(fontsize=16)
-    plt.grid(alpha=0.4)
-    plt.show()
+    do_plot()
 
     # compare v_s of CP
     fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col')
@@ -150,12 +199,14 @@ if __name__ == '__main__':
     v_s_CP_blue = two_el_exact.v_s_extension(grids, blue_CP, h)
     v_s_CP_exact = two_el_exact.v_s_extension(grids,
                                               (P_r_rp_idx / n_dmrg[x_idx]), h,
-                                              tol=1.1 * (10 ** (-4)))
+                                              tol=1. * (10 ** (-4)))
 
     ax2.plot(grids, v_s_CP_blue - ext_potentials.exp_hydrogenic(grids, Z=2),
-             label='$v^{CP, Blue}_s(' + str(x_value) + ',x\prime)$')
+             label='$v^{CP, Blue}_s(' + str(
+                 x_value) + ',x\prime) - v(x\prime)$')
     ax2.plot(grids, v_s_CP_exact - ext_potentials.exp_hydrogenic(grids, Z=2),
-             label='$v^{CP, Exact}_s(' + str(x_value) + ',x\prime)$')
+             label='$v^{CP, Exact}_s(' + str(
+                 x_value) + ',x\prime) - v(x\prime)$')
 
     plt.xlabel('$x\prime$', fontsize=16)
     plt.legend(fontsize=14)
@@ -197,6 +248,7 @@ if __name__ == '__main__':
     sys.exit()
 
 if __name__ == '__main__':
+    # symmetrized plotting <n_c(u)> etc.
     h = 0.08
     grids = np.arange(-256, 257) * h
 

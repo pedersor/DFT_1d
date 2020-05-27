@@ -119,21 +119,64 @@ if __name__ == '__main__':
     blue_CP_half = np.load('n_r0_1D_He_half.npy')[0]
     n_xc_blue_half = blue_CP_to_n_xc(blue_CP_half, n_dmrg)
 
+    # U_c plots -------------
+
     M_exact = get_M_measure(grids, n_xc_exact) - get_M_measure(grids, n_x_exact)
     M_blue = get_M_measure(grids, n_xc_blue) - get_M_measure(grids, n_x_exact)
-    M_blue_half = get_M_measure(grids, n_xc_blue_half) - get_M_measure(grids, n_x_exact)
+    M_blue_half = get_M_measure(grids, n_xc_blue_half) - get_M_measure(grids,
+                                                                       n_x_exact)
 
-    Uc = 0.5*np.trapz(M_exact*n_dmrg, grids)
-    print(Uc)
+    int_Uc_blue_half = 0.5 * M_blue_half * n_dmrg
+    int_Uc_blue = 0.5 * M_blue * n_dmrg
+    int_Uc_exact = 0.5 * M_exact * n_dmrg
 
-    plt.plot(grids, M_blue_half, label='blue ($e^B = 1/2$)')
-    plt.plot(grids, M_blue, label='blue ($e^B = 1$)')
-    plt.plot(grids, M_exact, label='exact')
+    Uc_blue_half = np.trapz(int_Uc_blue_half, grids)
+    Uc_blue = np.trapz(int_Uc_blue, grids)
+    Uc_exact = np.trapz(int_Uc_exact, grids)
+    print('Uc_blue_half = ', Uc_blue_half)
+    print('Uc_blue = ', Uc_blue)
+    print('Uc_exact = ', Uc_exact)
 
+    plt.plot(grids, int_Uc_blue_half,
+             label='blue ($e^B = 1/2$), $U^B_c = $' + format(Uc_blue_half,
+                                                             '.4f'))
+    plt.plot(grids, int_Uc_blue,
+             label='blue ($e^B = 1$), $U^B_c = $' + format(Uc_blue, '.4f'))
+    plt.plot(grids, int_Uc_exact,
+             label='exact, $U_c = $' + format(Uc_exact, '.4f'))
+    plt.xlabel('$x$', fontsize=16)
     plt.xlim(-0.01, 6)
 
     do_plot()
 
+    # U_xc plots -------------
+    M_exact = get_M_measure(grids, n_xc_exact)
+    M_blue = get_M_measure(grids, n_xc_blue)
+    M_blue_half = get_M_measure(grids, n_xc_blue_half)
+
+    int_Uxc_blue_half = 0.5 * M_blue_half * n_dmrg
+    int_Uxc_blue = 0.5 * M_blue * n_dmrg
+    int_Uxc_exact = 0.5 * M_exact * n_dmrg
+
+    Uxc_blue_half = np.trapz(int_Uxc_blue_half, grids)
+    Uxc_blue = np.trapz(int_Uxc_blue, grids)
+    Uxc_exact = np.trapz(int_Uxc_exact, grids)
+    print('Uxc_blue_half = ', Uxc_blue_half)
+    print('Uxc_blue = ', Uxc_blue)
+    print('Uxc_exact = ', Uxc_exact)
+    print('Ex = ', Uxc_exact - Uc_exact)
+
+    plt.plot(grids, int_Uxc_blue_half,
+             label='blue ($e^B = 1/2$), $U^B_{xc} = $' + format(Uxc_blue_half,
+                                                             '.4f'))
+    plt.plot(grids, int_Uxc_blue,
+             label='blue ($e^B = 1$), $U^B_{xc} = $' + format(Uxc_blue, '.4f'))
+    plt.plot(grids, int_Uxc_exact,
+             label='exact, $U_{xc} = $' + format(Uxc_exact, '.4f'))
+    plt.xlabel('$x$', fontsize=16)
+    plt.xlim(-0.01, 6)
+
+    do_plot()
 
     sys.exit()
 

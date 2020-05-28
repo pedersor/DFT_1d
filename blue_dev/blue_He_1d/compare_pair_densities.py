@@ -101,6 +101,249 @@ def get_M_measure(grids, n_xc):
 
 
 if __name__ == '__main__':
+    # symmetrized plotting <n_c(u)> etc.
+    h = 0.08
+    grids = np.arange(-256, 257) * h
+
+    # (x = 0) or specific values
+    # exact ----------------
+    P_r_rp_raw = np.load('P_r_rp.npy')
+    n_dmrg = np.load('densities.npy')[0]
+    P_r_rp = get_P_r_rp(P_r_rp_raw, n_dmrg, grids)
+    n_x_exact = get_two_el_n_x(n_dmrg)
+    n_x_exact_interp = get_interp_n_xc(grids, n_x_exact)
+
+    n_xc_exact = pair_density_to_n_xc(P_r_rp, n_dmrg)
+    n_xc_exact_interp = get_interp_n_xc(grids, n_xc_exact)
+
+    # blue --------
+    blue_CP = np.load('n_r0_0.npy')[0]
+    n_xc_blue = blue_CP_to_n_xc(blue_CP, n_dmrg)
+    n_xc_blue_interp = get_interp_n_xc(grids, n_xc_blue)
+    # e/2 charge
+    blue_CP_half = np.load('n_r0_1D_He_half.npy')[0]
+    n_xc_blue_half = blue_CP_to_n_xc(blue_CP_half, n_dmrg)
+    n_xc_blue_half_interp = get_interp_n_xc(grids, n_xc_blue_half)
+    # erf
+    gam_list = [1, 2, 3, 4]
+    blue_CP_erf = []
+    n_xc_blue_erf = []
+    n_xc_blue_erf_interp = []
+    for gam in gam_list:
+        blue_CP_erf_gam = np.load(
+            'erf_test/n_r0_1D_He_erf_gam_' + str(gam) + '.npy')
+        blue_CP_erf.append(blue_CP_erf_gam)
+        n_xc_blue_erf_gam = blue_CP_to_n_xc(blue_CP_erf_gam, n_dmrg)
+        n_xc_blue_erf.append(n_xc_blue_erf_gam)
+        n_xc_blue_erf_interp.append(get_interp_n_xc(grids, n_xc_blue_erf_gam))
+
+    u_grids = copy.deepcopy(grids)
+    avg_n_xc_exact = []
+    avg_n_x_exact = []
+    avg_n_xc_blue = []
+    avg_n_xc_blue_half = []
+
+    for u in u_grids:
+        avg_n_xc_exact.append(get_avg_n_xc(u, grids, n_xc_exact_interp, n_dmrg))
+        avg_n_xc_blue.append(get_avg_n_xc(u, grids, n_xc_blue_interp, n_dmrg))
+        avg_n_xc_blue_half.append(
+            get_avg_n_xc(u, grids, n_xc_blue_half_interp, n_dmrg))
+
+        avg_n_x_exact.append(get_avg_n_xc(u, grids, n_x_exact_interp, n_dmrg))
+
+    avg_n_xc_exact = np.asarray(avg_n_xc_exact)
+    avg_n_xc_blue = np.asarray(avg_n_xc_blue)
+    avg_n_xc_blue_half = np.asarray(avg_n_xc_blue_half)
+    avg_n_x_exact = np.asarray(avg_n_x_exact)
+
+    # erf interpolation
+    avg_n_xc_blue_erf = []
+    for i, gam in enumerate(gam_list):
+        avg_n_xc_blue_erf_gam = []
+        for u in u_grids:
+            avg_n_xc_blue_erf_gam.append(
+                get_avg_n_xc(u, grids, n_xc_blue_erf_interp[i], n_dmrg))
+        avg_n_xc_blue_erf_gam = np.asarray(avg_n_xc_blue_erf_gam)
+        avg_n_xc_blue_erf.append(avg_n_xc_blue_erf_gam)
+
+    # symmetric plotting, |u|
+    zero_u_idx = 256
+    u_grids = u_grids[zero_u_idx:]
+    avg_n_xc_blue = avg_n_xc_blue[zero_u_idx:]
+    avg_n_xc_blue_half = avg_n_xc_blue_half[zero_u_idx:]
+    avg_n_xc_exact = avg_n_xc_exact[zero_u_idx:]
+    for i, gam in enumerate(gam_list):
+        avg_n_xc_blue_erf[i] = avg_n_xc_blue_erf[i][zero_u_idx:]
+
+    avg_n_x_exact = avg_n_x_exact[zero_u_idx:]
+
+    # correlation
+    avg_n_c_exact = avg_n_xc_exact - avg_n_x_exact
+    avg_n_c_blue = avg_n_xc_blue - avg_n_x_exact
+    avg_n_c_blue_half = avg_n_xc_blue_half - avg_n_x_exact
+    avg_n_c_blue_erf = []
+    for i, gam in enumerate(gam_list):
+        avg_n_c_blue_erf.append(avg_n_xc_blue_erf[i] - avg_n_x_exact)
+
+
+    # plots --------
+    def do_plot():
+        plt.xlabel('$|u|$', fontsize=18)
+        plt.legend(fontsize=16)
+        plt.grid(alpha=0.4)
+        plt.show()
+
+
+    # avg_n_xc
+    plt.plot(u_grids, avg_n_xc_blue_half,
+             label=r'($e^B = 1/2$) $\left\langle n^{Blue}_{xc}(|u|) \right\rangle$')
+
+    for i, gam in enumerate(gam_list):
+        plt.plot(u_grids, avg_n_xc_blue_erf[i],
+                 label=r'($\gamma = ' + str(
+                     gam) + r'$) $\left\langle n^{Blue}_{xc}(|u|) \right\rangle$')
+
+    plt.plot(u_grids, avg_n_xc_blue,
+             label=r'($e^B = 1$) $\left\langle n^{Blue}_{xc}(|u|) \right\rangle$')
+
+    plt.plot(u_grids, avg_n_xc_exact,
+             label=r'$\left\langle n^{Exact}_{xc}(|u|) \right\rangle$')
+    do_plot()
+
+    # avg_n_xc weighted with Vee
+    plt.plot(u_grids, avg_n_xc_blue_half * -1 * ext_potentials.exp_hydrogenic(
+        u_grids),
+             label=r'($e^B = 1/2$) $\left\langle n^{Blue}_{xc}(|u|) \right\rangle v_{ee}(|u|)$')
+    for i, gam in enumerate(gam_list):
+        plt.plot(u_grids,
+                 avg_n_xc_blue_erf[i] * -1 * ext_potentials.exp_hydrogenic(
+                     u_grids),
+                 label=r'($\gamma = ' + str(
+                     gam) + r'$) $\left\langle n^{Blue}_{xc}(|u|) \right\rangle v_{ee}(|u|)$')
+
+    plt.plot(u_grids, avg_n_xc_blue * -1 * ext_potentials.exp_hydrogenic(
+        u_grids),
+             label=r'($e^B = 1$) $\left\langle n^{Blue}_{xc}(|u|) \right\rangle v_{ee}(|u|)$')
+
+    plt.plot(u_grids, avg_n_xc_exact * -1 * ext_potentials.exp_hydrogenic(
+        u_grids),
+             label=r'$\left\langle n^{Exact}_{xc}(|u|) \right\rangle v_{ee}(|u|)$')
+    do_plot()
+
+    # avg_n_c
+    plt.plot(u_grids, avg_n_c_blue_half,
+             label=r'($e^B = 1/2$) $\left\langle n^{Blue}_{c}(|u|) \right\rangle$')
+    for i, gam in enumerate(gam_list):
+        plt.plot(u_grids, avg_n_c_blue_erf[i],
+                 label=r'($\gamma = ' + str(
+                     gam) + r'$) $\left\langle n^{Blue}_{c}(|u|) \right\rangle$')
+
+    plt.plot(u_grids, avg_n_c_blue,
+             label=r'($e^B = 1$) $\left\langle n^{Blue}_{c}(|u|) \right\rangle$')
+    plt.plot(u_grids, avg_n_c_exact,
+             label=r'$\left\langle n^{Exact}_{c}(|u|) \right\rangle$')
+    do_plot()
+
+    # avg_n_c weighted with Vee
+    plt.plot(u_grids, avg_n_c_blue_half * -1 * ext_potentials.exp_hydrogenic(
+        u_grids),
+             label=r'($e^B = 1/2$) $\left\langle n^{Blue}_{c}(|u|) \right\rangle v_{ee}(|u|)$')
+    for i, gam in enumerate(gam_list):
+        plt.plot(u_grids,
+                 avg_n_c_blue_erf[i] * -1 * ext_potentials.exp_hydrogenic(
+                     u_grids),
+                 label=r'($\gamma = ' + str(
+                     gam) + r'$) $\left\langle n^{Blue}_{c}(|u|) \right\rangle v_{ee}(|u|)$')
+
+    plt.plot(u_grids, avg_n_c_blue * -1 * ext_potentials.exp_hydrogenic(
+        u_grids),
+             label=r'($e^B = 1$) $\left\langle n^{Blue}_{c}(|u|) \right\rangle v_{ee}(|u|)$')
+
+    plt.plot(u_grids, avg_n_c_exact * -1 * ext_potentials.exp_hydrogenic(
+        u_grids),
+             label=r'$\left\langle n^{Exact}_{c}(|u|) \right\rangle v_{ee}(|u|)$')
+    do_plot()
+
+
+    # integrated plots, ie so the u->infty value matches the energy
+    def integrated_avg_n_xc(u_grids, avg_n_xc_times_interaction):
+        int_avg_n_xc = []
+        for i, u in enumerate(u_grids):
+            int_avg_n_xc.append(
+                np.trapz(avg_n_xc_times_interaction[0:i], u_grids[0:i]))
+
+        int_avg_n_xc = np.asarray(int_avg_n_xc)
+        return int_avg_n_xc
+
+
+    # xc plots
+    plt.plot(u_grids, integrated_avg_n_xc(u_grids,
+                                          avg_n_xc_blue_half * -1 * ext_potentials.exp_hydrogenic(
+                                              u_grids)),
+             label=r'($e^B = 1/2$) $\int_0^u \left\langle n^{Blue}_{xc}(|u|) \right\rangle v_{ee}(|u|)$')
+    for i, gam in enumerate(gam_list):
+        plt.plot(u_grids,
+                 integrated_avg_n_xc(u_grids, avg_n_xc_blue_erf[
+                     i] * -1 * ext_potentials.exp_hydrogenic(
+                     u_grids)),
+                 label=r'($\gamma = ' + str(
+                     gam) + r'$) $\int_0^u \left\langle n^{Blue}_{xc}(|u|) \right\rangle v_{ee}(|u|)$')
+
+    plt.plot(u_grids, integrated_avg_n_xc(u_grids,
+                                          avg_n_xc_blue * -1 * ext_potentials.exp_hydrogenic(
+                                              u_grids)),
+             label=r'($e^B = 1$) $\int_0^u \left\langle n^{Blue}_{xc}(|u|) \right\rangle v_{ee}(|u|)$')
+
+    plt.plot(u_grids, integrated_avg_n_xc(u_grids,
+                                          avg_n_xc_exact * -1 * ext_potentials.exp_hydrogenic(
+                                              u_grids)),
+             label=r'$\int_0^u \left\langle n^{Exact}_{xc}(|u|) \right\rangle v_{ee}(|u|)$')
+    do_plot()
+
+    # c plots
+    plt.plot(u_grids, integrated_avg_n_xc(u_grids,
+                                          avg_n_c_blue_half * -1 * ext_potentials.exp_hydrogenic(
+                                              u_grids)),
+             label=r'($e^B = 1/2$) $\int_0^u \left\langle n^{Blue}_{c}(|u|) \right\rangle v_{ee}(|u|)$')
+    for i, gam in enumerate(gam_list):
+        plt.plot(u_grids,
+                 integrated_avg_n_xc(u_grids, avg_n_c_blue_erf[
+                     i] * -1 * ext_potentials.exp_hydrogenic(
+                     u_grids)),
+                 label=r'($\gamma = ' + str(
+                     gam) + r'$) $\int_0^u \left\langle n^{Blue}_{c}(|u|) \right\rangle v_{ee}(|u|)$')
+
+    plt.plot(u_grids, integrated_avg_n_xc(u_grids,
+                                          avg_n_c_blue * -1 * ext_potentials.exp_hydrogenic(
+                                              u_grids)),
+             label=r'($e^B = 1$) $\int_0^u \left\langle n^{Blue}_{c}(|u|) \right\rangle v_{ee}(|u|)$')
+
+    plt.plot(u_grids, integrated_avg_n_xc(u_grids,
+                                          avg_n_c_exact * -1 * ext_potentials.exp_hydrogenic(
+                                              u_grids)),
+             label=r'$\int_0^u \left\langle n^{Exact}_{c}(|u|) \right\rangle v_{ee}(|u|)$')
+    do_plot()
+
+    # U_c check:
+    print('U_c_blue = ',
+          np.trapz(avg_n_c_blue * -1 * ext_potentials.exp_hydrogenic(
+              u_grids), u_grids))
+    print('U_c_exact = ',
+          np.trapz(avg_n_c_exact * -1 * ext_potentials.exp_hydrogenic(
+              u_grids), u_grids))
+
+    # E_x check:
+    E_x = np.trapz(
+        avg_n_x_exact * -1 * ext_potentials.exp_hydrogenic(u_grids), u_grids)
+    print('E_x = ', E_x)
+
+    v_H = functionals.hartree_potential(grids, n_dmrg)
+    U = 0.5 * np.trapz(v_H * n_dmrg, grids)
+    print('E_x = -U/2 = ', -U / 2.)
+
+    sys.exit()
+
+if __name__ == '__main__':
     # plot M(r) measure, see logbook 5/25/20
     h = 0.08
     grids = np.arange(-256, 257) * h
@@ -112,12 +355,21 @@ if __name__ == '__main__':
     n_x_exact = get_two_el_n_x(n_dmrg)
     n_xc_exact = pair_density_to_n_xc(P_r_rp, n_dmrg)
 
-    # blue ------
+    # blue e charge ------
     blue_CP = np.load('n_r0_0.npy')[0]
     n_xc_blue = blue_CP_to_n_xc(blue_CP, n_dmrg)
     # e/2 charge
     blue_CP_half = np.load('n_r0_1D_He_half.npy')[0]
     n_xc_blue_half = blue_CP_to_n_xc(blue_CP_half, n_dmrg)
+    # erf
+    gam_list = [1, 2, 3, 4]
+    blue_CP_erf = []
+    n_xc_blue_erf = []
+    for gam in gam_list:
+        blue_CP_erf_gam = np.load(
+            'erf_test/n_r0_1D_He_erf_gam_' + str(gam) + '.npy')
+        blue_CP_erf.append(blue_CP_erf_gam)
+        n_xc_blue_erf.append(blue_CP_to_n_xc(blue_CP_erf_gam, n_dmrg))
 
     # U_c plots -------------
 
@@ -125,14 +377,22 @@ if __name__ == '__main__':
     M_blue = get_M_measure(grids, n_xc_blue) - get_M_measure(grids, n_x_exact)
     M_blue_half = get_M_measure(grids, n_xc_blue_half) - get_M_measure(grids,
                                                                        n_x_exact)
+    M_blue_erf = [get_M_measure(grids, n_xc_blue_erf_gam) - get_M_measure(grids,
+                                                                          n_x_exact)
+                  for n_xc_blue_erf_gam in n_xc_blue_erf]
 
+    int_Uc_blue_erf = [0.5 * M_blue_erf_gam * n_dmrg for M_blue_erf_gam in
+                       M_blue_erf]
     int_Uc_blue_half = 0.5 * M_blue_half * n_dmrg
     int_Uc_blue = 0.5 * M_blue * n_dmrg
     int_Uc_exact = 0.5 * M_exact * n_dmrg
 
+    Uc_blue_erf = [np.trapz(int_Uc_blue_erf_gam, grids) for int_Uc_blue_erf_gam
+                   in int_Uc_blue_erf]
     Uc_blue_half = np.trapz(int_Uc_blue_half, grids)
     Uc_blue = np.trapz(int_Uc_blue, grids)
     Uc_exact = np.trapz(int_Uc_exact, grids)
+    print('Uc_blue_erf = ', Uc_blue_erf)
     print('Uc_blue_half = ', Uc_blue_half)
     print('Uc_blue = ', Uc_blue)
     print('Uc_exact = ', Uc_exact)
@@ -140,12 +400,17 @@ if __name__ == '__main__':
     plt.plot(grids, int_Uc_blue_half,
              label='blue ($e^B = 1/2$), $U^B_c = $' + format(Uc_blue_half,
                                                              '.4f'))
+    for i, gam in enumerate(gam_list):
+        plt.plot(grids, int_Uc_blue_erf[i],
+                 label='blue (erf, $\gamma = $' + str(
+                     gam_list[i]) + '), $U^B_c = $' + format(Uc_blue_erf[i],
+                                                             '.4f'))
     plt.plot(grids, int_Uc_blue,
              label='blue ($e^B = 1$), $U^B_c = $' + format(Uc_blue, '.4f'))
     plt.plot(grids, int_Uc_exact,
              label='exact, $U_c = $' + format(Uc_exact, '.4f'))
     plt.xlabel('$x$', fontsize=16)
-    plt.xlim(-0.01, 6)
+    plt.xlim(-0.01, 5)
 
     do_plot()
 
@@ -153,14 +418,22 @@ if __name__ == '__main__':
     M_exact = get_M_measure(grids, n_xc_exact)
     M_blue = get_M_measure(grids, n_xc_blue)
     M_blue_half = get_M_measure(grids, n_xc_blue_half)
+    M_blue_erf = [get_M_measure(grids, n_xc_blue_erf_gam) for n_xc_blue_erf_gam
+                  in n_xc_blue_erf]
 
+    int_Uxc_blue_erf = [0.5 * M_blue_erf_gam * n_dmrg for M_blue_erf_gam in
+                        M_blue_erf]
     int_Uxc_blue_half = 0.5 * M_blue_half * n_dmrg
     int_Uxc_blue = 0.5 * M_blue * n_dmrg
     int_Uxc_exact = 0.5 * M_exact * n_dmrg
 
+    Uxc_blue_erf = [np.trapz(int_Uxc_blue_erf_gam, grids) for
+                    int_Uxc_blue_erf_gam
+                    in int_Uxc_blue_erf]
     Uxc_blue_half = np.trapz(int_Uxc_blue_half, grids)
     Uxc_blue = np.trapz(int_Uxc_blue, grids)
     Uxc_exact = np.trapz(int_Uxc_exact, grids)
+    print('Uxc_blue_erf = ', Uxc_blue_erf)
     print('Uxc_blue_half = ', Uxc_blue_half)
     print('Uxc_blue = ', Uxc_blue)
     print('Uxc_exact = ', Uxc_exact)
@@ -168,13 +441,18 @@ if __name__ == '__main__':
 
     plt.plot(grids, int_Uxc_blue_half,
              label='blue ($e^B = 1/2$), $U^B_{xc} = $' + format(Uxc_blue_half,
-                                                             '.4f'))
+                                                                '.4f'))
+    for i, gam in enumerate(gam_list):
+        plt.plot(grids, int_Uxc_blue_erf[i],
+                 label='blue (erf, $\gamma = $' + str(
+                     gam_list[i]) + '), $U^B_{xc} = $' + format(Uxc_blue_erf[i],
+                                                                '.4f'))
     plt.plot(grids, int_Uxc_blue,
              label='blue ($e^B = 1$), $U^B_{xc} = $' + format(Uxc_blue, '.4f'))
     plt.plot(grids, int_Uxc_exact,
              label='exact, $U_{xc} = $' + format(Uxc_exact, '.4f'))
     plt.xlabel('$x$', fontsize=16)
-    plt.xlim(-0.01, 6)
+    plt.xlim(-0.01, 2)
 
     do_plot()
 
@@ -287,112 +565,5 @@ if __name__ == '__main__':
 
     print('v_ee(r-rp) - E + eps_r + eps_rp = ',
           -1 * ext_potentials.exp_hydrogenic(1.04) - E + (-0.76955 - 0.7741))
-
-    sys.exit()
-
-if __name__ == '__main__':
-    # symmetrized plotting <n_c(u)> etc.
-    h = 0.08
-    grids = np.arange(-256, 257) * h
-
-    # (x = 0) or specific values
-    # exact ----------------
-    P_r_rp_raw = np.load('P_r_rp.npy')
-    n_dmrg = np.load('densities.npy')[0]
-    P_r_rp = get_P_r_rp(P_r_rp_raw, n_dmrg, grids)
-    n_x_exact = get_two_el_n_x(n_dmrg)
-    n_x_exact_interp = get_interp_n_xc(grids, n_x_exact)
-
-    n_xc_exact = pair_density_to_n_xc(P_r_rp, n_dmrg)
-    n_xc_exact_interp = get_interp_n_xc(grids, n_xc_exact)
-
-    # blue ------
-    blue_CP = np.load('n_r0_0.npy')[0]
-    # e/2 charge
-    blue_CP = np.load('n_r0_1D_He_half.npy')[0]
-    n_xc_blue = blue_CP_to_n_xc(blue_CP, n_dmrg)
-    n_xc_blue_interp = get_interp_n_xc(grids, n_xc_blue)
-
-    u_grids = copy.deepcopy(grids)
-    avg_n_xc_exact = []
-    avg_n_x_exact = []
-    avg_n_xc_blue = []
-    for u in u_grids:
-        avg_n_xc_exact.append(get_avg_n_xc(u, grids, n_xc_exact_interp, n_dmrg))
-        avg_n_xc_blue.append(get_avg_n_xc(u, grids, n_xc_blue_interp, n_dmrg))
-        avg_n_x_exact.append(get_avg_n_xc(u, grids, n_x_exact_interp, n_dmrg))
-
-    avg_n_xc_exact = np.asarray(avg_n_xc_exact)
-    avg_n_xc_blue = np.asarray(avg_n_xc_blue)
-    avg_n_x_exact = np.asarray(avg_n_x_exact)
-
-    # symmetric plotting, |u|
-    zero_u_idx = 256
-    u_grids = u_grids[zero_u_idx:]
-    avg_n_xc_blue = avg_n_xc_blue[zero_u_idx:]
-    avg_n_xc_exact = avg_n_xc_exact[zero_u_idx:]
-    avg_n_x_exact = avg_n_x_exact[zero_u_idx:]
-
-    # correlation
-    avg_n_c_exact = avg_n_xc_exact - avg_n_x_exact
-    avg_n_c_blue = avg_n_xc_blue - avg_n_x_exact
-
-
-    # plots --------
-    def do_plot():
-        plt.xlabel('$|u|$', fontsize=18)
-        plt.legend(fontsize=16)
-        plt.grid(alpha=0.4)
-        plt.show()
-
-
-    # avg_n_xc
-    plt.plot(u_grids, avg_n_xc_blue,
-             label=r'$\left\langle n^{Blue}_{xc}(|u|) \right\rangle$')
-    plt.plot(u_grids, avg_n_xc_exact,
-             label=r'$\left\langle n^{Exact}_{xc}(|u|) \right\rangle$')
-    do_plot()
-
-    # avg_n_xc weighted with Vee
-    plt.plot(u_grids, avg_n_xc_blue * -1 * ext_potentials.exp_hydrogenic(
-        u_grids),
-             label=r'$\left\langle n^{Blue}_{xc}(|u|) \right\rangle v_{ee}(|u|)$')
-    plt.plot(u_grids, avg_n_xc_exact * -1 * ext_potentials.exp_hydrogenic(
-        u_grids),
-             label=r'$\left\langle n^{Exact}_{xc}(|u|) \right\rangle v_{ee}(|u|)$')
-    do_plot()
-
-    # avg_n_c
-    plt.plot(u_grids, avg_n_c_blue,
-             label=r'$\left\langle n^{Blue}_{c}(|u|) \right\rangle$')
-    plt.plot(u_grids, avg_n_c_exact,
-             label=r'$\left\langle n^{Exact}_{c}(|u|) \right\rangle$')
-    do_plot()
-
-    # avg_n_c weighted with Vee
-    plt.plot(u_grids, avg_n_c_blue * -1 * ext_potentials.exp_hydrogenic(
-        u_grids),
-             label=r'$\left\langle n^{Blue}_{c}(|u|) \right\rangle v_{ee}(|u|)$')
-    plt.plot(u_grids, avg_n_c_exact * -1 * ext_potentials.exp_hydrogenic(
-        u_grids),
-             label=r'$\left\langle n^{Exact}_{c}(|u|) \right\rangle v_{ee}(|u|)$')
-    do_plot()
-
-    # U_c check:
-    print('U_c_blue = ',
-          np.trapz(avg_n_c_blue * -1 * ext_potentials.exp_hydrogenic(
-              u_grids), u_grids))
-    print('U_c_exact = ',
-          np.trapz(avg_n_c_exact * -1 * ext_potentials.exp_hydrogenic(
-              u_grids), u_grids))
-
-    # E_x check:
-    E_x = np.trapz(
-        avg_n_x_exact * -1 * ext_potentials.exp_hydrogenic(u_grids), u_grids)
-    print('E_x = ', E_x)
-
-    v_H = functionals.hartree_potential(grids, n_dmrg)
-    U = 0.5 * np.trapz(v_H * n_dmrg, grids)
-    print('E_x = -U/2 = ', -U / 2.)
 
     sys.exit()

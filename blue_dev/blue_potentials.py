@@ -17,7 +17,7 @@ def blue_helium(grids, r0, Z=2, lam=1):
     return np.asarray(vp)
 
 
-def blue_helium_erf(grids, r0, gam=1, Z=2, lam=1):
+def blue_helium_spherical_erf(grids, r0, gam=1, Z=2, lam=1):
     vp = []
 
     term_1 = np.exp(-1 * (gam * (grids + r0)) ** 2)
@@ -42,6 +42,15 @@ def blue_helium_erf(grids, r0, gam=1, Z=2, lam=1):
                 ((-Z + 0.5 * lam) / np.abs(r)) + 0.5 * lam * spherical_erf[i])
 
     return np.asarray(vp)
+
+
+def blue_helium_1d_erf(grids, r0, gam=1, Z=2):
+    # 1/(2|r-r'|) for r ~ r' and 1/|r-r'| for large separations of r and r'.
+    # Decrease/increase 'transition time' using gamma.
+
+    return ext_potentials.exp_hydrogenic(grids,
+                                         Z=Z) - 0.5 * ext_potentials.exp_hydrogenic(
+        grids - r0) * (1 + special.erf(np.abs(gam * (grids - r0))))
 
 
 def blue_helium_1d(grids, r0, Z=2, lam=1):

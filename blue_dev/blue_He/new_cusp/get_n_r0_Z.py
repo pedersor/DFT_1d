@@ -51,7 +51,7 @@ if __name__ == '__main__':
             print('i, r0 = ', i, '  ', r0)
             solver = single_electron.EigenSolver(grids,
                                                  potential_fn=functools.partial(
-                                                     blue_potentials.blue_helium_erf,
+                                                     blue_potentials.blue_helium_spherical_erf,
                                                      r0=r0, Z=Z),
                                                  boundary_condition='open',
                                                  num_electrons=1)

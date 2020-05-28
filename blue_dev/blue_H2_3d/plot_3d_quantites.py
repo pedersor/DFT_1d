@@ -91,11 +91,22 @@ if __name__ == '__main__':
     U_xc = (-U_plus_Ex) + U_c
     E_x = -U_plus_Ex
 
-    # blue results
-    R, V_ee_blue = txt_file_to_array('H2_from_srwhite/Vee_blue_half.dat')
+    # half blue
+    R, V_ee_blue_half = txt_file_to_array('H2_from_srwhite/Vee_blue_half.dat')
+    U_c_blue_half = V_ee_blue_half - U_plus_Ex
+    # gam results
+    R, V_ee_blue_gam_2 = txt_file_to_array('H2_from_srwhite/Vee_blue_gam_2.dat')
+    U_c_blue_gam_2 = V_ee_blue_gam_2 - U_plus_Ex
 
+    R, V_ee_blue_gam_0_43 = txt_file_to_array('H2_from_srwhite/Vee_blue_gam_0_43.dat')
+    U_c_blue_gam_0_43 = V_ee_blue_gam_0_43 - U_plus_Ex
+
+    # blue results
+    R, V_ee_blue = txt_file_to_array('H2_from_srwhite/Vee_blue.dat')
     U_c_blue = V_ee_blue - U_plus_Ex
 
+    R, V_ee_blue = txt_file_to_array('H2_from_srwhite/Vee_blue_gam_0_43.dat')
+    U_c_blue = V_ee_blue - U_plus_Ex
 
     # plots --------
     def do_plot():
@@ -106,24 +117,31 @@ if __name__ == '__main__':
 
 
     # total energy dissociation
-    plt.plot(R, 2 * T_s + V_ee_blue + V_ext + get_Vpp(R),
-             label='$E_0[V^{Blue}_{ee}(R)]$')
+    plt.plot(R, 2 * T + V_ee_blue_half + V_ext + get_Vpp(R),
+             label='$E_0[V^{Blue, e^B = 1/2}_{ee}(R)] + T^{Exact}_c[n(R)]$')
+    plt.plot(R, 2 * T + V_ee_blue_gam_0_43 + V_ext + get_Vpp(R),
+             label='$E_0[V^{Blue, \gamma = 0.43}_{ee}(R)] + T^{Exact}_c[n(R)]$')
+    plt.plot(R, 2 * T + V_ee_blue_gam_2 + V_ext + get_Vpp(R),
+             label='$E_0[V^{Blue, \gamma = 2}_{ee}(R)] + T^{Exact}_c[n(R)]$')
     plt.plot(R, 2 * T + V_ee_blue + V_ext + get_Vpp(R),
-             label='$E_0[V^{Blue}_{ee}(R)] + T^{Exact}_c[n(R)]$')
+             label='$E_0[V^{Blue, e^B = 1}_{ee}(R)] + T^{Exact}_c[n(R)]$')
     plt.plot(R, E + get_Vpp(R),
-             label='$E_0[V^{Exact}_{ee}(R)]$')
+             label='$E_0[V^{Exact}_{ee}(R)] + T^{Exact}_c[n(R)]$')
 
     do_plot()
 
     # U_c plot
-    plt.plot(R, U_c_blue, label='$U^{Blue}_c(R)$')
+    plt.plot(R, U_c_blue_half, label='$U^{Blue, e^B = 1/2}_c(R)$')
+    plt.plot(R, U_c_blue_gam_0_43, label='$U^{Blue, \gamma = 0.43}_c(R)$')
+    plt.plot(R, U_c_blue_gam_2, label='$U^{Blue, \gamma = 2}_c(R)$')
+    plt.plot(R, U_c_blue, label='$U^{Blue, e^B = 1}_c(R)$')
+
     plt.plot(R, U_c, label='$U^{Exact}_c(R)$')
 
     do_plot()
 
     # new e/2 blue results from steve
     R_idx_steve = [0, 2, 5, 10, 15]
-
 
     for i, R_idx_val in enumerate(R_idx_steve):
         print(R[R_idx_val], end=" & ")

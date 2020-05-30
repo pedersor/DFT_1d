@@ -3,7 +3,7 @@ import numpy as np
 import sys
 import two_el_exact
 import ext_potentials
-import blue_pair_density
+import blue_tools
 import single_electron
 import functionals
 import functools
@@ -471,8 +471,8 @@ if __name__ == '__main__':
     x_idx = np.where(grids == x_value)[0][0]
     print(x_idx)
 
-    P_r_rp_idx = blue_pair_density.get_P_r_rp_idx(P_r_rp, n=n_dmrg, x_idx=x_idx,
-                                                  h=h)
+    P_r_rp_idx = blue_tools.get_P_r_rp_idx(P_r_rp, n=n_dmrg, x_idx=x_idx,
+                                           h=h)
 
     print('n_dmrg[x_idx] ', n_dmrg[x_idx])
     print('integral check: n_dmrg = ', np.sum(n_dmrg) * h)

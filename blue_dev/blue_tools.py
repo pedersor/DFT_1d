@@ -73,3 +73,20 @@ def get_P_r_rp_idx(P_r_rp, n, x_idx, h):
 
     P_r_rp_idx = P_r_rp_idx / (h * h)
     return P_r_rp_idx
+
+# easy table print
+def table_print(to_print, round_to_dec=3, last_in_row=False):
+    if isinstance(to_print, float):
+        rounded_to_print = format(to_print, '.' + str(round_to_dec) + 'f')
+    else:
+        rounded_to_print = to_print
+
+    if last_in_row:
+        end = ' '
+        print(rounded_to_print, end=end)
+        print(r'\\')
+        print('\hline')
+
+    else:
+        end = ' & '
+        print(rounded_to_print, end=end)

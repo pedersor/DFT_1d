@@ -17,8 +17,8 @@ if __name__ == '__main__':
         # exact sphericalized v_s
         # sph_v_s = blue_potentials.exact_sph_hookes_atom(grids, r2=r0)
 
-        pot = blue_potentials.sph_blue_impurity(grids, r0=r0,
-                                                lam=1 / 2) + ext_potentials.harmonic_oscillator(
+        pot = blue_potentials.blue_helium_spherical_erf(grids, r0=r0, gam=2.,
+                                                        Z=0) + ext_potentials.harmonic_oscillator(
             grids, k=1 / 4)
 
         solver = single_electron.EigenSolver(grids,
@@ -48,6 +48,6 @@ if __name__ == '__main__':
 
     n_r0 = np.asarray(n_r0)
 
-    np.save("n_r0_blue_gam_0.npy", n_r0)
+    np.save("n_r0_blue_gam_2.npy", n_r0)
 
 sys.exit()

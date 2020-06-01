@@ -2,6 +2,7 @@ import numpy as np
 from scipy import special
 import matplotlib.pyplot as plt
 import blue_tools
+import sys
 
 
 def get_n(r):
@@ -16,6 +17,222 @@ def get_n(r):
     return n
 
 
+def get_pair_density(r1, r2, theta):
+    psi = (1 + 0.5 * np.sqrt(
+        r1 ** 2 + r2 ** 2 - 2 * r1 * r2 * np.cos(theta))) / (2. * np.exp(
+        0.25 * (r1 ** 2 + r2 ** 2)) * np.sqrt(
+        8 * np.pi ** 2.5 + 5 * np.pi ** 3))
+
+    return 2 * (psi ** 2)
+
+
+# get <n_xc(u)> plots
+if __name__ == '__main__':
+    grids = np.linspace(0.0056, 6, 1000)
+
+    n = get_n(grids)
+
+    # sph blue results
+    gammas = ['0', '0_43', '2', 'inf']
+    interp_n_xc_sph_blue = []
+    for gam in gammas:
+        n_r0_sph_blue_gam = np.load('n_r0_blue_gam_' + gam + '.npy')
+        n_xc_sph_blue_gam = blue_tools.n_CP_to_n_xc(n_r0_sph_blue_gam, n)
+        interp_n_xc_sph_blue_gam = blue_tools.get_interp_n_xc(grids,
+                                                              n_xc_sph_blue_gam)
+        interp_n_xc_sph_blue.append(interp_n_xc_sph_blue_gam)
+
+    # sph exact results
+    n_r0_sph_exact = np.load('n_r0_hookes_atom_sph_exact.npy')
+    n_xc_sph_exact = blue_tools.n_CP_to_n_xc(n_r0_sph_exact, n)
+    n_x_exact = blue_tools.get_two_el_n_x(n)
+
+    interp_n_xc_sph_exact = blue_tools.get_interp_n_xc(grids, n_xc_sph_exact)
+    interp_n_x_exact = blue_tools.get_interp_n_xc(grids, n_x_exact)
+
+    # avg xc hole sph exact
+    u_grids = np.linspace(0, 6, 200)
+    avg_xc_hole_sph_exact = []
+    avg_x_hole_exact = []
+    for u in u_grids:
+        avg_xc_hole_sph_exact.append(
+            blue_tools.get_avg_xc_hole(u, grids, interp_n_xc_sph_exact, n))
+        avg_x_hole_exact.append(
+            blue_tools.get_avg_xc_hole(u, grids, interp_n_x_exact, n))
+
+    avg_xc_hole_sph_exact = np.asarray(avg_xc_hole_sph_exact)
+    avg_x_hole_exact = np.asarray(avg_x_hole_exact)
+    avg_c_hole_sph_exact = (avg_xc_hole_sph_exact - avg_x_hole_exact)
+
+    # avg xc hole sph blue
+
+    avg_xc_hole_sph_blue = []
+    for interp_n_xc_sph_blue_gam in interp_n_xc_sph_blue:
+        avg_xc_hole_sph_blue_gam = []
+        u_grids = np.linspace(0, 6, 200)
+        for u in u_grids:
+            avg_xc_hole_sph_blue_gam.append(
+                blue_tools.get_avg_xc_hole(u, grids, interp_n_xc_sph_blue_gam,
+                                           n))
+
+        avg_xc_hole_sph_blue_gam = np.asarray(avg_xc_hole_sph_blue_gam)
+        avg_xc_hole_sph_blue.append(avg_xc_hole_sph_blue_gam)
+
+    gammas = ['0', '0.43', '2', '\infty']
+    for i, avg_xc_hole_sph_blue_gam in enumerate(avg_xc_hole_sph_blue):
+        plot_label = 'blue ($\gamma = ' + gammas[i] + '$)'
+        plt.plot(u_grids, avg_xc_hole_sph_blue_gam, label=plot_label)
+
+        # print('U_xc sph blue = ',
+        #      2 * np.trapz(2 * np.pi * u_grids * avg_xc_hole_sph_blue_gam, u_grids))
+
+    plt.plot(u_grids, avg_xc_hole_sph_exact,
+             label='sph. exact')
+
+    plt.xlabel('$u$')
+    plt.legend()
+    plt.grid(alpha=0.4)
+    plt.show()
+
+    for i, avg_xc_hole_sph_blue_gam in enumerate(avg_xc_hole_sph_blue):
+        plot_label = 'blue ($\gamma = ' + gammas[i] + '$)'
+        plt.plot(u_grids, 4 * np.pi * u_grids * avg_xc_hole_sph_blue_gam,
+                 label=plot_label)
+
+    plt.plot(u_grids, 4 * np.pi * u_grids * avg_xc_hole_sph_exact,
+             label='sph. exact')
+
+    plt.xlabel('$u$')
+    plt.legend()
+    plt.grid(alpha=0.4)
+    plt.show()
+
+    for i, avg_xc_hole_sph_blue_gam in enumerate(avg_xc_hole_sph_blue):
+        plot_label = 'blue ($\gamma = ' + gammas[i] + '$)'
+        plt.plot(u_grids, (avg_xc_hole_sph_blue_gam - avg_x_hole_exact),
+                 label=plot_label)
+
+    plt.plot(u_grids, avg_c_hole_sph_exact,
+             label='sph. exact')
+
+    plt.xlabel('$u$')
+    plt.legend()
+    plt.grid(alpha=0.4)
+    plt.show()
+
+    for i, avg_xc_hole_sph_blue_gam in enumerate(avg_xc_hole_sph_blue):
+        plot_label = 'blue ($\gamma = ' + gammas[i] + '$)'
+        plt.plot(u_grids, 4 * np.pi * u_grids * (
+                avg_xc_hole_sph_blue_gam - avg_x_hole_exact),
+                 label=plot_label)
+
+    plt.plot(u_grids, 4 * np.pi * u_grids * avg_c_hole_sph_exact,
+             label='sph. exact')
+
+    plt.xlabel('$u$')
+    plt.legend()
+    plt.grid(alpha=0.4)
+    plt.show()
+
+    sys.exit()
+
+# get M(r) plots
+if __name__ == '__main__':
+    grids = np.linspace(0.0056, 6, 1000)
+
+    n = get_n(grids)
+
+    # sph blue results
+    gammas = ['0', '0_43', '2', 'inf']
+    n_xc_sph_blue = []
+    M_xc_sph_blue = []
+    for gam in gammas:
+        n_r0_sph_blue_gam = np.load('n_r0_blue_gam_' + gam + '.npy')
+        n_xc_sph_blue_gam = blue_tools.n_CP_to_n_xc(n_r0_sph_blue_gam, n)
+        n_xc_sph_blue.append(n_xc_sph_blue_gam)
+        M_xc_sph_blue_gam = blue_tools.radial_get_v_H_n_xc(grids,
+                                                           n_xc_sph_blue_gam)
+        M_xc_sph_blue.append(M_xc_sph_blue_gam)
+
+    # sph exact results
+    n_r0_sph_exact = np.load('n_r0_hookes_atom_sph_exact.npy')
+    n_xc_sph_exact = blue_tools.n_CP_to_n_xc(n_r0_sph_exact, n)
+    M_xc_sph_exact = blue_tools.radial_get_v_H_n_xc(grids, n_xc_sph_exact)
+    n_x_exact = blue_tools.get_two_el_n_x(n)
+    M_x_exact = blue_tools.radial_get_v_H_n_xc(grids, n_x_exact)
+
+    # plot 0.5 n(r) M_xc(r). Integrating this * 4 pi r^2 = U_xc.
+    gammas = ['0', '0.43', '2', '\infty']
+    for i, M_xc_sph_blue_gam in enumerate(M_xc_sph_blue):
+        plot_label = 'blue ($\gamma = ' + gammas[i] + '$)'
+        plt.plot(grids, 0.5 * n * M_xc_sph_blue_gam, label=plot_label)
+    # plot sph exact
+    plt.plot(grids, 0.5 * n * M_xc_sph_exact, label='sph. exact')
+    # plot non-sph exact
+    # look at mathematica. Use FortranForm.. integrate over theta and r'
+
+    plt.xlabel('$r$')
+    plt.grid(alpha=0.4)
+    plt.legend()
+    plt.show()
+
+    # plot 0.5 * 4 pi r^2 n(r) M_xc(r). Integrating this = U_xc.
+    gammas = ['0', '0.43', '2', '\infty']
+    for i, M_xc_sph_blue_gam in enumerate(M_xc_sph_blue):
+        plot_label = 'blue ($\gamma = ' + gammas[i] + '$)'
+        plt.plot(grids,
+                 4 * np.pi * (grids * grids) * 0.5 * n * M_xc_sph_blue_gam,
+                 label=plot_label)
+    # plot sph exact
+    plt.plot(grids, 4 * np.pi * (grids * grids) * 0.5 * n * M_xc_sph_exact,
+             label='sph. exact')
+    # plot non-sph exact
+    # look at mathematica. Use FortranForm.. integrate over theta and r'
+
+    plt.xlabel('$r$')
+    plt.grid(alpha=0.4)
+    plt.legend()
+    plt.show()
+
+    # plot 0.5 n(r) M_c(r). Integrating this * 4 pi r^2 = U_c.
+    gammas = ['0', '0.43', '2', '\infty']
+    for i, M_xc_sph_blue_gam in enumerate(M_xc_sph_blue):
+        plot_label = 'blue ($\gamma = ' + gammas[i] + '$)'
+        plt.plot(grids, 0.5 * n * (M_xc_sph_blue_gam - M_x_exact),
+                 label=plot_label)
+    # plot sph exact
+    plt.plot(grids, 0.5 * n * (M_xc_sph_exact - M_x_exact), label='sph. exact')
+    # plot non-sph exact
+    # look at mathematica. Use FortranForm.. integrate over theta and r'
+
+    plt.xlabel('$r$')
+    plt.grid(alpha=0.4)
+    plt.legend()
+    plt.show()
+
+    # plot 0.5 * 4 pi r^2 n(r) M_c(r). Integrating this = U_c.
+    gammas = ['0', '0.43', '2', '\infty']
+    for i, M_xc_sph_blue_gam in enumerate(M_xc_sph_blue):
+        plot_label = 'blue ($\gamma = ' + gammas[i] + '$)'
+        plt.plot(grids,
+                 4 * np.pi * (grids * grids) * 0.5 * n * (
+                         M_xc_sph_blue_gam - M_x_exact),
+                 label=plot_label)
+    # plot sph exact
+    plt.plot(grids, 4 * np.pi * (grids * grids) * 0.5 * n * (
+            M_xc_sph_exact - M_x_exact),
+             label='sph. exact')
+    # plot non-sph exact
+    # look at mathematica. Use FortranForm.. integrate over theta and r'
+
+    plt.xlabel('$r$')
+    plt.grid(alpha=0.4)
+    plt.legend()
+    plt.show()
+
+    sys.exit()
+
+# get table results U_xc, U_c, etc.
 if __name__ == '__main__':
     grids = np.linspace(0.0056, 6, 1000)
 
@@ -30,19 +247,20 @@ if __name__ == '__main__':
         n_r0_sph_blue_gam = np.load('n_r0_blue_gam_' + gam + '.npy')
         n_r0_sph_blue.append(n_r0_sph_blue_gam)
 
-        v_H_n_ee_blue_gam = blue_tools.get_v_H_n_xc(grids, n_r0_sph_blue_gam)
+        v_H_n_ee_blue_gam = blue_tools.radial_get_v_H_n_xc(grids,
+                                                           n_r0_sph_blue_gam)
         v_H_n_ee_blue.append(v_H_n_ee_blue_gam)
-        V_ee_blue_gam = blue_tools.get_U_xc(grids, n, v_H_n_ee_blue_gam)
+        V_ee_blue_gam = blue_tools.radial_get_U_xc(grids, n, v_H_n_ee_blue_gam)
         V_ee_blue.append(V_ee_blue_gam)
 
     # sph exact results
-    v_H_n = blue_tools.get_v_H_n(grids, n)
-    U_H = blue_tools.get_U_xc(grids, n, v_H_n)
+    v_H_n = blue_tools.radial_get_v_H_n(grids, n)
+    U_H = blue_tools.radial_get_U_xc(grids, n, v_H_n)
     E_x = -(U_H / 2)
 
     n_r0_sph_exact = np.load('n_r0_hookes_atom_sph_exact.npy')
-    v_h_n_ee_sph = blue_tools.get_v_H_n_xc(grids, n_r0_sph_exact)
-    V_ee_sph = blue_tools.get_U_xc(grids, n, v_h_n_ee_sph)
+    v_h_n_ee_sph = blue_tools.radial_get_v_H_n_xc(grids, n_r0_sph_exact)
+    V_ee_sph = blue_tools.radial_get_U_xc(grids, n, v_h_n_ee_sph)
     U_xc_sph = V_ee_sph - U_H
     U_c_sph = V_ee_sph - U_H - E_x
 
@@ -92,3 +310,5 @@ if __name__ == '__main__':
     blue_tools.table_print(error_sph, round_to_dec=1)
     # U_c non-sph exact error
     blue_tools.table_print(0., round_to_dec=1, last_in_row=True)
+
+    sys.exit()

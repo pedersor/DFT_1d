@@ -101,6 +101,8 @@ if __name__ == '__main__':
     R, V_ee_blue_gam_0_43 = txt_file_to_array('H2_from_srwhite/Vee_blue_gam_0_43.dat')
     U_c_blue_gam_0_43 = V_ee_blue_gam_0_43 - U_plus_Ex
 
+
+
     # blue results
     R, V_ee_blue = txt_file_to_array('H2_from_srwhite/Vee_blue.dat')
     U_c_blue = V_ee_blue - U_plus_Ex

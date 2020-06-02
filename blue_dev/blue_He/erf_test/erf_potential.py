@@ -11,7 +11,7 @@ if __name__ == '__main__':
     grids = np.linspace(0.018435, L, grid_size)
     h = grids[1] - grids[0]
 
-    n_r0_Z_2_erf = np.load('n_r0_Z_2_erf.npy')[0]
+    n_r0_Z_2_erf = np.load('n_r0_Z_blue_gam_1.npy')[0]
     n_r0 = np.load('n_r0.npy')
 
 

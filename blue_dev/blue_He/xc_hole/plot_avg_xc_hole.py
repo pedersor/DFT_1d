@@ -4,7 +4,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 import sys
 
 
-def txt_file_to_array(file):
+def txt_file_to_array(file: object) -> object:
     # two column file to np arrays
     with open(file) as f:
         lines = f.readlines()
@@ -51,9 +51,10 @@ if __name__ == '__main__':
     grids = np.linspace(0.018435, L, grid_size)
     extrap_grids = np.linspace(0, L, grid_size)
 
-    n_r0_r = np.load('n_r0.npy')
+    n_r0_r = np.load('n_r0_Z_blue_gam_inf.npy')[0]
+
     # new cusp
-    n_r0_r = np.load('n_r0_Z_2_erf.npy')[0]
+    #n_r0_r = np.load('n_r0_Z_blue_gam_1.npy')[0]
     n_HF = np.load('n_HF.npy')
 
     n_xc = []

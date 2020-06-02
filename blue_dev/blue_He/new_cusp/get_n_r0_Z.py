@@ -52,7 +52,7 @@ if __name__ == '__main__':
             solver = single_electron.EigenSolver(grids,
                                                  potential_fn=functools.partial(
                                                      blue_potentials.blue_helium_spherical_erf,
-                                                     r0=r0, Z=Z),
+                                                     gam=3., r0=r0, Z=Z),
                                                  boundary_condition='open',
                                                  num_electrons=1)
             solver.solve_ground_state()
@@ -78,7 +78,7 @@ if __name__ == '__main__':
 
     n_r0_Z = np.asarray(n_r0_Z)
     print(n_r0_Z)
-    np.save("n_r0_Z_2_erf.npy", n_r0_Z)
+    np.save("n_r0_Z_blue_gam_3.npy", n_r0_Z)
 
 sys.exit()
 
@@ -128,4 +128,4 @@ if __name__ == '__main__':
 
     n_r0_Z = np.asarray(n_r0_Z)
     print(n_r0_Z)
-    np.save("n_r0_Z_2.npy", n_r0_Z)
+    np.save("n_r0_Z_blue_gam_0.npy", n_r0_Z)

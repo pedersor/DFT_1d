@@ -120,7 +120,7 @@ def exp_hydrogenic(grids, A=1.071295, k=(1. / 2.385345), a=0, Z=1):
     return vp
 
 
-def get_potential_from_npy_file(grids, potential):
+def get_gridded_potential(grids, potential):
     '''
     If a potential .npy file has already been generated on a grid. Necessary
     for utilizing ks_dft.py and hf_scf.py where potential(grids) is assumed.

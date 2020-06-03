@@ -152,3 +152,19 @@ def table_print(to_print, round_to_dec=3, last_in_row=False):
     else:
         end = ' & '
         print(rounded_to_print, end=end)
+
+
+# other
+def txt_file_to_array(file, header=False):
+    start = 0
+    if header:
+        start = 1
+    # two column file to np arrays
+    with open(file) as f:
+        lines = f.readlines()
+        x = [float(line.split()[0]) for line in lines[start:]]
+        y = [float(line.split()[1]) for line in lines[start:]]
+
+    x = np.asarray(x)
+    y = np.asarray(y)
+    return x, y

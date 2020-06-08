@@ -100,8 +100,37 @@ def txt_file_to_array(file, skip=0):
     n = np.asarray(n)
     return r, n
 
+
+# Z = 2 (He): get avg r_s
 if __name__ == '__main__':
-    r, n = txt_file_to_array('Cyrus_Umrigar_data.txt', skip=12)
+    # HF results --------------------------
+    L = 20
+    # for 1000, L = 20 using initial pt 0.018435 to minimize error of H and He
+    grid_size = 1000
+    grids = np.linspace(0.018435, L, grid_size)
+
+    n_HF = np.load('n_HF_2.npy')
+
+    print('normalization check: ',
+          np.trapz(4 * np.pi * grids * grids * n_HF, grids))
+
+    r_s = (3 / (4 * np.pi * n_HF)) ** (1 / 3)
+    print('avg r_s = ',
+          np.trapz(4 * np.pi * grids * grids * n_HF * r_s, grids) / 2)
+
+    # Cyrus Density --------------------------
+    r, n = txt_file_to_array('Cyrus_Umrigar_data_He.dat', skip=1)
+
+    print('norm check: ', np.trapz(4 * np.pi * r * r * n, r))
+    r_s = (3 / (4 * np.pi * n)) ** (1 / 3)
+    print('avg r_s = ',
+          np.trapz(4 * np.pi * r * r * n * r_s, r) / 2)
+
+    sys.exit()
+
+# Z = 1 data
+if __name__ == '__main__':
+    r, n = txt_file_to_array('Cyrus_Umrigar_data_Z_1.dat', skip=12)
     interp_int_n = InterpolatedUnivariateSpline(r, n, k=3)
 
     L = 10
@@ -110,8 +139,6 @@ if __name__ == '__main__':
 
     n2_r0 = np.load('n_r0_1.npy')[0]
     n_HF = np.load('n_HF_1.npy')[0]
-
-
 
     # v_h = get_v_h_n(grids, interp_int_n(grids))
     v_h = get_v_h_n_trapz(r, interp_int_n(r))

@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
+import blue_tools
 
 
 def get_plotting_params():
@@ -70,6 +71,18 @@ def table_print(to_print, round_to_dec=3, last_in_row=False):
         print(rounded_to_print, end=end)
 
 
+# avg r_s vs R
+if __name__ == '__main__':
+    R, avg_r_s = blue_tools.txt_file_to_array('H2_from_srwhite/avg_r_s.dat',
+                                              header=True)
+
+    for i, avg_r_s_R in enumerate(avg_r_s):
+        blue_tools.table_print(R[i], round_to_dec=1)
+        blue_tools.table_print(avg_r_s_R, round_to_dec=4, last_in_row=True)
+
+    sys.exit()
+
+# dispersion plots etc.
 if __name__ == '__main__':
     # exact results
     R, T = txt_file_to_array('H2_from_srwhite/T.dat')

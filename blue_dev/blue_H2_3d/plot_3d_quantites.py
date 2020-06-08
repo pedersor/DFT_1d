@@ -71,8 +71,10 @@ def table_print(to_print, round_to_dec=3, last_in_row=False):
         print(rounded_to_print, end=end)
 
 
+run = 'disp'
+
 # avg r_s vs R
-if __name__ == '__main__':
+if run == 'r_s':
     R, avg_r_s = blue_tools.txt_file_to_array('H2_from_srwhite/avg_r_s.dat',
                                               header=True)
 
@@ -83,7 +85,7 @@ if __name__ == '__main__':
     sys.exit()
 
 # dispersion plots etc.
-if __name__ == '__main__':
+if run == 'disp':
     # exact results
     R, T = txt_file_to_array('H2_from_srwhite/T.dat')
     R, T_s = txt_file_to_array('H2_from_srwhite/T_s.dat')
@@ -100,24 +102,16 @@ if __name__ == '__main__':
     U_xc = (-U_plus_Ex) + U_c
     E_x = -U_plus_Ex
 
-    # half blue
-    R, V_ee_blue_half = txt_file_to_array('H2_from_srwhite/Vee_blue_half.dat')
-    U_c_blue_half = V_ee_blue_half - U_plus_Ex
-    # gam results
-    R, V_ee_blue_gam_2 = txt_file_to_array('H2_from_srwhite/Vee_blue_gam_2.dat')
-    U_c_blue_gam_2 = V_ee_blue_gam_2 - U_plus_Ex
+    gam_files = ['r_s', '0', '0_43', '1_5', '2', 'inf']
+    V_ee_blue = []
+    U_c_blue = []
+    for gam in gam_files:
+        R, V_ee_blue_gam = txt_file_to_array(
+            'H2_from_srwhite/Vee_blue_gam_' + gam + '.dat')
+        U_c_blue_gam = V_ee_blue_gam - U_plus_Ex
 
-    R, V_ee_blue_gam_0_43 = txt_file_to_array(
-        'H2_from_srwhite/Vee_blue_gam_0_43.dat')
-    U_c_blue_gam_0_43 = V_ee_blue_gam_0_43 - U_plus_Ex
-
-    R, V_ee_blue_gam_1_5 = txt_file_to_array(
-        'H2_from_srwhite/Vee_blue_gam_1_5.dat')
-    U_c_blue_gam_1_5 = V_ee_blue_gam_1_5 - U_plus_Ex
-
-    # blue results
-    R, V_ee_blue = txt_file_to_array('H2_from_srwhite/Vee_blue.dat')
-    U_c_blue = V_ee_blue - U_plus_Ex
+        V_ee_blue.append(V_ee_blue_gam)
+        U_c_blue.append(U_c_blue_gam)
 
 
     # plots --------
@@ -129,35 +123,25 @@ if __name__ == '__main__':
 
 
     # total energy dissociation
-    gam_disp = ['0', '0.43', '1.5', '2', r'\infty']
-    plt.plot(R, 2 * T + V_ee_blue_half + V_ext + get_Vpp(R),
-             label='blue ($\gamma = ' + gam_disp[0] + '$)')
-    plt.plot(R, 2 * T + V_ee_blue_gam_0_43 + V_ext + get_Vpp(R),
-             label='blue ($\gamma = ' + gam_disp[1] + '$)')
-    plt.plot(R, 2 * T + V_ee_blue_gam_1_5 + V_ext + get_Vpp(R),
-             label='blue ($\gamma = ' + gam_disp[2] + '$)')
-    plt.plot(R, 2 * T + V_ee_blue_gam_2 + V_ext + get_Vpp(R),
-             label='blue ($\gamma = ' + gam_disp[3] + '$)')
-    plt.plot(R, 2 * T + V_ee_blue + V_ext + get_Vpp(R),
-             label='blue ($\gamma = ' + gam_disp[4] + '$)')
-    plt.plot(R, E + get_Vpp(R),
-             label='exact')
+    gam_disp = ['1.5/r_s', '0', '0.43', '1.5', '2', r'\infty']
+    for i, gam in enumerate(gam_disp):
+        plt.plot(R, 2 * T + V_ee_blue[i] + V_ext + get_Vpp(R),
+                 label='blue ($\gamma = ' + gam + '$)')
+
+    plt.plot(R, E + get_Vpp(R), label='exact')
 
     do_plot()
 
     # U_c plot
-    plt.plot(R, U_c_blue_half, label='blue ($\gamma = ' + gam_disp[0] + '$)')
-    plt.plot(R, U_c_blue_gam_0_43,
-             label='blue ($\gamma = ' + gam_disp[1] + '$)')
-    plt.plot(R, U_c_blue_gam_1_5, label='blue ($\gamma = ' + gam_disp[2] + '$)')
-    plt.plot(R, U_c_blue_gam_2, label='blue ($\gamma = ' + gam_disp[3] + '$)')
-    plt.plot(R, U_c_blue, label='blue ($\gamma = ' + gam_disp[4] + '$)')
+    for i, gam in enumerate(gam_disp):
+        plt.plot(R, U_c_blue[i], label='blue ($\gamma = ' + gam + '$)')
+
     plt.plot(R, U_c, label='exact')
 
     do_plot()
 
-    # new e/2 blue results from steve
-    R, V_ee_blue = txt_file_to_array('H2_from_srwhite/Vee_blue_gam_1_5.dat')
+    # table results for a sin
+    V_ee_blue = V_ee_blue[0]
     U_c_blue = V_ee_blue - U_plus_Ex
 
     R_idx_steve = [0, 2, 5, 10, 15]

@@ -126,6 +126,7 @@ if __name__ == '__main__':
     n_xc_blue_half_interp = get_interp_n_xc(grids, n_xc_blue_half)
     # erf
     gam_list = [1, 2, 3, 4]
+    gam_list = ['r_s']
     blue_CP_erf = []
     n_xc_blue_erf = []
     n_xc_blue_erf_interp = []
@@ -458,6 +459,7 @@ if __name__ == '__main__':
 
     sys.exit()
 
+# (old) look at CP potential
 if __name__ == '__main__':
     h = 0.08
     grids = np.arange(-256, 257) * h

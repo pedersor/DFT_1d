@@ -5,6 +5,7 @@ from scipy import integrate
 from scipy import optimize
 import math
 import matplotlib.pyplot as plt
+import sys
 
 
 def sph_blue_impurity(grids, r0, lam=1.):
@@ -56,9 +57,15 @@ def blue_helium_spherical_erf(grids, r0, gam=1., Z=2, lam=1.):
     return np.asarray(vp)
 
 
-def blue_helium_1d_erf(grids, r0, gam=1, Z=2):
+def blue_helium_1d_erf(grids, r0, n_r, Z=2):
     # 1/(2|r-r'|) for r ~ r' and 1/|r-r'| for large separations of r and r'.
     # Decrease/increase 'transition time' using gamma.
+
+    if n_r <= 10 ** (-6):
+        gam = 0
+    else:
+        r_s = (3 / (4 * np.pi * n_r)) ** (1 / 3)
+        gam = 3 / (2 * r_s)
 
     return ext_potentials.exp_hydrogenic(grids,
                                          Z=Z) - 0.5 * ext_potentials.exp_hydrogenic(
@@ -118,6 +125,22 @@ def exact_sph_hookes_atom(grids, r2):
 
 
 if __name__ == '__main__':
+    # 1d He erf calc
+
+    h = 0.08
+    grids = np.arange(-256, 257) * h
+
+    densities = np.load('blue_He_1d/densities.npy')[0]
+
+    plt.plot(grids, densities)
+    plt.show()
+
+    erf_1d = blue_helium_1d_erf(grids, r0=grids[280], n_r=densities[280])
+
+    plt.plot(grids, erf_1d)
+    plt.show()
+
+    sys.exit()
     # hooke's atom testing
 
     grids = np.linspace(0.01, 5, 1000)
@@ -125,10 +148,11 @@ if __name__ == '__main__':
     plt.plot(grids, sph_v_s)
 
     pot = sph_blue_impurity(grids,
-                            r0=grids[100], lam=1/2) + ext_potentials.harmonic_oscillator(
+                            r0=grids[100],
+                            lam=1 / 2) + ext_potentials.harmonic_oscillator(
         grids, k=1 / 4)
 
-    plt.plot(grids, pot-1)
+    plt.plot(grids, pot - 1)
 
     # plt.plot(grids, blue_helium(grids, r0=0.5, Z=0, lam=0.5) - 1)
 

@@ -8,13 +8,13 @@ import functools
 import sys
 
 
-def get_n_r0(grids, gam):
+def get_n_r0(grids, n):
     n_r0 = []
-    for r0 in grids:
+    for i, r0 in enumerate(grids):
         solver = single_electron.EigenSolver(grids,
                                              potential_fn=functools.partial(
                                                  blue_potentials.blue_helium_1d_erf,
-                                                 r0=r0, gam=gam))
+                                                 r0=r0, n_r=n[i]))
 
         solver.solve_ground_state()
         n_r0.append(solver.density)
@@ -27,6 +27,8 @@ if __name__ == '__main__':
     h = 0.08
     grids = np.arange(-256, 257) * h
 
-    n_r0 = get_n_r0(grids, 3)
+    n_dmrg = np.load('densities.npy')[0]
 
-    np.save("n_r0_1D_He_erf_gam_3.npy", n_r0)
+    n_r0 = get_n_r0(grids, n_dmrg)
+
+    np.save("n_r0_1D_He_erf_gam_r_s.npy", n_r0)

@@ -1,6 +1,3 @@
-import single_electron, functionals, ext_potentials
-import blue_potentials
-import matplotlib.pyplot as plt
 import os
 import sys
 
@@ -12,6 +9,8 @@ sys.path.append(
 
 import numpy as np
 import functools
+import single_electron, functionals, ext_potentials
+import blue_potentials
 
 
 def get_n_r0(grids, densities, potentials):
@@ -21,7 +20,7 @@ def get_n_r0(grids, densities, potentials):
         n_r0_R = []
         for j, r0 in enumerate(grids):
             blue_pot = functools.partial(blue_potentials.blue_1d_H2_erf,
-                                         r0=r0, n_r=densities[j], pot=pot)
+                                         r0=r0, n_r=densities[i][j], pot=pot)
             solver = single_electron.EigenSolver(grids,
                                                  potential_fn=blue_pot)
 
@@ -38,8 +37,8 @@ if __name__ == '__main__':
     h = 0.08
     grids = np.arange(-256, 257) * h
 
-    densities = np.load('H2_data/densities.npy')
-    potentials = np.load('H2_data/potentials.npy')
+    densities = np.load('../H2_data/densities.npy')
+    potentials = np.load('../H2_data/potentials.npy')
 
     n_r0 = get_n_r0(grids, densities, potentials)
 

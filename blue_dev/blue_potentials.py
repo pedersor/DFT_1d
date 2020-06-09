@@ -61,14 +61,24 @@ def blue_helium_1d_erf(grids, r0, n_r, Z=2):
     # 1/(2|r-r'|) for r ~ r' and 1/|r-r'| for large separations of r and r'.
     # Decrease/increase 'transition time' using gamma.
 
-    if n_r <= 10 ** (-6):
-        gam = 0
-    else:
-        r_s = (3 / (4 * np.pi * n_r)) ** (1 / 3)
-        gam = 3 / (2 * r_s)
+    # \gamma = 1.5/r_s
+    gam = (3 / 2) * (((4 * np.pi * n_r) / 3) ** (1 / 3))
 
     return ext_potentials.exp_hydrogenic(grids,
                                          Z=Z) - 0.5 * ext_potentials.exp_hydrogenic(
+        grids - r0) * (1 + special.erf(np.abs(gam * (grids - r0))))
+
+
+def blue_1d_H2_erf(grids, r0, n_r, pot):
+    # 1/(2|r-r'|) for r ~ r' and 1/|r-r'| for large separations of r and r'.
+    # Decrease/increase 'transition time' using gamma.
+
+    # \gamma = 1.5/r_s
+    gam = (3 / 2) * (((4 * np.pi * n_r) / 3) ** (1 / 3))
+
+    ext_pot = ext_potentials.get_gridded_potential(grids, pot)
+
+    return ext_pot - 0.5 * ext_potentials.exp_hydrogenic(
         grids - r0) * (1 + special.erf(np.abs(gam * (grids - r0))))
 
 

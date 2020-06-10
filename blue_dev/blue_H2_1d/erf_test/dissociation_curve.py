@@ -77,20 +77,25 @@ if __name__ == '__main__':
     total_energies = np.load("../H2_data/total_energies.npy")
     Vee_energies = np.load("../H2_data/Vee_energies.npy")
 
-    # blue conditional probability density
-    n_r0_R = np.load('n_r0_1D_H2_erf_gam_r_s.npy')
-
     h = 0.08
     grids = np.arange(-256, 257) * h
 
     Etot_dmrg = []
-    Etot_blue = []
     Etot_HF = []
-    Etot_blue_Tc_dmrg = []
-
-    U_c_blue = []
     U_c_dmrg = []
-    U_c_error = []
+
+    # blue conditional probability density
+    blue_files = ['3o2r_s', '1or_s']
+    labels = ['$3/(2r_s)$', '$1/r_s$']
+    blue_approxs = []
+    for i, file in enumerate(blue_files):
+        n_r0_blue = np.load('n_r0_1D_H2_erf_gam_' + file + '.npy')
+        blue_quantities = {'approx': file, 'label': labels[i],
+                           'n_r0_blue': n_r0_blue,
+                           'Etot_blue': [],
+                           'U_c_blue': [],
+                           'U_c_error': []}
+        blue_approxs.append(blue_quantities)
 
     R_separations = []
 
@@ -100,7 +105,7 @@ if __name__ == '__main__':
         R = np.abs(location[0] - location[1])
         R_separations.append(R)
 
-        # print('R = ', R)
+        #print('R = ', R)
 
         # dmrg
         E_dmrg = total_energies[i]
@@ -122,23 +127,32 @@ if __name__ == '__main__':
         U_c_dmrg.append(U_c_dmrg_R)
 
         # Blue Vee (with exact n)
-        Vee_blue = get_Vee_blue(grids, n_r0_R[i], n)
-        Etot_blue.append(T_s + Vee_blue + V_ext + get_Vpp(R) + T_c_dmrg)
+        for blue_approx in blue_approxs:
+            n_r0_blue_R = blue_approx['n_r0_blue'][i]
+            Vee_blue_R = get_Vee_blue(grids, n_r0_blue_R, n)
 
-        # blue U_c
-        U_c_blue_R = Vee_blue - U - E_x
-        U_c_blue.append(U_c_blue_R)
+            Etot_blue = blue_approx['Etot_blue']
+            Etot_blue.append(T_s + Vee_blue_R + V_ext + get_Vpp(R) + T_c_dmrg)
+            blue_approx['Etot_blue'] = Etot_blue
 
-        # U_c error
-        U_c_error_R = 100 * (U_c_dmrg_R - U_c_blue_R) / U_c_dmrg_R
-        U_c_error.append(U_c_error_R)
+            # blue U_c
+            U_c_blue_R = Vee_blue_R - U - E_x
+            U_c_blue = blue_approx['U_c_blue']
+            U_c_blue.append(U_c_blue_R)
+            blue_approx['U_c_blue'] = U_c_blue
 
-        # table Rues
+            # U_c error
+            U_c_error_R = 100 * (U_c_dmrg_R - U_c_blue_R) / U_c_dmrg_R
+            U_c_error = blue_approx['U_c_error']
+            U_c_error.append(U_c_error_R)
+            blue_approx['U_c_error'] = U_c_error
+
+        # table R values
         R_table = [0.0, 1.04, 1.44, 2.0, 3.04, 4.0]
         if R in R_table:
             blue_tools.table_print(R, round_to_dec=2)
 
-            blue_tools.table_print(Vee_blue)
+            blue_tools.table_print(Vee_blue_R)
             blue_tools.table_print(Vee_dmrg)
 
             U_xc_blue_R = E_x + U_c_blue_R
@@ -153,18 +167,21 @@ if __name__ == '__main__':
             blue_tools.table_print(U_c_error_R, round_to_dec=1,
                                    last_in_row=True)
 
-    Etot_blue = np.asarray(Etot_blue)
     R_separations = np.asarray(R_separations)
     Etot_dmrg = np.asarray(Etot_dmrg)
     Etot_HF = np.asarray(Etot_HF)
-    Etot_blue_Tc_dmrg = np.asarray(Etot_blue_Tc_dmrg)
 
     # plot dissociation curve
 
     # total energy of H2 at infinite separation = 2E(H)
     Etot_inf_sep_H2 = 2 * (-0.669778)
 
-    plt.plot(R_separations, Etot_blue - Etot_inf_sep_H2, label='Blue')
+    # TODO: labels
+    for blue_approx in blue_approxs:
+        Etot_blue = np.asarray(blue_approx['Etot_blue'])
+        plt.plot(R_separations, Etot_blue - Etot_inf_sep_H2,
+                 label='blue, ' + blue_approx['label'])
+
     plt.plot(R_separations, Etot_dmrg - Etot_inf_sep_H2, label='dmrg')
 
     plt.xlabel("R", fontsize=18)
@@ -173,9 +190,12 @@ if __name__ == '__main__':
     plt.grid()
     plt.show()
 
-    # plot U_c and relative error
-    plt.plot(R_separations, U_c_dmrg, label='$Blue$')
-    plt.plot(R_separations, U_c_blue, label='$dmrg$')
+    # plot U_c and/or relative error
+    for blue_approx in blue_approxs:
+        U_c_blue = np.asarray(blue_approx['U_c_blue'])
+        plt.plot(R_separations, U_c_blue, label='blue, ' + blue_approx['label'])
+
+    plt.plot(R_separations, U_c_dmrg, label='dmrg')
 
     plt.xlabel("R", fontsize=18)
     plt.ylabel("$E_0(R)$", fontsize=18)

@@ -42,4 +42,4 @@ if __name__ == '__main__':
 
     n_r0 = get_n_r0(grids, densities, potentials)
 
-    np.save("n_r0_1D_H2_erf_gam_r_s.npy", n_r0)
+    np.save("n_r0_1D_H2_erf_gam_1or_s.npy", n_r0)

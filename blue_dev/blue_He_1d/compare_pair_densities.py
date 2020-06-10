@@ -101,6 +101,9 @@ def get_M_measure(grids, n_xc):
 
 
 run = 'M'
+gam_files = ['1r_s', 'r_s', 0, 2, 3, 'inf']
+gam_disp = ['1/r_s', '1.5/r_s', 0, 2, 3, '\infty']
+
 if run == 'n':
     # symmetrized plotting <n_c(u)> etc.
     h = 0.08
@@ -121,7 +124,6 @@ if run == 'n':
     avg_r_s = np.trapz((n_dmrg ** (2 / 3)) * r_s, grids) / 2
 
     # erf
-    gam_files = ['r_s', 0, 1, 2, 3, 'inf']
 
     blue_CP_erf = []
     n_xc_blue_erf = []
@@ -179,7 +181,6 @@ if run == 'n':
         plt.show()
 
 
-    gam_disp = ['1.5/r_s', 0, 1, 2, 3, '\infty']
     # avg n_xc
     for i, gam in enumerate(gam_disp):
         plt.plot(u_grids, avg_n_xc_blue_erf[i],
@@ -316,7 +317,6 @@ if run == 'M':
     n_xc_exact = pair_density_to_n_xc(P_r_rp, n_dmrg)
 
     # erf
-    gam_files = ['r_s', 0, 1, 2, 3, 'inf']
     n_xc_blue_erf = []
     for gam in gam_files:
         blue_CP_erf_gam = np.load(
@@ -334,7 +334,6 @@ if run == 'M':
                        M_blue_erf]
     int_Uc_exact = 0.5 * M_exact * n_dmrg
 
-    gam_disp = ['1.5/r_s', 0, 1, 2, 3, '\infty']
     for i, gam in enumerate(gam_disp):
         plt.plot(grids, int_Uc_blue_erf[i],
                  label='$\gamma = ' + str(gam) + '$')

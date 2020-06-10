@@ -102,7 +102,9 @@ if run == 'disp':
     U_xc = (-U_plus_Ex) + U_c
     E_x = -U_plus_Ex
 
-    gam_files = ['r_s', '0', '0_43', '1_5', '2', 'inf']
+    gam_files = ['3o2r_s', '1or_s', '0', '0_43', '1_5', 'inf']
+    gam_disp = ['3/(2r_s)', '1/r_s', '0', '0.43', '1.5', r'\infty']
+
     V_ee_blue = []
     U_c_blue = []
     for gam in gam_files:
@@ -123,7 +125,6 @@ if run == 'disp':
 
 
     # total energy dissociation
-    gam_disp = ['1.5/r_s', '0', '0.43', '1.5', '2', r'\infty']
     for i, gam in enumerate(gam_disp):
         plt.plot(R, 2 * T + V_ee_blue[i] + V_ext + get_Vpp(R),
                  label='blue ($\gamma = ' + gam + '$)')
@@ -140,8 +141,8 @@ if run == 'disp':
 
     do_plot()
 
-    # table results for a sin
-    V_ee_blue = V_ee_blue[0]
+    # table results for a blue approx.
+    V_ee_blue = V_ee_blue[1]
     U_c_blue = V_ee_blue - U_plus_Ex
 
     R_idx_steve = [0, 2, 5, 10, 15]

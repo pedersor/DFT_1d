@@ -105,7 +105,7 @@ if __name__ == '__main__':
         R = np.abs(location[0] - location[1])
         R_separations.append(R)
 
-        #print('R = ', R)
+        # print('R = ', R)
 
         # dmrg
         E_dmrg = total_energies[i]

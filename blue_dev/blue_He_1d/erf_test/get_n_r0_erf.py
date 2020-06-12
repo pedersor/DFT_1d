@@ -31,4 +31,4 @@ if __name__ == '__main__':
 
     n_r0 = get_n_r0(grids, n_dmrg)
 
-    np.save("n_r0_1D_He_erf_gam_1r_s.npy", n_r0)
+    np.save("n_r0_1D_He_erf_gam_1or_s.npy", n_r0)

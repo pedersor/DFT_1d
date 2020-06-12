@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.interpolate import InterpolatedUnivariateSpline
+import copy
 
 
 # get n_x and n_xc
@@ -30,6 +31,95 @@ def n_CP_to_n_xc(n_CP, n):
         n_xc.append(-n + CP_rp)
     n_xc = np.asarray(n_xc)
     return n_xc
+
+
+def get_interp_n_xc(grids, n_xc):
+    interp_n_xc = []
+    for i, n_xc_r in enumerate(n_xc):
+        # interpolated cubic spline function
+        cubic_spline = InterpolatedUnivariateSpline(grids, n_xc_r, k=3)
+        interp_n_xc.append(cubic_spline)
+
+    interp_n_xc = np.asarray(interp_n_xc)
+    return interp_n_xc
+
+
+# 1d averaged symmetrized holes
+def get_n_xc_sym(u, grids, n_xc_interp):
+    n_xc_sym = []
+    for i, x in enumerate(grids):
+        n_xc_sym.append(0.5 * (n_xc_interp[i](u + x) + n_xc_interp[i](-u + x)))
+
+    n_xc_sym = np.asarray(n_xc_sym)
+    # division by zero: nan -> 0.0
+    n_xc_sym = np.nan_to_num(n_xc_sym)
+    return n_xc_sym
+
+
+def get_avg_n_xc(u, grids, n_xc_interp, n):
+    n_xc_sym_u = get_n_xc_sym(u, grids, n_xc_interp)
+    avg_n_xc = np.trapz(n * n_xc_sym_u, grids)
+
+    return avg_n_xc
+
+
+def get_avg_sym_n_xc(grids, n, n_xc):
+    n_xc_interp = get_interp_n_xc(grids, n_xc)
+
+    u_grids = copy.deepcopy(grids)
+    avg_n_xc = []
+    for u in u_grids:
+        avg_n_xc.append(get_avg_n_xc(u, grids, n_xc_interp, n))
+    avg_n_xc = np.asarray(avg_n_xc)
+
+    try:
+        zero_u_idx = np.where(grids == 0.0)[0][0]
+    except:
+        print('error: no 0.0 in grids')
+        return
+
+    u_grids = u_grids[zero_u_idx:]
+    avg_n_xc = avg_n_xc[zero_u_idx:]
+
+    return u_grids, avg_n_xc
+
+
+# tools for exact pair density
+
+# output pair density 2 columns to 2d array
+def txt_file_to_2d_array(file, grids):
+    array_2d = []
+    with open(file) as f:
+        lines = f.readlines()
+
+        counter = 0
+        array_1d = []
+        for line in lines:
+            array_1d.append(float(line.split()[2]))
+
+            counter += 1
+            if counter == len(grids):
+                array_1d = np.asarray(array_1d)
+                array_2d.append(array_1d)
+                counter = 0
+                array_1d = []
+
+    array_2d = np.asarray(array_2d)
+    return array_2d
+
+
+# 2d array raw pair density to exact pair density
+def get_exact_pair_density(raw_pair_density, n, grids):
+    h = np.abs(grids[1] - grids[0])
+
+    P_r_rp = []
+    for i, P_rp_raw in enumerate(raw_pair_density):
+        P_rp = copy.deepcopy(P_rp_raw)
+        P_rp[i] -= n[i] * h
+        P_r_rp.append(P_rp / (h * h))
+
+    P_r_rp = np.asarray(P_r_rp)
+    return P_r_rp
 
 
 # radial U_xc integrals etc.
@@ -75,18 +165,6 @@ def radial_get_U_xc(grids, n, v_h):
     return (.5) * 4 * np.pi * U_xc
 
 
-# averaged xc hole
-def get_interp_n_xc(grids, n_xc):
-    interp_n_xc = []
-    for i, n_xc_r in enumerate(n_xc):
-        # interpolated cubic spline function
-        cubic_spline = InterpolatedUnivariateSpline(grids, n_xc_r, k=3)
-        interp_n_xc.append(cubic_spline)
-
-    interp_n_xc = np.asarray(interp_n_xc)
-    return interp_n_xc
-
-
 def get_avg_xc_hole(u, grids, interp_n_xc, n):
     # x = cos(theta), see RP logbook 3/16/20
     x_grids = np.linspace(-1, 1, len(grids))
@@ -103,37 +181,6 @@ def get_avg_xc_hole(u, grids, interp_n_xc, n):
                                    grids)
 
     return avg_xc_hole
-
-
-# tools for exact pair density
-def txt_file_to_2d_array(file, grids):
-    array_2d = []
-    with open(file) as f:
-        lines = f.readlines()
-
-        counter = 0
-        array_1d = []
-        for line in lines:
-            array_1d.append(float(line.split()[2]))
-
-            counter += 1
-            if counter == len(grids):
-                array_1d = np.asarray(array_1d)
-                array_2d.append(array_1d)
-                counter = 0
-                array_1d = []
-
-    array_2d = np.asarray(array_2d)
-    return array_2d
-
-
-def get_P_r_rp_idx(P_r_rp, n, x_idx, h):
-    P_r_rp_idx = P_r_rp[x_idx]
-
-    P_r_rp_idx[x_idx] = P_r_rp_idx[x_idx] - n[x_idx] * h
-
-    P_r_rp_idx = P_r_rp_idx / (h * h)
-    return P_r_rp_idx
 
 
 # easy table print

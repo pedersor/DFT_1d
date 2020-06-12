@@ -12,7 +12,6 @@ import copy
 from scipy.interpolate import InterpolatedUnivariateSpline
 
 
-# TODO: general, interpolate 2d array
 # same from blue_He/xc_hole/plot_avg_xc_hole.py
 def get_interp_n_xc(grids, n_xc):
     interp_n_xc = []
@@ -100,12 +99,169 @@ def get_M_measure(grids, n_xc):
     return M
 
 
-run = 'M'
-gam_files = ['1r_s', 'r_s', 0, 2, 3, 'inf']
+def get_T_mat(grids):
+    solver = single_electron.EigenSolver(grids,
+                                         potential_fn=functools.partial(
+                                             ext_potentials.exp_hydrogenic),
+                                         boundary_condition='open',
+                                         num_electrons=1)
+
+    T_mat = solver.get_kinetic_matrix()
+    return T_mat
+
+
+def get_T_from_pair_density(grids, pair_density):
+    Psi = []
+    for P_x1 in pair_density:
+        Psi_x1 = np.sqrt(np.abs(P_x1) / 2)
+        Psi.append(Psi_x1)
+    Psi = np.asarray(Psi)
+
+    # kinetic energy operator matrix, T_mat
+    T_mat = get_T_mat(grids)
+
+    # T_mat_x2 Psi(x1,x2)
+    T_mat_x2_Psi = []
+    for Psi_x1 in Psi:
+        T_mat_x2_Psi_x1 = np.matmul(T_mat, Psi_x1)
+        T_mat_x2_Psi.append(T_mat_x2_Psi_x1)
+    T_mat_x2_Psi = np.asarray(T_mat_x2_Psi)
+
+    # T_mat_x1 Psi(x1, x2)
+    T_mat_x1_Psi = []
+    for Psi_x2 in np.transpose(Psi):
+        T_mat_x1_Psi_x2 = np.matmul(T_mat, Psi_x2)
+        T_mat_x1_Psi.append(T_mat_x1_Psi_x2)
+    T_mat_x1_Psi = np.asarray(T_mat_x1_Psi)
+    T_mat_x1_Psi = np.transpose(T_mat_x1_Psi)
+
+    # \int dx_2 Psi(x1, x2)*( T_mat_x1 Psi(x1, x2) + T_mat_x2 Psi(x1, x2))
+    integral_1 = []
+    for i, Psi_x1 in enumerate(Psi):
+        int_dx1 = Psi_x1 * (T_mat_x1_Psi[i] + T_mat_x2_Psi[i])
+        integral_1.append(np.trapz(int_dx1, grids))
+    integral_1 = np.asarray(integral_1)
+
+    T = np.trapz(integral_1, grids)
+
+    return T
+
+
+def get_avg_sym_n_xc(grids, n, n_xc):
+    n_xc_interp = get_interp_n_xc(grids, n_xc)
+
+    u_grids = copy.deepcopy(grids)
+    avg_n_xc = []
+    for u in u_grids:
+        avg_n_xc.append(get_avg_n_xc(u, grids, n_xc_interp, n))
+    avg_n_xc = np.asarray(avg_n_xc)
+
+    try:
+        zero_u_idx = np.where(grids == 0.0)[0][0]
+    except:
+        print('error: no 0.0 in grids')
+        return
+
+    u_grids = u_grids[zero_u_idx:]
+    avg_n_xc = avg_n_xc[zero_u_idx:]
+
+    return u_grids, avg_n_xc
+
+
+class Quantities():
+    def __init__(self, label, n_x, n_xc, pair_density=None):
+        self.label = label
+        self.n_x = n_x
+        self.n_xc = n_xc
+        self.pair_density = pair_density
+
+    def get_T(self, grids):
+        return get_T_from_pair_density(grids, self.pair_density)
+
+    def get_U_xc(self, grids, n):
+        u_grids, avg_sym_n_xc = get_avg_sym_n_xc(grids, n, self.n_xc)
+
+        U_xc = np.trapz(avg_sym_n_xc * -1 * ext_potentials.exp_hydrogenic(
+            u_grids), u_grids)
+        return U_xc
+
+    def get_U_c(self, grids, n):
+        u_grids, avg_sym_n_xc = get_avg_sym_n_xc(grids, n, self.n_xc)
+        u_grids, avg_sym_n_x = get_avg_sym_n_xc(grids, n, self.n_x)
+        avg_sym_n_c = avg_sym_n_xc - avg_sym_n_x
+
+        U_c = np.trapz(avg_sym_n_c * -1 * ext_potentials.exp_hydrogenic(
+            u_grids), u_grids)
+
+        return U_c
+
+
+run = 'kin'
+gam_files = ['1or_s', '3o2r_s', 0, 2, 3, 'inf']
 gam_disp = ['1/r_s', '1.5/r_s', 0, 2, 3, '\infty']
 
+# kinetic energy from pair density
+if run == 'kin':
+    h = 0.08
+    grids = np.arange(-256, 257) * h
+
+    to_compare = []
+
+    # exact ----------------
+    E_c_exact = -0.014
+    T_s_exact = 0.273
+    P_r_rp_raw = np.load('P_r_rp.npy')
+    n_dmrg = np.load('densities.npy')[0]
+    pair_density = get_P_r_rp(P_r_rp_raw, n_dmrg, grids)
+    n_x_exact = get_two_el_n_x(n_dmrg)
+    n_xc_exact = pair_density_to_n_xc(pair_density, n_dmrg)
+
+    # blue -----------------
+    gam_files = ['1or_s', '3o2r_s', '0', '1', '2', '3', 'inf']
+    gam_labels = ['1/r_s  ', '3/(2r_s)  ', '0 ', '1 ', '2', '3', r'\infty ']
+    for i, gam in enumerate(gam_files):
+        blue_CP = np.load('erf_test/n_r0_1D_He_erf_gam_' + str(gam) + '.npy')
+
+        blue_pair_density = []
+        for j, blue_CP_x1 in enumerate(blue_CP):
+            blue_pair_density.append(n_dmrg[j] * blue_CP_x1)
+        blue_pair_density = np.asarray(blue_pair_density)
+        n_xc_blue = blue_CP_to_n_xc(blue_CP, n_dmrg)
+
+        gam_label = 'blue, $\gamma = ' + gam_labels[i] + '$'
+
+        Q_blue = Quantities(label=gam_label, n_x=n_x_exact,
+                            n_xc=n_xc_blue, pair_density=blue_pair_density)
+        to_compare.append(Q_blue)
+
+    # append exact quantities
+    Q_exact = Quantities(label='exact', n_x=n_x_exact, n_xc=n_xc_exact,
+                         pair_density=pair_density)
+    to_compare.append(Q_exact)
+
+    for method in to_compare:
+        # method
+        blue_tools.table_print(method.label)
+
+        # U_xc
+        blue_tools.table_print(method.get_U_xc(grids, n_dmrg))
+
+        # U_c
+        U_c_method = method.get_U_c(grids, n_dmrg)
+        blue_tools.table_print(U_c_method)
+
+        # T_c
+        T_c_method = method.get_T(grids) - T_s_exact
+        blue_tools.table_print(T_c_method)
+
+        # E_c
+        E_c_method = U_c_method + T_c_method
+        blue_tools.table_print(E_c_method, last_in_row=True)
+
+    sys.exit()
+
+# symmetrized plotting <n_c(u)> etc.
 if run == 'n':
-    # symmetrized plotting <n_c(u)> etc.
     h = 0.08
     grids = np.arange(-256, 257) * h
 
@@ -113,11 +269,11 @@ if run == 'n':
     # exact ----------------
     P_r_rp_raw = np.load('P_r_rp.npy')
     n_dmrg = np.load('densities.npy')[0]
-    P_r_rp = get_P_r_rp(P_r_rp_raw, n_dmrg, grids)
+    pair_density = get_P_r_rp(P_r_rp_raw, n_dmrg, grids)
     n_x_exact = get_two_el_n_x(n_dmrg)
     n_x_exact_interp = get_interp_n_xc(grids, n_x_exact)
 
-    n_xc_exact = pair_density_to_n_xc(P_r_rp, n_dmrg)
+    n_xc_exact = pair_density_to_n_xc(pair_density, n_dmrg)
     n_xc_exact_interp = get_interp_n_xc(grids, n_xc_exact)
 
     r_s = (3 / (4 * np.pi * 1)) ** (1 / 3)
@@ -304,17 +460,17 @@ if run == 'n':
 
     sys.exit()
 
+# plot M(r) measure, see logbook 5/25/20
 if run == 'M':
-    # plot M(r) measure, see logbook 5/25/20
     h = 0.08
     grids = np.arange(-256, 257) * h
 
     # exact ----------------
     P_r_rp_raw = np.load('P_r_rp.npy')
     n_dmrg = np.load('densities.npy')[0]
-    P_r_rp = get_P_r_rp(P_r_rp_raw, n_dmrg, grids)
+    pair_density = get_P_r_rp(P_r_rp_raw, n_dmrg, grids)
     n_x_exact = get_two_el_n_x(n_dmrg)
-    n_xc_exact = pair_density_to_n_xc(P_r_rp, n_dmrg)
+    n_xc_exact = pair_density_to_n_xc(pair_density, n_dmrg)
 
     # erf
     n_xc_blue_erf = []
@@ -364,116 +520,5 @@ if run == 'M':
     plt.xlim(-0.01, 2)
 
     do_plot()
-
-    sys.exit()
-
-# (old) look at CP potential
-if __name__ == '__main__':
-    h = 0.08
-    grids = np.arange(-256, 257) * h
-
-    # (x = 0) or specific values
-    # exact ----------------
-    P_r_rp = np.load('P_r_rp.npy')
-    n_dmrg = np.load('densities.npy')[0]
-
-    x_value = -0.72
-    x_idx = np.where(grids == x_value)[0][0]
-    print(x_idx)
-
-    P_r_rp_idx = blue_tools.get_P_r_rp_idx(P_r_rp, n=n_dmrg, x_idx=x_idx,
-                                           h=h)
-
-    print('n_dmrg[x_idx] ', n_dmrg[x_idx])
-    print('integral check: n_dmrg = ', np.sum(n_dmrg) * h)
-
-    print('integral check: P_r_rp_idx = ', np.sum(P_r_rp_idx) * h)
-
-    # blue ----------------------------
-
-    blue_CP = np.load('n_r0_0.npy')[0][x_idx]
-    # e/2 charge
-    blue_CP = np.load('n_r0_1D_He_half.npy')[0][x_idx]
-
-    print('integral check: n2_r0 = ', np.sum(blue_CP) * h)
-    print('integral check: (P_r_rp_idx / n_dmrg[x_idx]) = ',
-          np.sum((P_r_rp_idx / n_dmrg[x_idx])) * h)
-
-    plt.plot(grids, (blue_CP), label='$n^{Blue}_0(x\prime)$')
-    plt.plot(grids, (P_r_rp_idx / n_dmrg[x_idx]),
-             label='$P^{exact}(' + str(x_value) + ',x\prime)/n(' + str(
-                 x_value) + ')$')
-    plt.xlabel('$x\prime$', fontsize=16)
-    do_plot()
-
-    plt.plot(grids, (blue_CP) - n_dmrg,
-             label='$n^{Blue}_{xc}(' + str(x_value) + ',x\prime)$')
-    plt.plot(grids, (P_r_rp_idx / n_dmrg[x_idx]) - n_dmrg,
-             label='$n_{xc}(' + str(x_value) + ',x\prime)$')
-    plt.xlabel('$x\prime$', fontsize=16)
-    do_plot()
-
-    plt.plot(grids, (blue_CP) - n_dmrg / 2,
-             label='$n^{Blue}_{c}(' + str(x_value) + ',x\prime)$')
-    plt.plot(grids, (P_r_rp_idx / n_dmrg[x_idx]) - n_dmrg / 2,
-             label='$n_{c}(' + str(x_value) + ',x\prime)$')
-    plt.xlabel('$x\prime$', fontsize=16)
-    do_plot()
-
-    # compare v_s of CP
-    fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col')
-
-    ax1.plot(grids, blue_CP)
-    ax1.plot(grids, (P_r_rp_idx / n_dmrg[x_idx]))
-
-    # with extension
-    v_s_CP_blue = two_el_exact.v_s_extension(grids, blue_CP, h)
-    v_s_CP_exact = two_el_exact.v_s_extension(grids,
-                                              (P_r_rp_idx / n_dmrg[x_idx]), h,
-                                              tol=1. * (10 ** (-4)))
-
-    ax2.plot(grids, v_s_CP_blue - ext_potentials.exp_hydrogenic(grids, Z=2),
-             label='$v^{CP, Blue}_s(' + str(
-                 x_value) + ',x\prime) - v(x\prime)$')
-    ax2.plot(grids, v_s_CP_exact - ext_potentials.exp_hydrogenic(grids, Z=2),
-             label='$v^{CP, Exact}_s(' + str(
-                 x_value) + ',x\prime) - v(x\prime)$')
-
-    plt.xlabel('$x\prime$', fontsize=16)
-    plt.legend(fontsize=14)
-    plt.xlim(-10, 10)
-
-    ax1.grid(alpha=0.4)
-    ax2.grid(alpha=0.4)
-    plt.show()
-
-    # check complimentary condition ----------
-
-    solver = single_electron.EigenSolver(grids,
-                                         potential_fn=functools.partial(
-                                             ext_potentials.get_gridded_potential,
-                                             potential=v_s_CP_exact),
-                                         boundary_condition='open',
-                                         num_electrons=1)
-    solver.solve_ground_state()
-    eps_r = solver.eigenvalues[0]
-    print('eps_r = ', eps_r)
-
-    idx_0 = 256
-    idx_104 = 269
-    idx_run = idx_0
-
-    v_ext_0 = ext_potentials.exp_hydrogenic(0.0, Z=2)
-    v_ext_104 = ext_potentials.exp_hydrogenic(1.04, Z=2)
-    E = -2.237
-
-    print('v_s_CP: ')
-    print(v_s_CP_exact[idx_run])
-
-    print('v_s_CP - v_ext')
-    print(v_s_CP_exact[idx_run] - v_ext_104)
-
-    print('v_ee(r-rp) - E + eps_r + eps_rp = ',
-          -1 * ext_potentials.exp_hydrogenic(1.04) - E + (-0.76955 - 0.7741))
 
     sys.exit()

@@ -29,7 +29,30 @@ def get_pair_density(r1, r2, theta):
 gammas_files = ['0', '0_43', '0_613', '1_5', '2', 'inf']
 gammas_disp = ['0', '0.43', r'1.5/\left\langle r_s \right\rangle = 0.613',
                '1.5', '2', '\infty']
-run = 'M(r)'
+run = 'cp density'
+
+# r = 0 CP density
+if run == 'cp density':
+    # compare gam = inf and gam = 1/r_s
+    # exact -------------------
+    grids = np.linspace(0.0056, 6, 1000)
+    n = get_n(grids)
+    pair_density_exact = get_pair_density(0, grids, 0)
+    cp_density_exact = pair_density_exact / n[0]
+
+    cp_density_gam_inf = np.load('n_r0_blue_gam_' + 'inf' + '.npy')
+    cp_density_gam_interp = np.load('n_r0_blue_gam_' + '1or_s' + '.npy')
+
+    plt.plot(grids, cp_density_gam_interp[0])
+    plt.plot(grids, cp_density_gam_inf[0])
+    plt.plot(grids, cp_density_exact)
+
+    plt.xlim(0, 4)
+    plt.xlabel(r'$r^{\prime}$')
+    plt.ylabel(r'$n^{CP}_{r=0, \lambda = 1}(r^{\prime})$')
+    plt.show()
+
+    sys.exit()
 
 # get table results U_xc, U_c, etc.
 if run == 'table':

@@ -168,7 +168,7 @@ def get_avg_sym_n_xc(grids, n, n_xc):
     return u_grids, avg_n_xc
 
 
-class Quantities():
+class Quantities:
     def __init__(self, label, n_x, n_xc, pair_density=None):
         self.label = label
         self.n_x = n_x

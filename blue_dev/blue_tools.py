@@ -108,12 +108,11 @@ def txt_file_to_2d_array(file, grids):
     return array_2d
 
 
-# 2d array raw pair density to exact pair density
-def get_exact_pair_density(raw_pair_density, n, grids):
+def get_exact_pair_density(P_r_rp_raw, n, grids):
     h = np.abs(grids[1] - grids[0])
 
     P_r_rp = []
-    for i, P_rp_raw in enumerate(raw_pair_density):
+    for i, P_rp_raw in enumerate(P_r_rp_raw):
         P_rp = copy.deepcopy(P_rp_raw)
         P_rp[i] -= n[i] * h
         P_r_rp.append(P_rp / (h * h))

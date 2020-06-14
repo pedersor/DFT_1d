@@ -105,6 +105,9 @@ if run == 'disp':
     gam_files = ['3o2r_s', '1or_s', '0', '0_43', '1_5', 'inf']
     gam_disp = ['3/(2r_s)', '1/r_s', '0', '0.43', '1.5', r'\infty']
 
+    gam_files = ['1or_s']
+    gam_disp = ['1/r_s(n(r))']
+
     V_ee_blue = []
     U_c_blue = []
     for gam in gam_files:
@@ -123,21 +126,23 @@ if run == 'disp':
         plt.grid(alpha=0.4)
         plt.show()
 
+    # energy of two infinitely separated H atoms
+    two_H_atoms_E = -2*0.5
 
     # total energy dissociation
     for i, gam in enumerate(gam_disp):
-        plt.plot(R, 2 * T + V_ee_blue[i] + V_ext + get_Vpp(R),
-                 label='blue ($\gamma = ' + gam + '$)')
+        plt.plot(R, (2 * T + V_ee_blue[i] + V_ext + get_Vpp(R)) - two_H_atoms_E,
+                 label='Blue')
 
-    plt.plot(R, E + get_Vpp(R), label='exact')
+    plt.plot(R, (E + get_Vpp(R)) - two_H_atoms_E, label='Exact')
 
     do_plot()
 
     # U_c plot
     for i, gam in enumerate(gam_disp):
-        plt.plot(R, U_c_blue[i], label='blue ($\gamma = ' + gam + '$)')
+        plt.plot(R, U_c_blue[i], label='Blue')
 
-    plt.plot(R, U_c, label='exact')
+    plt.plot(R, U_c, label='Exact')
 
     do_plot()
 

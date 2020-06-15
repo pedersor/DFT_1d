@@ -122,7 +122,9 @@ if run == 'disp':
     # plots --------
     def do_plot():
         plt.xlabel('$R$', fontsize=18)
-        plt.legend(fontsize=16)
+        #plt.legend(fontsize=16)
+        plt.xlim(1,4)
+        plt.ylim(-.2,0)
         plt.grid(alpha=0.4)
         plt.show()
 
@@ -135,7 +137,7 @@ if run == 'disp':
                  label='Blue')
 
     plt.plot(R, (E + get_Vpp(R)) - two_H_atoms_E, label='Exact')
-
+    plt.ylabel('$E_0(R)$', fontsize=18)
     do_plot()
 
     # U_c plot
@@ -143,11 +145,11 @@ if run == 'disp':
         plt.plot(R, U_c_blue[i], label='Blue')
 
     plt.plot(R, U_c, label='Exact')
-
+    plt.ylabel('$U_c(R)$', fontsize=18)
     do_plot()
 
     # table results for a blue approx.
-    V_ee_blue = V_ee_blue[1]
+    V_ee_blue = V_ee_blue[0]
     U_c_blue = V_ee_blue - U_plus_Ex
 
     R_idx_steve = [0, 2, 5, 10, 15]

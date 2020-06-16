@@ -43,13 +43,18 @@ if run == 'cp density':
     cp_density_gam_inf = np.load('n_r0_blue_gam_' + 'inf' + '.npy')
     cp_density_gam_interp = np.load('n_r0_blue_gam_' + '1or_s' + '.npy')
 
-    plt.plot(grids, cp_density_gam_interp[0])
-    plt.plot(grids, cp_density_gam_inf[0])
-    plt.plot(grids, cp_density_exact)
+    plt.plot(grids, 100*cp_density_gam_interp[0], linewidth=3, color='Blue')
+    plt.plot(grids, 100*cp_density_gam_inf[0], linewidth=3, color='Orange')
+    plt.plot(grids, 100*cp_density_exact, linewidth=3, color = 'black')
 
     plt.xlim(0, 4)
-    plt.xlabel(r'$r^{\prime}$')
-    plt.ylabel(r'$n^{CP}_{r=0, \lambda = 1}(r^{\prime})$')
+    plt.xlabel(r'$r^{\prime}$', fontsize=16)
+    plt.ylabel(r'$\tilde n_{r}(r^{\prime}) / 10^{-2}$', fontsize=16)
+
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+
+
     plt.show()
 
     sys.exit()

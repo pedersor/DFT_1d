@@ -42,24 +42,31 @@ with open('ion_results_all.dat') as f:
     Vee_blue = [float(line.split()[5]) for line in lines[start:]]
 
 Z_results = []
+cyrus_Ts = [0.499869, 2.867082, 7.240085, 13.614084, 32.363072]
 for i, ion in enumerate(Z):
-    Z_Quantities = Quantities(ion, Etot[i], Ex_plus_U[i], Ts[i], Vee[i])
+    Z_Quantities = Quantities(ion, Etot[i], Ex_plus_U[i], cyrus_Ts[i], Vee[i])
     Z_Quantities.get_blue_results(Vee_blue[i])
     Z_results.append(Z_Quantities)
-
-# cyrus = [0.499869, 2.867082, 7.240085, 13.614084, 32.363072]
-# print('Z  |  T_s  |  T_s(Cyrus)   |    T_s(Cyrus) - T_s')
-
 
 for i, ion in enumerate(Z_results):
     Z = str(ion.Z)
     blue_tools.table_print(Z)
 
+    blue_tools.table_print(ion.Ex, round_to_dec=4)
+
+    blue_tools.table_print(ion.Vee_blue, round_to_dec=4)
+
     blue_tools.table_print(ion.blue_Uc, round_to_dec=4)
 
     blue_tools.table_print(ion.Uc, round_to_dec=4)
 
+    U_c_error = 100 * (ion.Uc - ion.blue_Uc) / ion.Uc
+
+    blue_tools.table_print(U_c_error, round_to_dec=1)
+
     blue_tools.table_print(ion.blue_Ec, round_to_dec=4)
 
-    blue_tools.table_print(ion.Ec, round_to_dec=4, last_in_row=True)
+    blue_tools.table_print(ion.Ec, round_to_dec=4)
 
+    E_c_error = 100 * (ion.Ec - ion.blue_Ec) / ion.Ec
+    blue_tools.table_print(E_c_error, round_to_dec=1, last_in_row=True)

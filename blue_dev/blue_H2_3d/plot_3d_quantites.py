@@ -105,8 +105,8 @@ if run == 'disp':
     gam_files = ['3o2r_s', '1or_s', '0', '0_43', '1_5', 'inf']
     gam_disp = ['3/(2r_s)', '1/r_s', '0', '0.43', '1.5', r'\infty']
 
-    gam_files = ['1or_s']
-    gam_disp = ['1/r_s(n(r))']
+    gam_files = ['1or_s', 'inf', '0']
+    gam_disp = ['1/r_s(n(r))', r'\infty', '0']
 
     V_ee_blue = []
     U_c_blue = []
@@ -122,10 +122,12 @@ if run == 'disp':
     # plots --------
     def do_plot():
         plt.xlabel('$R$', fontsize=18)
-        #plt.legend(fontsize=16)
-        plt.xlim(1,4)
-        plt.ylim(-.2,0)
+        plt.legend(fontsize=16)
+        #plt.xlim(1,4)
+        #plt.ylim(-.2,0)
         plt.grid(alpha=0.4)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14)
         plt.show()
 
     # energy of two infinitely separated H atoms
@@ -142,10 +144,11 @@ if run == 'disp':
 
     # U_c plot
     for i, gam in enumerate(gam_disp):
-        plt.plot(R, U_c_blue[i], label='Blue')
+        plt.plot(R, U_c_blue[i], label='$\gamma = '+gam+'$', linewidth=3)
 
-    plt.plot(R, U_c, label='Exact')
+    plt.plot(R, U_c, label='Exact', color='black', linewidth=3)
     plt.ylabel('$U_c(R)$', fontsize=18)
+
     do_plot()
 
     # table results for a blue approx.

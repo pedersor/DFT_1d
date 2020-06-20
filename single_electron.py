@@ -217,14 +217,17 @@ class EigenSolver(SolverBase):
         # TODO(Chris): proper end-point formulas, see Thesis. Skype (4/17/20)
         if self.n_point_stencil == 5:
             A_central = [-5 / 2, 4 / 3, -1 / 12]
-            A_end = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
+            #0 means the first row, 1 means the second row
+            A_end_0 = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
+            A_end_1 = [5 / 6, -5 / 4, -1 / 3, 7 / 6, -1 / 2, 1 / 12]
         elif self.n_point_stencil == 3:
             A_central = [-2., 1.]
-            A_end = [2., -5., 4., -1.]
+            A_end_0 = [2., -5., 4., -1.]
         else:
             raise ValueError(
                 'n_point_stencil = %d is not supported' % self.n_point_stencil)
-
+        
+        #get pentadiagonal KE matrix
         for j, A_n in enumerate(A_central):
             mat[idx[j:], idx[j:] - j] = A_n
             mat[idx[:-j], idx[:-j] + j] = A_n
@@ -232,24 +235,25 @@ class EigenSolver(SolverBase):
         if (self.boundary_condition == 'open'):
             mat = -0.5 * mat / (self.dx * self.dx)
             return mat
+        
         # append end-point forward/backward difference formulas
         elif self.boundary_condition == 'closed':
-            for i, A_n in enumerate(A_end):
-                mat[0, i] = A_n
-                mat[-1, -1 - i] = A_n
-
-                if self.n_point_stencil == 5:
-                    mat[1, i + 1] = A_n
-                    mat[-2, -2 - i] = A_n
-
+            
+            #replace two ends of the matrix with forward/backward formulas
+            if self.n_point_stencil == 5:
+                for i, A_n_0 in enumerate(A_end_0):
+                    mat[0, i] = A_n_0
+                    mat[-1, -1 - i] = A_n_0
+                for i, A_n_1 in enumerate(A_end_1):
+                    mat[1, i] = A_n_1
+                    mat[-2, -1 - i] = A_n_1
+            elif self.n_point_stencil == 3:
+                for i, A_n_0 in enumerate(A_end_0):
+                    mat[0, i] = A_n_0
+                    mat[-1, -1 - i] = A_n_0
+            
             mat[0, 0] = 0
             mat[-1, -1] = 0
-
-            if self.n_point_stencil == 5:
-                mat[1, 0] = 0
-                mat[2, 0] = 0
-                mat[-2, -1] = 0
-                mat[-3, -1] = 0
 
             mat = -0.5 * mat / (self.dx * self.dx)
             return mat
@@ -452,16 +456,18 @@ class SparseEigenSolver(EigenSolver):
 
         # n-point centered difference formula coefficients
         if self.n_point_stencil == 5:
-            A = [-5 / 2, 4 / 3, -1 / 12]
-            A_end = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
+            A_central = [-5 / 2, 4 / 3, -1 / 12]
+            #0 means the first row, 1 means the second row
+            A_end_0 = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
+            A_end_1 = [5 / 6, -5 / 4, -1 / 3, 7 / 6, -1 / 2, 1 / 12]
         elif self.n_point_stencil == 3:
-            A = [-2., 1.]
-            A_end = [2., -5., 4., -1.]
+            A_central = [-2., 1.]
+            A_end_0 = [2., -5., 4., -1.]
         else:
             raise ValueError(
                 'n_point_stencil = %d is not supported' % self.n_point_stencil)
 
-        mat = A[0] * sparse.eye(self.num_grids, format="lil")
+        mat = A_central[0] * sparse.eye(self.num_grids, format="lil")
         for i, A_n in enumerate(A[1:]):
             j = i + 1
             elements = A_n * np.ones(self.num_grids - j)

@@ -251,6 +251,9 @@ class EigenSolver(SolverBase):
                 for i, A_n_0 in enumerate(A_end_0):
                     mat[0, i] = A_n_0
                     mat[-1, -1 - i] = A_n_0
+            
+            mat[0, 0] = 0
+            mat[-1, -1] = 0
 
             mat = -0.5 * mat / (self.dx * self.dx)
             return mat

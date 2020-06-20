@@ -5,9 +5,7 @@ from numpy.polynomial.polynomial import polyfit
 from scipy import stats
 import functools
 import sys
-
-import get_exact_gs_energy
-
+import os
 
 def get_plotting_params():
     # plotting parameters
@@ -31,25 +29,18 @@ def rsquared(x, y):
 # example checking convergence rate of poschl-teller potential
 # for n_point_stencil=5, our slope (p) = 4, for n_point_stencil=3, p = 2.
 # TODO(Chris): check convergence for hard wall boundaries using poschl-teller
-
-num_grids_list = [40, 80, 120, 160, 200, 400, 600, 800, 1000]
-
-
-potential_func_list = [ext_potentials.harmonic_oscillator,
-                       functools.partial(ext_potentials.poschl_teller, lam=1),
-                       ext_potentials.quartic_oscillator,
-                       functools.partial(ext_potentials.gaussian_dips, coeff=1, sigma=1, mu=1),
-                       functools.partial(ext_potentials.kronig_penney, a=1, b=0.5, v0=-1),
-                       ext_potentials.exp_hydrogenic]
-
-range = (-20, 20)
-
-#exact_energy_grids = np.linspace(-20, 20, 5000)
-
-for potential_fn in potential_func_list:
+def convergence_test(Solver,
+                     range,
+                     potential_fn,
+                     boundary_condition,   
+                     n_point_stencil,  
+                     num_grids_list = [40, 80, 120, 160, 200, 400, 600, 800, 1000],
+                     analytical_energy = None):
     
+    # error list for plotting
     E_abs_error = []
-           
+    
+    # get the name of potential function in order to save to local machine
     try:
         func_name = potential_fn.__name__
     except AttributeError:
@@ -59,17 +50,31 @@ for potential_fn in potential_func_list:
     # obtain lowest eigenvalue (level = 1) from exact/analytical result.
     # When the exact answer is not known, simply run the solver with a large
     # grid, e.g. N = 5000 to obtain the "exact" g.s. energy
-    # exact
-    # exact_gs_energy = ext_potentials.poschl_teller_eigen_energy(level=1, lam=1)
-    exact_gs_energy = get_exact_gs_energy.get_exact_energy_from_npy(potential_fn, range, num_grid = 5000)
-    
-    print(f'exact gs energy for {func_name}:', exact_gs_energy)
+    if analytical_energy:
+        exact_gs_energy = analytical_energy
+        energy_form = 'analytical'
+    else:
+        # solve eigenvalue problem with matrix size N = 5000
+        exact_grids = np.linspace(*range, 5000)      
+        exact_solver = Solver(exact_grids,
+                              potential_fn = potential_fn, 
+                              boundary_condition = boundary_condition,
+                              n_point_stencil = n_point_stencil)
+        
+        # solve ground state
+        exact_solver.solve_ground_state()
+        
+        # obtain ground state energy as exact energy
+        exact_gs_energy = exact_solver.eigenvalues[0]
+        energy_form = '5000_grids'
     
     for grid in num_grids_list:
         grids = np.linspace(*range, grid)
         # solve eigenvalue problem with matrix size N = grid
-        solver = single_electron.EigenSolver(grids, potential_fn=potential_fn, boundary_condition='closed',
-                                             n_point_stencil=5)
+        solver = Solver(grids, 
+                        potential_fn = potential_fn, 
+                        boundary_condition = boundary_condition,
+                        n_point_stencil = n_point_stencil)
     
         
         solver.solve_ground_state()
@@ -78,7 +83,7 @@ for potential_fn in potential_func_list:
         ground_state_energy = solver.eigenvalues[0]
     
         # obtain g.s. wavefunction
-        ground_state_wf = solver.wave_function[0]
+        # ground_state_wf = solver.wave_function[0]
     
         # contruct absolute error
         abs_error = np.abs(ground_state_energy - exact_gs_energy)
@@ -118,12 +123,36 @@ for potential_fn in potential_func_list:
     ax.set_ylabel("|Error| (au)", fontsize=18)
     
     plt.legend(fontsize=16)
-    plt.title(f'Error in ground state vs. number of grids\n{func_name}', fontsize=20)
+    plt.title(f'Error in ground state vs. number of grids\n{func_name}, {boundary_condition}, {range}, {n_point_stencil}-points, {energy_form}', fontsize=20)
     plt.grid(alpha=0.4)
     plt.gca().xaxis.grid(True, which='minor', alpha=0.4)
     plt.gca().yaxis.grid(True, which='minor', alpha=0.4)
     
-    plt.savefig(f'ground_states_npy/{func_name}.png')
+    # create folder if no such directory
+    if not os.path.isdir('convergence_test'):
+        os.mkdir('convergence_test')
+    
+    # save fig
+    plt.savefig(f'convergence_test/{func_name}_{boundary_condition}_{range}_{n_point_stencil}_{energy_form}.png')
     plt.close()
     
+    # message for completing one convergence test
+    print(f'{func_name}_{boundary_condition}_{range}_{n_point_stencil}_{energy_form} done')
+        
+
+
+if __name__ == "__main__":
     
+    num_grids_list = [40, 80, 120, 160, 200, 400, 600, 800, 1000]
+    test_potential_fn_list = [functools.partial(ext_potentials.poschl_teller, lam=1), 
+                              ext_potentials.exp_hydrogenic]
+    
+    Solver = single_electron.EigenSolver
+    
+    for potential_fn in test_potential_fn_list:
+        convergence_test(Solver, (-5, 5), potential_fn, 'closed', 3)
+        convergence_test(Solver, (-5, 5), potential_fn, 'closed', 5)
+        convergence_test(Solver, (-20, 20), potential_fn, 'closed', 3)
+        convergence_test(Solver, (-20, 20), potential_fn, 'closed', 5)
+
+

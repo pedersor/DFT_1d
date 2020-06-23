@@ -90,7 +90,7 @@ if run == 'disp':
     R, T = txt_file_to_array('H2_from_srwhite/T.dat')
     R, T_s = txt_file_to_array('H2_from_srwhite/T_s.dat')
     R, V_ext_plus_T = txt_file_to_array('H2_from_srwhite/H1en.dat')
-    R, U_plus_Ex = txt_file_to_array('H2_from_srwhite/U.dat')
+    R, U_plus_Ex = txt_file_to_array('H2_from_srwhite/U_plus_Ex.dat')
     R, E = txt_file_to_array('H2_from_srwhite/E.dat')
     R, Vee = txt_file_to_array('H2_from_srwhite/Vee.dat')
     V_ext = V_ext_plus_T - 2 * T

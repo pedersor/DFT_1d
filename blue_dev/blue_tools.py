@@ -183,7 +183,7 @@ def get_avg_xc_hole(u, grids, interp_n_xc, n):
 
 
 # easy table print
-def table_print(to_print, round_to_dec=3, last_in_row=False):
+def table_print(to_print, round_to_dec=4, last_in_row=False):
     if isinstance(to_print, float):
         rounded_to_print = format(to_print, '.' + str(round_to_dec) + 'f')
     else:

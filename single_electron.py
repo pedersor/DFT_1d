@@ -31,9 +31,6 @@ from __future__ import print_function
 import numpy as np
 from scipy import sparse
 from scipy.sparse import linalg
-import six
-from six.moves import range
-import copy
 
 
 # import tensorflow as tf
@@ -89,7 +86,7 @@ class SolverBase(object):
 
     def __init__(self, grids, potential_fn, num_electrons=1, k_point=None,
                  boundary_condition='open',
-                 n_point_stencil=5, approx_E=None, fock_mat=None):
+                 n_point_stencil=5, fock_mat=None):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -98,29 +95,29 @@ class SolverBase(object):
           potential_fn: potential function taking grids as argument.
           num_electrons: integer, the number of electrons in the system. Must be
               greater or equal to 1.
-          k_point: the k-point in reciprocal space used to evaluate Schrodinger Equation
-              for the case of a periodic potential. K should be chosen to be within
-              the first Brillouin zone.
+          k_point: the k-point in reciprocal space used to evaluate Hamiltonian
+              for the case of a periodic potential. K should be chosen to be
+              within the first Brillouin zone.
           boundary_condition:
               'closed': forward/backward finite difference methods will be used
-              near the boundaries to ensure the wavefunction is zero at boundaries.
-              This should only be used when the grid interval is purposefully small.
+              near the boundaries to ensure the wavefunction is zero at
+              boundaries. This should only be used when the grid interval is
+              purposefully small.
 
-              'open': all ghost points outside of the grid are set to zero. This should
-              be used whenever the grid interval is sufficiently large. Setting to false
-              also results in a faster computational time due to matrix symmetry.
+              'open': all ghost points outside of the grid are set to zero. This
+              should be used whenever the grid interval is sufficiently large.
+              Setting to false also results in a faster computational time due
+              to matrix symmetry.
 
-              'exponential decay': (TESTING!) special case for a truncated system. The tails of the
-              wavefunction will be exponentially decaying.
-
-              'periodic':
-
-          n_point_stencil: total number of points used in the central finite difference method.
-              The default 5-points results in a convergence rate of 4 for most systems. Suggested:
-              use 3-point stencil for potentials with cusps as n_point_stencil > 3 will not improve
+              'periodic': periodic (wrap-around) boundary conditions. Requires
+              a k_point to be specified.
+          n_point_stencil: total number of points used in the central finite
+              difference method. The default 5-points results in a convergence
+              rate of 4 for most systems. Suggested: use 3-point stencil for
+              potentials with cusps as n_point_stencil > 3 will not improve
               convergence rates.
-          approx_E: TESTING ONLY. Use for special case of truncated grid size
-          fock_mat: Provide a Fock matrix if using hartree-fock Hamiltonian
+          fock_mat: Provide a Fock operator (matrix) if using hartree-fock
+              Hamiltonian
 
         Raises:
           ValueError: If num_electrons is less than 1; or num_electrons is not
@@ -135,7 +132,6 @@ class SolverBase(object):
         self.num_grids = len(grids)
         # Potential on grid.
         self.vp = potential_fn(grids)
-        self.approx_E = approx_E
         self.fock_mat = fock_mat
 
         if not isinstance(num_electrons, int):
@@ -171,7 +167,7 @@ class EigenSolver(SolverBase):
 
     def __init__(self, grids, potential_fn, num_electrons=1, k_point=None,
                  boundary_condition='open',
-                 n_point_stencil=5, approx_E=None, fock_mat=None):
+                 n_point_stencil=5, fock_mat=None):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -182,7 +178,7 @@ class EigenSolver(SolverBase):
         """
         super(EigenSolver, self).__init__(grids, potential_fn, num_electrons,
                                           k_point, boundary_condition,
-                                          n_point_stencil, approx_E, fock_mat)
+                                          n_point_stencil, fock_mat)
         self._set_matrices()
 
     def _set_matrices(self):
@@ -199,12 +195,14 @@ class EigenSolver(SolverBase):
         self._v_mat = self.get_potential_matrix()
         # Hamiltonian matrix
         self._h = self._t_mat + self._v_mat
-
+        # Fock-Matrix (exact exchange)
         if self.fock_mat is not None:
             self._h += self.fock_mat
 
     def get_kinetic_matrix(self):
-        """Kinetic matrix.
+        """Kinetic matrix. Here the finite difference method is used to
+        generate a kinetic energy operator in discrete space while satisfying
+        desired boundary conditions.
 
         Returns:
           mat: Kinetic matrix.
@@ -214,10 +212,9 @@ class EigenSolver(SolverBase):
         idx = np.arange(self.num_grids)
 
         # n-point centered difference formula coefficients
-        # TODO(Chris): proper end-point formulas, see Thesis. Skype (4/17/20)
         if self.n_point_stencil == 5:
             A_central = [-5 / 2, 4 / 3, -1 / 12]
-            #0 means the first row, 1 means the second row
+            # 0 means the first row, 1 means the second row
             A_end_0 = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
             A_end_1 = [5 / 6, -5 / 4, -1 / 3, 7 / 6, -1 / 2, 1 / 12]
         elif self.n_point_stencil == 3:
@@ -226,8 +223,8 @@ class EigenSolver(SolverBase):
         else:
             raise ValueError(
                 'n_point_stencil = %d is not supported' % self.n_point_stencil)
-        
-        #get pentadiagonal KE matrix
+
+        # get pentadiagonal KE matrix
         for j, A_n in enumerate(A_central):
             mat[idx[j:], idx[j:] - j] = A_n
             mat[idx[:-j], idx[:-j] + j] = A_n
@@ -235,11 +232,10 @@ class EigenSolver(SolverBase):
         if (self.boundary_condition == 'open'):
             mat = -0.5 * mat / (self.dx * self.dx)
             return mat
-        
-        # append end-point forward/backward difference formulas
+
         elif self.boundary_condition == 'closed':
-            
-            #replace two ends of the matrix with forward/backward formulas
+
+            # replace two ends of the matrix with forward/backward formulas
             if self.n_point_stencil == 5:
                 for i, A_n_0 in enumerate(A_end_0):
                     mat[0, i] = A_n_0
@@ -251,33 +247,9 @@ class EigenSolver(SolverBase):
                 for i, A_n_0 in enumerate(A_end_0):
                     mat[0, i] = A_n_0
                     mat[-1, -1 - i] = A_n_0
-            
+
             mat[0, 0] = 0
             mat[-1, -1] = 0
-
-            mat = -0.5 * mat / (self.dx * self.dx)
-            return mat
-
-        elif self.boundary_condition == 'exponential decay':
-            if self.n_point_stencil != 3:
-                raise ValueError(
-                    'please use n_point_stencil = 3 if using boundary_condition == exponential decay')
-
-            # left side of cusp
-            v_left = self.vp[0]
-            k_left = ((2 * np.abs(self.approx_E - v_left)) ** .5)
-
-            mat[0, 0] = self.dx * (-3 / 2) * k_left
-            mat[0, 1] = self.dx * 2. * k_left
-            mat[0, 2] = self.dx * -.5 * k_left
-
-            # right side of cusp
-            v_right = self.vp[-1]
-            k_right = -((2 * np.abs(self.approx_E - v_right)) ** .5)
-
-            mat[-1, -1] = self.dx * (3 / 2) * k_right
-            mat[-1, -2] = self.dx * -2. * k_right
-            mat[-1, -3] = self.dx * .5 * k_right
 
             mat = -0.5 * mat / (self.dx * self.dx)
             return mat
@@ -308,7 +280,8 @@ class EigenSolver(SolverBase):
                 'boundary_condition = %d is not supported' % self.boundary_condition)
 
     def get_potential_matrix(self):
-        """Potential matrix.
+        """Potential matrix. A diagonal matrix corresponding to the one-body
+        potential input.
 
         Returns:
           mat: Potential matrix.
@@ -352,35 +325,6 @@ class EigenSolver(SolverBase):
             self.potential_energy += quadratic_function(
                 self._v_mat, self.wave_function[i]) * self.dx
 
-        if self.boundary_condition == 'exponential decay':
-            self.extended_wave_function = list(
-                copy.deepcopy(self.wave_function[0]))
-            self.extended_grids = list(copy.deepcopy(self.grids))
-
-            v_left = self.vp[0]
-            k_left = ((2 * np.abs(self.approx_E - v_left)) ** .5)
-            psi_left = self.extended_wave_function[0]
-
-            v_right = self.vp[-1]
-            k_right = -((2 * np.abs(self.approx_E - v_right)) ** .5)
-            psi_right = self.extended_wave_function[-1]
-
-            end_value = max(np.abs(psi_left), np.abs(psi_right))
-            tol = 10 ** -4
-            i = 1
-            while end_value > tol:
-                self.extended_wave_function = [psi_left * np.exp(
-                    -k_left * i * self.dx)] + self.extended_wave_function + [
-                                                  psi_right * np.exp(
-                                                      k_right * i * self.dx)]
-                end_value = max(np.abs(self.extended_wave_function[0]),
-                                np.abs(self.extended_wave_function[-1]))
-                self.extended_grids = [self.grids[
-                                           0] - i * self.dx] + self.extended_grids + [
-                                          self.grids[-1] + i * self.dx]
-
-                i += 1
-
         self._solved = True
         return self
 
@@ -393,8 +337,8 @@ class EigenSolver(SolverBase):
         Returns:
           self
         """
-        if (
-                self.boundary_condition == 'open' or self.boundary_condition == 'periodic'):
+        if (self.boundary_condition == 'open'
+                or self.boundary_condition == 'periodic'):
             eigenvalues, eigenvectors = np.linalg.eigh(self._h)
         else:
             eigenvalues, eigenvectors = np.linalg.eig(self._h)
@@ -457,7 +401,7 @@ class SparseEigenSolver(EigenSolver):
         # n-point centered difference formula coefficients
         if self.n_point_stencil == 5:
             A_central = [-5 / 2, 4 / 3, -1 / 12]
-            #0 means the first row, 1 means the second row
+            # 0 means the first row, 1 means the second row
             A_end_0 = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
             A_end_1 = [5 / 6, -5 / 4, -1 / 3, 7 / 6, -1 / 2, 1 / 12]
         elif self.n_point_stencil == 3:
@@ -496,26 +440,6 @@ class SparseEigenSolver(EigenSolver):
                 mat[-2, -1] = 0
                 mat[-3, -1] = 0
 
-        elif (self.boundary_condition == 'exponential decay'):
-            if self.n_point_stencil != 3:
-                raise ValueError(
-                    'please use n_point_stencil = 3 if using boundary_condition == exponential decay')
-
-            # left side of cusp
-            v_left = self.vp[0]
-            k_left = ((2 * np.abs(self.approx_E - v_left)) ** .5)
-
-            mat[0, 0] = self.dx * (-3 / 2) * k_left
-            mat[0, 1] = self.dx * 2. * k_left
-            mat[0, 2] = self.dx * -.5 * k_left
-
-            # right side of cusp
-            v_right = self.vp[-1]
-            k_right = -((2 * np.abs(self.approx_E - v_right)) ** .5)
-
-            mat[-1, -1] = self.dx * (3 / 2) * k_right
-            mat[-1, -2] = self.dx * -2. * k_right
-            mat[-1, -3] = self.dx * .5 * k_right
         else:
             raise ValueError(
                 'boundary_condition = %d is not supported' % self.boundary_condition)

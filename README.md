@@ -1,7 +1,7 @@
 ## DFT_1d
 
-Density Functional Theory solver for 1-dimensional
-systems. Specifically implements exponential-Coulomb repulsion, instead of e.g. soft-Coulomb, to more closely mimic an analogous 3D calculation. 
+Density Functional Theory (DFT) solver for 1-dimensional
+systems. Specifically implements exponential-Coulomb repulsion, instead of e.g. soft-Coulomb, to more closely mimic 3D calculations. 
 
 ## Disclaimer
 This library is in *alpha* and is not currently intended for public use.

@@ -208,46 +208,48 @@ class EigenSolver(SolverBase):
           mat: Kinetic matrix.
             (num_grids, num_grids)
         """
-        mat = np.eye(self.num_grids)
-        idx = np.arange(self.num_grids)
 
         # n-point centered difference formula coefficients
         if self.n_point_stencil == 5:
             A_central = [-5 / 2, 4 / 3, -1 / 12]
-            # 0 means the first row, 1 means the second row
-            A_end_0 = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
-            A_end_1 = [5 / 6, -5 / 4, -1 / 3, 7 / 6, -1 / 2, 1 / 12]
         elif self.n_point_stencil == 3:
             A_central = [-2., 1.]
-            A_end_0 = [2., -5., 4., -1.]
         else:
             raise ValueError(
-                'n_point_stencil = %d is not supported' % self.n_point_stencil)
+                'n_point_stencil = %s is not supported' % self.n_point_stencil)
 
-        # get pentadiagonal KE matrix
-        for j, A_n in enumerate(A_central):
-            mat[idx[j:], idx[j:] - j] = A_n
-            mat[idx[:-j], idx[:-j] + j] = A_n
-
+        mat = A_central[0] * sparse.eye(self.num_grids, format="lil")
+        for i, A_n in enumerate(A_central[1:]):
+            j = i + 1
+            elements = A_n * np.ones(self.num_grids - j)
+            mat += sparse.diags(elements, offsets=j, format="lil")
+            mat += sparse.diags(elements, offsets=-j, format="lil")
+    
         if (self.boundary_condition == 'open'):
             mat = -0.5 * mat / (self.dx * self.dx)
             return mat
-
-        elif self.boundary_condition == 'closed':
-
-            # replace two ends of the matrix with forward/backward formulas
+        # end-point forward/backward difference formulas
+        elif (self.boundary_condition == 'closed'):
+            
             if self.n_point_stencil == 5:
-                for i, A_n_0 in enumerate(A_end_0):
-                    mat[0, i] = A_n_0
-                    mat[-1, -1 - i] = A_n_0
+                # 0 means the first row, 1 means the second row
+                # 0 and 1 are for forward/backward formulas in two ends of the matrix
+                A_end_0 = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
+                A_end_1 = [5 / 6, -5 / 4, -1 / 3, 7 / 6, -1 / 2, 1 / 12]
+            elif self.n_point_stencil == 3:
+                # 0 means the same with 5 point
+                A_end_0 = [2., -5., 4., -1.]
+            
+            # replace two ends of the matrix with forward/backward formulas
+            for i, A_n_0 in enumerate(A_end_0):
+                mat[0, i] = A_n_0
+                mat[-1, -1 - i] = A_n_0   
+            if self.n_point_stencil == 5:
                 for i, A_n_1 in enumerate(A_end_1):
                     mat[1, i] = A_n_1
                     mat[-2, -1 - i] = A_n_1
-            elif self.n_point_stencil == 3:
-                for i, A_n_0 in enumerate(A_end_0):
-                    mat[0, i] = A_n_0
-                    mat[-1, -1 - i] = A_n_0
-
+  
+            # also change two end points as 0
             mat[0, 0] = 0
             mat[-1, -1] = 0
 
@@ -257,27 +259,47 @@ class EigenSolver(SolverBase):
         # periodic (no end point formulas needed)
         elif self.boundary_condition == 'periodic' and self.k is not None:
             k = self.k
-
-            mat[0, -1] = -.5
-            mat[-1, 0] = -.5
-
-            mat1 = .5 * (k ** 2) * np.eye(self.num_grids, dtype=complex)
-            idy = np.arange(self.num_grids)
-
-            mat1[idy[:-1], idy[:-1] + 1] = complex(0., k * -0.5 / self.dx)
-            mat1[idy[1:], idy[1:] - 1] = complex(0., k * 0.5 / self.dx)
-
-            mat1[0, -1] = complex(0., k * 0.5 / self.dx)
-            mat1[-1, 0] = complex(0., k * -0.5 / self.dx)
-
-            mat = mat / (self.dx * self.dx)
+            
+            # assign central FDM formula (without center point)
+            # also change 2nd-order end points
+            if self.n_point_stencil == 3:
+                D1_central = [1 / 2]
+                
+                mat[0, -1] = 1
+                mat[-1, 0] = 1
+                
+            elif self.n_point_stencil == 5:
+                D1_central = [2 / 3, -1 / 12]
+                
+                mat[0, -1] = 4 / 3
+                mat[0, -2] = -1 / 12
+                mat[1, -1] = -1 / 12
+                
+                mat[-1, 0] = 4 / 3
+                mat[-1, -2] = -1 / 12
+                mat[-2, -2] = -1 / 12
+            
+            # scale 2nd-order derivative matrix
+            mat = -0.5 * mat / (self.dx * self.dx)
+            
+            # create identity matrix
+            mat1 = 0.5 * (k ** 2) * sparse.eye(self.num_grids, dtype=complex, format="lil")
+            
+            # add 1st-order derivative matrix to identity
+            idy = np.arange(self.num_grids)       
+            for i, D1_n in enumerate(D1_central):
+                j = i + 1
+                mat1[idy[0:], (idy[0:] - j) % self.num_grids] = complex(0., D1_n * k / self.dx)
+                mat1[idy[0:], (idy[0:] + j) % self.num_grids] = complex(0., -D1_n * k / self.dx)
+            
+            
+            # add all to second order matrix
             mat = mat + mat1
-
+            
             return mat
-
         else:
             raise ValueError(
-                'boundary_condition = %d is not supported' % self.boundary_condition)
+                'boundary_condition = %s is not supported' % self.boundary_condition)
 
     def get_potential_matrix(self):
         """Potential matrix. A diagonal matrix corresponding to the one-body
@@ -390,8 +412,11 @@ class SparseEigenSolver(EigenSolver):
         self._additional_levels = additional_levels
         self._set_matrices()
 
+    
     def get_kinetic_matrix(self):
-        """Kinetic matrix.
+        """Kinetic matrix. Here the finite difference method is used to
+        generate a kinetic energy operator in discrete space while satisfying
+        desired boundary conditions.
 
         Returns:
           mat: Kinetic matrix.
@@ -401,54 +426,96 @@ class SparseEigenSolver(EigenSolver):
         # n-point centered difference formula coefficients
         if self.n_point_stencil == 5:
             A_central = [-5 / 2, 4 / 3, -1 / 12]
-            # 0 means the first row, 1 means the second row
-            A_end_0 = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
-            A_end_1 = [5 / 6, -5 / 4, -1 / 3, 7 / 6, -1 / 2, 1 / 12]
         elif self.n_point_stencil == 3:
             A_central = [-2., 1.]
-            A_end_0 = [2., -5., 4., -1.]
         else:
             raise ValueError(
-                'n_point_stencil = %d is not supported' % self.n_point_stencil)
+                'n_point_stencil = %s is not supported' % self.n_point_stencil)
 
         mat = A_central[0] * sparse.eye(self.num_grids, format="lil")
-        for i, A_n in enumerate(A[1:]):
+        for i, A_n in enumerate(A_central[1:]):
             j = i + 1
             elements = A_n * np.ones(self.num_grids - j)
             mat += sparse.diags(elements, offsets=j, format="lil")
             mat += sparse.diags(elements, offsets=-j, format="lil")
-
-        # end-point forward/backward difference formulas
-        # end-point forward/backward difference formulas
+    
         if (self.boundary_condition == 'open'):
-            pass
+            mat = -0.5 * mat / (self.dx * self.dx)
+            return mat
+        # end-point forward/backward difference formulas
         elif (self.boundary_condition == 'closed'):
-            for i, A_n in enumerate(A_end):
-                mat[0, i] = A_n
-                mat[-1, -1 - i] = A_n
-
-                if self.n_point_stencil == 5:
-                    mat[1, i + 1] = A_n
-                    mat[-2, -2 - i] = A_n
-
+            
+            if self.n_point_stencil == 5:
+                # 0 means the first row, 1 means the second row
+                # 0 and 1 are for forward/backward formulas in two ends of the matrix
+                A_end_0 = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
+                A_end_1 = [5 / 6, -5 / 4, -1 / 3, 7 / 6, -1 / 2, 1 / 12]
+            elif self.n_point_stencil == 3:
+                # 0 means the same with 5 point
+                A_end_0 = [2., -5., 4., -1.]
+            
+            # replace two ends of the matrix with forward/backward formulas
+            for i, A_n_0 in enumerate(A_end_0):
+                mat[0, i] = A_n_0
+                mat[-1, -1 - i] = A_n_0   
+            if self.n_point_stencil == 5:
+                for i, A_n_1 in enumerate(A_end_1):
+                    mat[1, i] = A_n_1
+                    mat[-2, -1 - i] = A_n_1
+  
+            # also change two end points as 0
             mat[0, 0] = 0
             mat[-1, -1] = 0
 
-            if self.n_point_stencil == 5:
-                mat[1, 0] = 0
-                mat[2, 0] = 0
-                mat[-2, -1] = 0
-                mat[-3, -1] = 0
+            mat = -0.5 * mat / (self.dx * self.dx)
+            return mat
 
+        # periodic (no end point formulas needed)
+        elif self.boundary_condition == 'periodic' and self.k is not None:
+            k = self.k
+            
+            # assign central FDM formula (without center point)
+            # also change 2nd-order end points
+            if self.n_point_stencil == 3:
+                D1_central = [1 / 2]
+                
+                mat[0, -1] = 1
+                mat[-1, 0] = 1
+                
+            elif self.n_point_stencil == 5:
+                D1_central = [2 / 3, -1 / 12]
+                
+                mat[0, -1] = 4 / 3
+                mat[0, -2] = -1 / 12
+                mat[1, -1] = -1 / 12
+                
+                mat[-1, 0] = 4 / 3
+                mat[-1, -2] = -1 / 12
+                mat[-2, -2] = -1 / 12
+            
+            # scale 2nd-order derivative matrix
+            mat = -0.5 * mat / (self.dx * self.dx)
+            
+            # create identity matrix
+            mat1 = 0.5 * (k ** 2) * sparse.eye(self.num_grids, dtype=complex, format="lil")
+            
+            # add 1st-order derivative matrix to identity
+            idy = np.arange(self.num_grids)       
+            for i, D1_n in enumerate(D1_central):
+                j = i + 1
+                mat1[idy[0:], (idy[0:] - j) % self.num_grids] = complex(0., D1_n * k / self.dx)
+                mat1[idy[0:], (idy[0:] + j) % self.num_grids] = complex(0., -D1_n * k / self.dx)
+            
+            
+            # add all to second order matrix
+            mat = mat + mat1
+            
+            return mat
+        
         else:
             raise ValueError(
-                'boundary_condition = %d is not supported' % self.boundary_condition)
-
-        # periodic not yet implemented in sparse solver
-
-        mat = -.5 * mat / (self.dx * self.dx)
-
-        return mat
+                'boundary_condition = %s is not supported' % self.boundary_condition)
+            
 
     def get_potential_matrix(self):
         """Potential matrix.

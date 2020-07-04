@@ -30,7 +30,7 @@ def rsquared(x, y):
 # for n_point_stencil=5, our slope (p) = 4, for n_point_stencil=3, p = 2.
 # TODO(Chris): check convergence for hard wall boundaries using poschl-teller
 def convergence_test(Solver,
-                     range,
+                     test_range,
                      potential_fn,
                      boundary_condition,   
                      n_point_stencil,  
@@ -55,7 +55,7 @@ def convergence_test(Solver,
         energy_form = 'analytical'
     else:
         # solve eigenvalue problem with matrix size N = 5000
-        exact_grids = np.linspace(*range, 5000)      
+        exact_grids = np.linspace(*test_range, 5000)      
         exact_solver = Solver(exact_grids,
                               potential_fn = potential_fn, 
                               boundary_condition = boundary_condition,
@@ -68,9 +68,9 @@ def convergence_test(Solver,
         exact_gs_energy = exact_solver.eigenvalues[0]
         energy_form = '5000_grids'
     
-    for grid in num_grids_list:
-        grids = np.linspace(*range, grid)
-        # solve eigenvalue problem with matrix size N = grid
+    for num_grids in num_grids_list:
+        grids = np.linspace(*test_range, num_grids)
+        # solve eigenvalue problem with matrix size N = num_grids
         solver = Solver(grids, 
                         potential_fn = potential_fn, 
                         boundary_condition = boundary_condition,
@@ -123,7 +123,7 @@ def convergence_test(Solver,
     ax.set_ylabel("|Error| (au)", fontsize=18)
     
     plt.legend(fontsize=16)
-    plt.title(f'Error in ground state vs. number of grids\n{func_name}, {boundary_condition}, {range}, {n_point_stencil}-points, {energy_form}', fontsize=20)
+    plt.title(f'Error in ground state vs. number of grids\n{func_name}, {boundary_condition}, {test_range}, {n_point_stencil}-points, {energy_form}', fontsize=20)
     plt.grid(alpha=0.4)
     plt.gca().xaxis.grid(True, which='minor', alpha=0.4)
     plt.gca().yaxis.grid(True, which='minor', alpha=0.4)
@@ -133,11 +133,11 @@ def convergence_test(Solver,
         os.mkdir('convergence_test')
     
     # save fig
-    plt.savefig(f'convergence_test/{func_name}_{boundary_condition}_{range}_{n_point_stencil}_{energy_form}.png')
+    plt.savefig(f'convergence_test/{func_name}_{boundary_condition}_{test_range}_{n_point_stencil}_{energy_form}.png')
     plt.close()
     
     # message for completing one convergence test
-    print(f'{func_name}_{boundary_condition}_{range}_{n_point_stencil}_{energy_form} done')
+    print(f'{func_name}_{boundary_condition}_{test_range}_{n_point_stencil}_{energy_form} done')
         
 
 

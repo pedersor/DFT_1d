@@ -4,8 +4,9 @@ import numpy as np
 from numpy.polynomial.polynomial import polyfit
 from scipy import stats
 import functools
-import sys
 import os
+import time
+import warnings
 
 def get_plotting_params():
     # plotting parameters
@@ -30,12 +31,17 @@ def rsquared(x, y):
 # for n_point_stencil=5, our slope (p) = 4, for n_point_stencil=3, p = 2.
 # TODO(Chris): check convergence for hard wall boundaries using poschl-teller
 def convergence_test(Solver,
-                     range,
+                     test_range,
                      potential_fn,
                      boundary_condition,   
-                     n_point_stencil,  
+                     n_point_stencil,
+                     k_point = None,
                      num_grids_list = [40, 80, 120, 160, 200, 400, 600, 800, 1000],
-                     analytical_energy = None):
+                     analytical_energy = None,
+                     plot_index = ''):
+    
+    # start timer
+    t0 = time.time()
     
     # error list for plotting
     E_abs_error = []
@@ -45,7 +51,12 @@ def convergence_test(Solver,
         func_name = potential_fn.__name__
     except AttributeError:
         func_name = potential_fn.func.__name__
-
+        
+    # choose whether include endpoints
+    if boundary_condition == 'periodic':
+        endpoint = False
+    else:
+        endpoint = True
 
     # obtain lowest eigenvalue (level = 1) from exact/analytical result.
     # When the exact answer is not known, simply run the solver with a large
@@ -55,9 +66,10 @@ def convergence_test(Solver,
         energy_form = 'analytical'
     else:
         # solve eigenvalue problem with matrix size N = 5000
-        exact_grids = np.linspace(*range, 5000)      
+        exact_grids = np.linspace(*test_range, 5000, endpoint = endpoint)      
         exact_solver = Solver(exact_grids,
                               potential_fn = potential_fn, 
+                              k_point = k_point,
                               boundary_condition = boundary_condition,
                               n_point_stencil = n_point_stencil)
         
@@ -68,11 +80,13 @@ def convergence_test(Solver,
         exact_gs_energy = exact_solver.eigenvalues[0]
         energy_form = '5000_grids'
     
-    for grid in num_grids_list:
-        grids = np.linspace(*range, grid)
-        # solve eigenvalue problem with matrix size N = grid
+    # get error of energy for each num_grid compared to the exact energy
+    for num_grids in num_grids_list:
+        grids = np.linspace(*test_range, num_grids, endpoint = endpoint)
+        # solve eigenvalue problem with matrix size N = num_grids
         solver = Solver(grids, 
                         potential_fn = potential_fn, 
+                        k_point = k_point,
                         boundary_condition = boundary_condition,
                         n_point_stencil = n_point_stencil)
     
@@ -123,7 +137,7 @@ def convergence_test(Solver,
     ax.set_ylabel("|Error| (au)", fontsize=18)
     
     plt.legend(fontsize=16)
-    plt.title(f'Error in ground state vs. number of grids\n{func_name}, {boundary_condition}, {range}, {n_point_stencil}-points, {energy_form}', fontsize=20)
+    plt.title(f'Error in ground state vs. number of grids\n{func_name}, {boundary_condition}, {test_range}, {n_point_stencil}-points, {energy_form}', fontsize=20)
     plt.grid(alpha=0.4)
     plt.gca().xaxis.grid(True, which='minor', alpha=0.4)
     plt.gca().yaxis.grid(True, which='minor', alpha=0.4)
@@ -131,28 +145,98 @@ def convergence_test(Solver,
     # create folder if no such directory
     if not os.path.isdir('convergence_test'):
         os.mkdir('convergence_test')
+    if not os.path.isdir(f'convergence_test/{Solver.__name__}'):
+        os.mkdir(f'convergence_test/{Solver.__name__}')
     
     # save fig
-    plt.savefig(f'convergence_test/{func_name}_{boundary_condition}_{range}_{n_point_stencil}_{energy_form}.png')
+    plt.savefig(f'convergence_test/{Solver.__name__}/{func_name}_{boundary_condition}_{test_range}_{n_point_stencil}_{energy_form}{plot_index}.png')
     plt.close()
     
-    # message for completing one convergence test
-    print(f'{func_name}_{boundary_condition}_{range}_{n_point_stencil}_{energy_form} done')
+    # stop timer
+    t1 = time.time()
+    
+    # write time taken to complete the convergence test to log (txt) file
+    time_str = time.strftime("==== %Y-%m-%d %H:%M:%S ====", time.localtime())
+    finish_str = f'{Solver.__name__}: {func_name}_{boundary_condition}_{test_range}_{n_point_stencil}_{energy_form}{plot_index} done'
+    timer_str = f'Time: {t1 - t0}'
+    all_str = time_str + '\n' + finish_str + '\n' + timer_str + '\n\n'
+    
+    with open("convergence_test/test_log.txt", "a") as text_file:
+        text_file.write(all_str)
+    
+    print(all_str)
+    
+
+# plot the dispersion relation for a periodic potential
+def plot_dispersion(Solver, 
+                    test_range,
+                    potential_fn,
+                    k_range = (-np.pi, np.pi),
+                    eigenvalue_index = 0,
+                    n_point_stencil = 5,
+                    num_grids = 1000,
+                    num_k_grids = 100):
+    
+    warnings.warn('Warning: make sure potential_fn is a periodic function!')
+    
+    #grids = np.linspace(*test_range, num_grids, endpoint = False)
+    k_list = np.linspace(*k_range, num_k_grids)
+    E_list = []
+    
+    for k in k_list:
+        grids = np.linspace(*test_range, num_grids, endpoint = False)
+        solver = Solver(grids,
+                        potential_fn = potential_fn, 
+                        k_point = k,
+                        boundary_condition = 'periodic',
+                        n_point_stencil = n_point_stencil,
+                        tol = 0)
         
+        solver.solve_ground_state()
+    
+        # obtain lowest eigenvalue from FDM
+        energy = solver.eigenvalues[eigenvalue_index]
+        
+        E_list.append(energy)
+
+    # initialize figure for plots
+    fig, ax = get_plotting_params()
+    # matplotlib trick to obtain same color of a previous plot
+    ax.plot(k_list, E_list, marker='o', linestyle='solid', color='blue')
+        
+    ax.set_xlabel("k", fontsize=18)
+    ax.set_ylabel("E", fontsize=18)
+    
+    #plt.legend(fontsize=16)
+    #plt.title(f'Dispersion relation {k_range} {eigenvalue_index}', fontsize=20)
+    plt.grid(alpha=0.4)
+    plt.gca().xaxis.grid(True, which='minor', alpha=0.4)
+    plt.gca().yaxis.grid(True, which='minor', alpha=0.4)
+    
+    # create folder if no such directory
+    if not os.path.isdir('dispersion_plots'):
+        os.mkdir('dispersion_plots')
+    
+    # save fig
+    plt.savefig(f'dispersion_plots/dispersion_relation_{k_range}_{eigenvalue_index}.png')
+    plt.close()
+    
+    print(f'dispersion_relation_{k_range}_{eigenvalue_index} done')
 
 
 if __name__ == "__main__":
     
-    num_grids_list = [40, 80, 120, 160, 200, 400, 600, 800, 1000]
-    test_potential_fn_list = [functools.partial(ext_potentials.poschl_teller, lam=1), 
-                              ext_potentials.exp_hydrogenic]
+    test_potential_fn_list = [((0, 3), functools.partial(ext_potentials.kronig_penney, a = 3, b = 0.5, v0 = -1), 'periodic'),
+                              ((-5, 5), functools.partial(ext_potentials.poschl_teller, lam=1), 'closed'),
+                              ((-5, 5), functools.partial(ext_potentials.poschl_teller, lam=1), 'open'),
+                              ((0, 2*np.pi), np.sin, 'periodic')]
     
-    Solver = single_electron.EigenSolver
+    Solver1 = single_electron.SparseEigenSolver
+    Solver2 = single_electron.EigenSolver
     
-    for potential_fn in test_potential_fn_list:
-        convergence_test(Solver, (-5, 5), potential_fn, 'closed', 3)
-        convergence_test(Solver, (-5, 5), potential_fn, 'closed', 5)
-        convergence_test(Solver, (-20, 20), potential_fn, 'closed', 3)
-        convergence_test(Solver, (-20, 20), potential_fn, 'closed', 5)
-
+    # convergence test for the sin potential
+    r, p, b = test_potential_fn_list[3]
+    convergence_test(Solver1, r, p, b, 3, k_point = 1)
+    
+    
 

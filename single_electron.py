@@ -78,7 +78,7 @@ def quadratic(mat, x):
     return np.dot(x, np.dot(mat, x))
 
 
-class SolverBase(object):
+class SolverBase:
     """Base Solver for non-interacting 1d system.
 
     Subclasses should define solve_ground_state method.
@@ -86,7 +86,7 @@ class SolverBase(object):
 
     def __init__(self, grids, potential_fn, num_electrons=1, k_point=None,
                  boundary_condition='open',
-                 n_point_stencil=5, fock_mat=None):
+                 n_point_stencil=3, fock_mat=None):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -123,14 +123,12 @@ class SolverBase(object):
           ValueError: If num_electrons is less than 1; or num_electrons is not
               an integer.
         """
-        # 1d grids.
         self.k = k_point
         self.boundary_condition = boundary_condition
         self.n_point_stencil = n_point_stencil
         self.grids = grids
         self.dx = get_dx(grids)
         self.num_grids = len(grids)
-        # Potential on grid.
         self.vp = potential_fn(grids)
         self.fock_mat = fock_mat
 
@@ -163,18 +161,18 @@ class SolverBase(object):
 
 class EigenSolver(SolverBase):
     """Represents the Hamiltonian as a matrix and diagonalizes it directly.
+
+    This is the most stable and accurate eigensolver. Use SparseEigenSolver
+    for a faster iterative eigensolver.
     """
 
     def __init__(self, grids, potential_fn, num_electrons=1, k_point=None,
                  boundary_condition='open',
-                 n_point_stencil=5, fock_mat=None):
+                 n_point_stencil=3, fock_mat=None):
         """Initialize the solver with potential function and grid.
 
         Args:
-          grids: numpy array of grid points for evaluating 1d potential.
-            (num_grids,)
-          potential_fn: potential function taking grids as argument.
-          num_electrons: Integer, the number of electrons in the system.
+          See SolverBase for args. discriptions.
         """
         super(EigenSolver, self).__init__(grids, potential_fn, num_electrons,
                                           k_point, boundary_condition,
@@ -188,9 +186,8 @@ class EigenSolver(SolverBase):
           form: string, creates identity matrix if form == 'identity'
                         creates potential matrix if form == 'potential'
         """
-        
         if form == 'identity':
-            return np.eye(self.num_grids, dtype = complex)
+            return np.eye(self.num_grids, dtype=complex)
         elif form == 'potential':
             return np.diag(self.vp)
 
@@ -221,7 +218,7 @@ class EigenSolver(SolverBase):
           mat: Kinetic matrix.
             (num_grids, num_grids)
         """
-        
+
         # n-point centered difference formula coefficients
         # these coefficients are for centered 2-order derivatives
         if self.n_point_stencil == 5:
@@ -231,10 +228,10 @@ class EigenSolver(SolverBase):
         else:
             raise ValueError(
                 'n_point_stencil = %d is not supported' % self.n_point_stencil)
-        
+
         mat = self._diagonal_matrix('identity')
-        
-        #get pentadiagonal KE matrix
+
+        # get pentadiagonal KE matrix
         idx = np.arange(self.num_grids)
         for i, A_n in enumerate(A_central):
             mat[idx[i:], idx[i:] - i] = A_n
@@ -244,28 +241,28 @@ class EigenSolver(SolverBase):
         if self.boundary_condition == 'open':
             mat = -0.5 * mat / (self.dx * self.dx)
             return np.real(mat)
-        
+
         # append end-point forward/backward difference formulas
         elif self.boundary_condition == 'closed':
-            
+
             if self.n_point_stencil == 5:
                 # 0 means the first row, 1 means the second row
-                # 0 and 1 are for forward/backward formulas in two ends of the matrix
+                # 0/1 are for forward/backward formulas at the end of the grid
                 A_end_0 = [15 / 4, -77 / 6, 107 / 6, -13., 61 / 12, -5 / 6]
                 A_end_1 = [5 / 6, -5 / 4, -1 / 3, 7 / 6, -1 / 2, 1 / 12]
             elif self.n_point_stencil == 3:
                 # 0 means the same with 5 point
                 A_end_0 = [2., -5., 4., -1.]
-            
+
             # replace two ends of the matrix with forward/backward formulas
             for i, A_n_0 in enumerate(A_end_0):
                 mat[0, i] = A_n_0
-                mat[-1, -1 - i] = A_n_0   
+                mat[-1, -1 - i] = A_n_0
             if self.n_point_stencil == 5:
                 for i, A_n_1 in enumerate(A_end_1):
                     mat[1, i] = A_n_1
                     mat[-2, -1 - i] = A_n_1
-  
+
             # also change two end points as 0
             mat[0, 0] = 0
             mat[-1, -1] = 0
@@ -276,47 +273,49 @@ class EigenSolver(SolverBase):
         # periodic (no end point formulas needed)
         elif self.boundary_condition == 'periodic' and self.k is not None:
             k = self.k
-            
+
             # assign central FDM formula (without center point)
             # also change 2nd-order end points
             if self.n_point_stencil == 3:
                 D1_central = [1 / 2]
-                
+
                 mat[0, -1] = 1
                 mat[-1, 0] = 1
-                
+
             elif self.n_point_stencil == 5:
                 D1_central = [2 / 3, -1 / 12]
-                
+
                 mat[0, -1] = 4 / 3
                 mat[0, -2] = -1 / 12
                 mat[1, -1] = -1 / 12
-                
+
                 mat[-1, 0] = 4 / 3
                 mat[-1, 1] = -1 / 12
                 mat[-2, 0] = -1 / 12
-            
+
             # scale 2nd-order derivative matrix
             mat = -0.5 * mat / (self.dx * self.dx)
-            
+
             # create identity matrix
             mat1 = 0.5 * (k ** 2) * self._diagonal_matrix('identity')
-            
+
             # add 1st-order derivative matrix to identity
-            idy = np.arange(self.num_grids)       
+            idy = np.arange(self.num_grids)
             for i, D1_n in enumerate(D1_central):
                 j = i + 1
-                mat1[idy[0:], (idy[0:] - j) % self.num_grids] = complex(0., D1_n * k / self.dx)
-                mat1[idy[0:], (idy[0:] + j) % self.num_grids] = complex(0., -D1_n * k / self.dx)
-            
+                mat1[idy[0:], (idy[0:] - j) % self.num_grids] = \
+                    complex(0., D1_n * k / self.dx)
+                mat1[idy[0:], (idy[0:] + j) % self.num_grids] = \
+                    complex(0., -D1_n * k / self.dx)
+
             # add all to second order matrix
             mat = mat + mat1
-            
+
             return mat
-        
+
         else:
-            raise ValueError(
-                'boundary_condition = %s is not supported' % self.boundary_condition)
+            raise ValueError('boundary_condition = %s is not supported' %
+                             self.boundary_condition)
 
     def get_potential_matrix(self):
         """Potential matrix. A diagonal matrix corresponding to the one-body
@@ -333,15 +332,16 @@ class EigenSolver(SolverBase):
                              quadratic_function):
         """Helper function to solve_ground_state() method.
 
-        Updates the attributes total_energy, wave_function, density, kinetic_energy,
-        potential_enenrgy and _solved from the eigensolver's output (w, v).
+        Updates the attributes total_energy, wave_function, density,
+        kinetic_energy, potential_enenrgy and _solved from the eigensolver's
+        output (w, v).
 
         Args:
-          eigenvalues: Numpy array with shape [num_eigenstates,], the eigenvalues in
-              ascending order.
-          eigenvectors: Numpy array with shape [num_grids, num_eigenstates], each
-              column eigenvectors[:, i] is the normalized eigenvector corresponding
-              to the eigenvalue eigenvalues[i].
+          eigenvalues: Numpy array with shape [num_eigenstates,], the
+              eigenvalues in ascending order.
+          eigenvectors: Numpy array with shape [num_grids, num_eigenstates],
+              each column eigenvectors[:, i] is the normalized eigenvector
+              corresponding to the eigenvalue eigenvalues[i].
           quadratic_function: Callable, compute the quadratic form of matrix and
               vector.
 
@@ -376,7 +376,8 @@ class EigenSolver(SolverBase):
         Returns:
           self
         """
-        if (self.boundary_condition == 'open' or self.boundary_condition == 'periodic'):
+        if (self.boundary_condition == 'open'
+                or self.boundary_condition == 'periodic'):
             eigenvalues, eigenvectors = np.linalg.eigh(self._h)
         else:
             eigenvalues, eigenvectors = np.linalg.eig(self._h)
@@ -387,46 +388,31 @@ class EigenSolver(SolverBase):
         return self._update_ground_state(eigenvalues, eigenvectors, quadratic)
 
 
-# TODO(Chris): repeat everything for sparse matrices
 class SparseEigenSolver(EigenSolver):
     """Represents the Hamiltonian as a matrix and solve with sparse eigensolver.
+
+    This eigensolver is iterative and approximate. It is in general much
+    faster than EigenSolver but less robust.
     """
 
     def __init__(self,
                  grids,
                  potential_fn,
                  num_electrons=1,
-                 additional_levels=5, k_point=None, boundary_condition=False,
-                 n_point_stencil=5,
-                 tol = 0.001):
+                 k_point=None, boundary_condition='open',
+                 n_point_stencil=3,
+                 tol=10 ** -6):
         """Initialize the solver with potential function and grid.
 
         Args:
-          grids: numpy array of grid points for evaluating 1d potential.
-            (num_grids,)
-          potential_fn: potential function taking grids as argument.
-          num_electrons: Integer, the number of electrons in the system.
-          additional_levels: Integer, non-negative number. For numerical accuracy of
-            eigen energies for the first num_electrons,
-            num_electrons + additional_levels will be solved.
+          tol: Relative accuracy for eigenvalues (stopping criterion).
 
-        Raises:
-          ValueError: If additional_levels is negative.
+          See SolverBase for additional args. discriptions.
         """
         super(SparseEigenSolver, self).__init__(grids, potential_fn,
                                                 num_electrons, k_point,
                                                 boundary_condition,
                                                 n_point_stencil)
-        if additional_levels < 0:
-            raise ValueError(
-                'additional_levels is expected to be non-negative, but '
-                'got %d.' % additional_levels)
-        elif additional_levels > self.num_grids - self.num_electrons:
-            raise ValueError('additional_levels is expected to be smaller than '
-                             'num_grids - num_electrons (%d), but got %d.'
-                             % (self.num_grids - self.num_electrons,
-                                additional_levels))
-        self._additional_levels = additional_levels
         self._tol = tol
 
     def _diagonal_matrix(self, form):
@@ -436,17 +422,17 @@ class SparseEigenSolver(EigenSolver):
           form: string, creates identity matrix if form == 'identity'
                         creates potential matrix if form == 'potential'
         """
-        
+
         if form == 'identity':
-            return sparse.eye(self.num_grids, dtype = complex, format = "lil")
+            return sparse.eye(self.num_grids, dtype=complex, format="lil")
         elif form == 'potential':
-            return sparse.diags(self.vp, offsets = 0, format = 'lil')
+            return sparse.diags(self.vp, offsets=0, format='lil')
 
     def _sparse_quadratic(self, sparse_matrix, vector):
         """Compute quadratic of a sparse matrix and a dense vector.
 
-        As of Numpy 1.7, np.dot is not aware of sparse matrices, scipy suggests to
-        use the matrix dot method: sparse_matrix.dot(vector).
+        As of Numpy 1.7, np.dot is not aware of sparse matrices, scipy suggests
+        to use the matrix dot method: sparse_matrix.dot(vector).
 
         Args:
           sparse_matrix: Scipy sparse matrix with shape [dim, dim].
@@ -466,19 +452,15 @@ class SparseEigenSolver(EigenSolver):
         Returns:
           self
         """
-        # NOTE(leeley): linalg.eigsh is built on ARPACK. ArpackNoConvergence will be
-        # raised if convergence is not obtained.
-        # eigsh will solve 5 more eigenstates than self.num_electrons to reduce the
-        # numerical error for the last few eigenstates.
-
-        if (self.boundary_condition == 'open' or self.boundary_condition == 'periodic'):
+        if (self.boundary_condition == 'open'
+                or self.boundary_condition == 'periodic'):
             eigenvalues, eigenvectors = linalg.eigsh(
-                self._h, k=self.num_electrons + self._additional_levels,
-                which='SA', tol = self._tol)
+                self._h, k=self.num_electrons,
+                which='SA', tol=self._tol)
         else:
             eigenvalues, eigenvectors = linalg.eigs(
-                self._h, k=self.num_electrons + self._additional_levels,
-                which='SR', tol = self._tol)
+                self._h, k=self.num_electrons,
+                which='SR', tol=self._tol)
             idx = eigenvalues.argsort()
             eigenvalues = eigenvalues[idx]
             eigenvectors = eigenvectors[:, idx]
@@ -496,8 +478,8 @@ def solved_1dsolver_to_example(solver, params):
 
     Returns:
       example: A tf.Example proto with the following populated fields:
-        density, kinetic_energy, total_energy, potential, and other keys in params
-        dict.
+        density, kinetic_energy, total_energy, potential, and other keys in
+        params dict.
 
     Raises:
       ValueError: If the solver is not solved.

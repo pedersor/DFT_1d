@@ -37,14 +37,12 @@ def grided_potential(grids, pot):
 if __name__ == '__main__':
     dir = 'H4_data'
     densities = np.load(dir + "/densities.npy")
-    locations = np.load(dir + "/locations.npy")
     potentials_ext = np.load(dir + "/potentials.npy")
-    total_energies = np.load(dir + "/total_energies.npy")
 
     h = 0.08
     grids = np.arange(-256, 257) * h
 
-    R_idx = 24
+    R_idx = 25
 
     n = densities[R_idx]
     v_ext = potentials_ext[R_idx]
@@ -87,7 +85,7 @@ if __name__ == '__main__':
 
         E_curr = 2 * solver.total_energy
         E_diff = np.abs(E_prev - E_curr)
-        print('E_diff = ', E_diff)
+        #print('E_diff = ', E_diff)
         E_prev = E_curr
 
         n_curr = 2 * solver.density
@@ -98,16 +96,10 @@ if __name__ == '__main__':
         v_xc_n_plus1 = v_xc_n_plus1 + (-v_vw_n_target + v_vw_n_LDA)
 
         d_ntar_n = (1 / 4) * ((np.sum((n_trunc - n_curr) ** 2) * h) ** (.5))
-        print('$d(n^{target},n^i) $', d_ntar_n)
+        #print('$d(n^{target},n^i) $', d_ntar_n)
 
     v_s_algo = v_ext_trunc + v_H_trunc + v_xc_n_plus1
 
-    # see density
-    # plt.plot(grids_trunc, n_curr)
-    # plt.plot(grids_trunc, n_trunc, label='n exact')
-
-    # see potential
-    # plt.plot(grids_trunc, v_s_algo)
 
     v_s_full = two_el_exact.v_s_derivs(v_s_algo[2:-2], n, grids, h,
                                        tol=10 ** (-4))
@@ -146,16 +138,11 @@ if __name__ == '__main__':
 
     n_algo = 2 * solver.density
 
-    np.save('H4_R6_out/grids.npy', grids)
-    np.save('H4_R6_out/v_s.npy', v_s_full)
-    np.save('H4_R6_out/phi_0.npy', phi_0)
-    np.save('H4_R6_out/phi_1.npy', phi_1)
-    np.save('H4_R6_out/phi_2.npy', phi_2)
-    np.save('H4_R6_out/phi_3.npy', phi_3)
-
+    '''
     # see densities
-    # plt.plot(grids, n_algo)
-    # plt.plot(grids, n)
+    plt.plot(grids, n_algo)
+    plt.plot(grids, n+.001)
+    '''
 
     plt.legend()
     plt.show()

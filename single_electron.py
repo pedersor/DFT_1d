@@ -84,9 +84,14 @@ class SolverBase:
     Subclasses should define solve_ground_state method.
     """
 
-    def __init__(self, grids, potential_fn, num_electrons=1, k_point=None,
+    def __init__(self, 
+                 grids, 
+                 potential_fn=None, 
+                 num_electrons=1, 
+                 k_point=None,
                  boundary_condition='open',
-                 n_point_stencil=3, fock_mat=None):
+                 n_point_stencil=3, 
+                 fock_mat=None):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -129,7 +134,9 @@ class SolverBase:
         self.grids = grids
         self.dx = get_dx(grids)
         self.num_grids = len(grids)
-        self.vp = potential_fn(grids)
+        self.potential_fn = potential_fn
+        if self.potential_fn != None:
+            self.vp = potential_fn(grids)
         self.fock_mat = fock_mat
 
         if not isinstance(num_electrons, int):
@@ -166,9 +173,14 @@ class EigenSolver(SolverBase):
     for a faster iterative eigensolver.
     """
 
-    def __init__(self, grids, potential_fn, num_electrons=1, k_point=None,
+    def __init__(self, 
+                 grids, 
+                 potential_fn=None, 
+                 num_electrons=1, 
+                 k_point=None,
                  boundary_condition='open',
-                 n_point_stencil=3, fock_mat=None):
+                 n_point_stencil=3, 
+                 fock_mat=None):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -199,8 +211,31 @@ class EigenSolver(SolverBase):
           _v_mat: numpy matrix, potential matrix in Hamiltonian.
           _h: numpy matrix, Hamiltonian matrix.
         """
+        
         # Kinetic matrix
         self._t_mat = self.get_kinetic_matrix()
+        
+        if self.potential_fn != None:
+            # Potential matrix
+            self._v_mat = self.get_potential_matrix()
+            # Hamiltonian matrix
+            self._h = self._t_mat + self._v_mat
+            
+        # Fock-Matrix (exact exchange)
+        if self.fock_mat is not None:
+            self._h += self.fock_mat
+            
+    def update_potential(self, potential_fn):
+        """Replace the current potential grids with a new potential grids.
+        Delete all attributes created by solving eigenvalues, set _solved to
+        False.
+        
+        Args:
+          potential_fn: potential function taking grids as argument.
+        """
+        
+        self.potential_fn = potential_fn
+        self.vp = potential_fn(self.grids)
         # Potential matrix
         self._v_mat = self.get_potential_matrix()
         # Hamiltonian matrix
@@ -208,6 +243,15 @@ class EigenSolver(SolverBase):
         # Fock-Matrix (exact exchange)
         if self.fock_mat is not None:
             self._h += self.fock_mat
+
+        if self._solved:    
+            del self.total_energy
+            del self.wave_function
+            del self.density
+            del self.kinetic_energy
+            del self.potential_energy
+            del self.eigenvalues
+            self._solved = False
 
     def get_kinetic_matrix(self):
         """Kinetic matrix. Here the finite difference method is used to
@@ -325,6 +369,9 @@ class EigenSolver(SolverBase):
           mat: Potential matrix.
             (num_grids, num_grids)
         """
+        
+        if self.potential_fn == None:
+            raise ValueError('potential_fn is None, unable to get potential matrix.')
 
         return self._diagonal_matrix('potential')
 
@@ -376,6 +423,10 @@ class EigenSolver(SolverBase):
         Returns:
           self
         """
+        
+        if self.potential_fn == None:
+            raise ValueError('potential_fn is None, unable to solve for ground state.')   
+        
         if (self.boundary_condition == 'open'
                 or self.boundary_condition == 'periodic'):
             eigenvalues, eigenvectors = np.linalg.eigh(self._h)
@@ -397,9 +448,10 @@ class SparseEigenSolver(EigenSolver):
 
     def __init__(self,
                  grids,
-                 potential_fn,
+                 potential_fn=None,
                  num_electrons=1,
-                 k_point=None, boundary_condition='open',
+                 k_point=None, 
+                 boundary_condition='open',
                  n_point_stencil=3,
                  tol=10 ** -6):
         """Initialize the solver with potential function and grid.

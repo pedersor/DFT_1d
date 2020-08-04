@@ -191,7 +191,11 @@ if __name__ == '__main__':
         E_list.append(energy)
         
     # save E vs. d into d_E_table.dat
-    np.savetxt('d_E_table.dat', (d_list, E_list))
+    import csv
+    with open('d_E_table.csv', 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(['d', 'E'])
+        writer.writerows(zip(d_list, E_list))
 
     # plot E vs d
     plot_and_save(d_list, E_list, 'd', 'E', 'E vs d')
@@ -205,4 +209,4 @@ if __name__ == '__main__':
                  ['wave function', grids, solver.wave_function[0], '-', 'blue'],
                  ['eigenvalue', grids, np.full(len(grids), solver.eigenvalues[0]), '--', 'green']]
     plot_multiple_and_save(plot_list, f'd={test_d}', ylim=(-2,1))
-        
+    

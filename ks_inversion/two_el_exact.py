@@ -1,20 +1,8 @@
-import single_electron, ext_potentials, functionals, ks_dft
+import single_electron, ext_potentials
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy.polynomial.polynomial import polyfit
-from scipy import stats
 import functools
 import sys
-
-# plotting parameters
-params = {'mathtext.default': 'default'}
-plt.rcParams.update(params)
-plt.rcParams['axes.axisbelow'] = True
-fig_size = plt.rcParams["figure.figsize"]
-fig_size[0] = 9
-fig_size[1] = 6
-plt.rcParams["figure.figsize"] = fig_size
-fig, ax = plt.subplots()
 
 
 def get_truncated_system(n, tol):

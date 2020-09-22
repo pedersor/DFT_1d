@@ -22,7 +22,7 @@ class Quantities():
         self.Etot_HF = Etot_HF
         self.Ex_HF = -1 * Ex_plus_U_HF
         self.U_HF = 2 * Ex_plus_U_HF
-        self.Ts_HF = -1 * Etot_HF  # enforce virial theorem (!)
+        self.Ts_HF = Ts_HF #-1 * Etot_HF  # enforce virial theorem (!)
         self.V_ext_HF = self.Etot_HF - self.Ts_HF - self.U_HF - self.Ex_HF
 
     def get_blue_results_w_HF(self, Vee_blue_HF):
@@ -71,8 +71,7 @@ with open('ion_results_all_HF.dat') as f:
 
 Z_results = []
 # cyrus is exact
-# cyrus_Ts = [0.499869, 2.867082, 7.240085, 13.614084, 32.363072]
-cyrus_Ts = [2.867082, 7.240085, 13.614084, 32.363072]
+cyrus_Ts = [0.499869, 2.867082, 7.240085, 13.614084, 32.363072]
 for i, ion in enumerate(Z):
     Z_Quantities = Quantities(ion, Etot[i], Ex_plus_U[i], cyrus_Ts[i], Vee[i])
     Z_Quantities.get_blue_results_exact(Vee_blue[i])

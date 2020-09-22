@@ -34,32 +34,112 @@ def grided_potential(grids, pot):
     return pot
 
 
+def KS_inversion(grids, n, v_ext):
+    v_H = functionals.hartree_potential(grids, n)
+    start, end = two_el_exact.get_truncated_system(n, tol=10 ** (-4))
+
+    grids_trunc = grids[start:end]
+    n_trunc = n[start:end]
+    v_H_trunc = v_H[start:end]
+    v_ext_trunc = v_ext[start:end]
+
+    # get T_matrix
+    solver = single_electron.EigenSolver(grids_trunc,
+                                         potential_fn=functools.partial(
+                                             grided_potential,
+                                             pot=v_ext_trunc),
+                                         boundary_condition='open',
+                                         num_electrons=2)
+    T = solver.get_kinetic_matrix()
+    solver.solve_ground_state()
+
+    E_prev = 2 * solver.total_energy
+
+    D_mat = derivative_mat(len(n_trunc), h)
+    v_vw_n_target = v_vw(n_trunc, D_mat, T)
+    t_vw_n_target = t_vw(n_trunc, D_mat)
+
+    v_xc_trunc = 0
+
+    for i in range(0, 50):
+        v_s_trunc = v_ext_trunc + v_H_trunc + v_xc_trunc
+
+        solver = single_electron.EigenSolver(grids_trunc,
+                                             potential_fn=functools.partial(
+                                                 grided_potential,
+                                                 pot=v_s_trunc),
+                                             boundary_condition='open',
+                                             num_electrons=2)
+        solver.solve_ground_state()
+
+        E_curr = 2 * solver.total_energy
+        E_diff = np.abs(E_prev - E_curr)
+        # print('E_diff = ', E_diff)
+        E_prev = E_curr
+
+        n_curr = 2 * solver.density
+        T_s_curr = 2 * solver.kinetic_energy
+
+        v_vw_n_algo = v_vw(n_curr, D_mat, T)
+
+        v_xc_trunc = v_xc_trunc + (-v_vw_n_target + v_vw_n_algo)
+
+        d_ntar_n = (1 / 4) * ((np.sum((n_trunc - n_curr) ** 2) * h) ** (.5))
+        # print('$d(n^{target},n^i) $', d_ntar_n)
+
+    v_s_algo = v_ext_trunc + v_H_trunc + v_xc_trunc
+
+    v_s_full = two_el_exact.v_s_derivs(v_s_algo[2:-2], n, grids, h,
+                                       tol=10 ** (-4))
+    # plt.plot(grids, v_s_full)
+
+    # get KS orbitals
+    solver = single_electron.EigenSolver(grids,
+                                         potential_fn=functools.partial(
+                                             ext_potentials.get_gridded_potential,
+                                             potential=v_s_full),
+                                         boundary_condition='open',
+                                         num_electrons=2)
+    solver.solve_ground_state()
+
+    T_s = 2*solver.kinetic_energy
+    n_algo = 2*solver.density
+
+    return T_s, v_s_full, n_algo
+
 if __name__ == '__main__':
-    dir = 'H4_data'
-    densities = np.load(dir + "/densities.npy")
-    potentials_ext = np.load(dir + "/potentials.npy")
-    locations = np.load(dir + "/locations.npy")
+    dir = 'Be_solo'
+    densities = np.load(dir + "/densities.npy")[0]
+    potentials_ext = np.load(dir + "/potentials.npy")[0]
+    locations = np.load(dir + "/locations.npy")[0]
 
     h = 0.08
     grids = np.arange(-256, 257) * h
 
+    v_H = functionals.hartree_potential(grids, densities)
+    T_s, v_s, n = KS_inversion(grids, densities, potentials_ext)
+    print(np.sum(n)*h)
+    print('T_s = ', T_s)
+    v_xc = v_s - potentials_ext - v_H
+    plt.plot(grids, v_xc)
+    plt.show()
+
+    sys.exit()
+    # H4 runs ----------------------------------------------
     H4_v_s_exact_all = np.load('H4_v_s_exact_all.npy')
 
     grids_idx = [14, 24, 34, 44, 54, 64, 74]
     H4_v_s_exact_select = []
     for idx in grids_idx:
-        #print(locations[idx])
+        # print(locations[idx])
         print('R = ', locations[idx][1] - locations[idx][0])
         H4_v_s_exact_select.append(H4_v_s_exact_all[idx])
-
-
 
     H4_v_s_exact_select = np.asarray(H4_v_s_exact_select)
     np.save('H4_v_s_exact_select.npy', H4_v_s_exact_select)
     print(H4_v_s_exact_select.shape)
-    
-    sys.exit()
 
+    sys.exit()
 
     # get H4_v_s_exact_all --------------------------------------
 

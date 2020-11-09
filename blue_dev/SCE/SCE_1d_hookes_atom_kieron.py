@@ -234,7 +234,8 @@ elif example == 'calculate V_ee':
 
         f_i_exact, Vee_SCE = get_Vee_SCE(grids_interp, n_lam_interp)
 
-        blue_CP_densities = np.load('blue_CP_densities_' + str(lam) + '.npy')
+        blue_CP_densities = np.load(
+            'Hookes_atom_lam/blue_CP_densities_' + str(lam) + '.npy')
 
         # extras
         '''
@@ -253,19 +254,17 @@ elif example == 'calculate V_ee':
         blue_v_n_H = functionals.get_v_n_xc(grids, blue_CP_densities)
         blue_v_ee = 0.5 * np.trapz(blue_v_n_H * n_lam, grids)
 
+        blue_tools.table_print(lam, round_to_dec=0)
         blue_tools.table_print(lam * blue_v_ee)
         blue_tools.table_print(exact_Vee[i])
         blue_tools.table_print(lam * Vee_SCE)
 
         per_error_blue_dmrg = 100 * (exact_Vee[i] - lam * blue_v_ee) / (
             exact_Vee[i])
-
-        per_error_blue_dmrg = (exact_Vee[i] - lam * blue_v_ee)
         blue_tools.table_print(per_error_blue_dmrg)
 
         per_error_blue_SCE = 100 * (lam * Vee_SCE - lam * blue_v_ee) / (
                 lam * Vee_SCE)
-        per_error_blue_SCE = (lam * Vee_SCE - lam * blue_v_ee)
         blue_tools.table_print(per_error_blue_SCE, last_in_row=True)
 
 elif example == 'nuclear':
@@ -315,7 +314,7 @@ elif example == 'gaussians':
 
         n_lam = np.load(lam_dir + '/densities.npy')[0]
 
-        blue_CP_densities = np.load('blue_CP_densities_' + str(lam) + '.npy')
+        blue_CP_densities = np.load('Hookes_atom_lam/blue_CP_densities_' + str(lam) + '.npy')
 
         gauss_CP_densities = np.asarray(
             [getGaussianCP(grids, ref_x, lam) for ref_x in grids])

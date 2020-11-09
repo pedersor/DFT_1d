@@ -69,7 +69,7 @@ def get_n_r0_lambda(lam, grids, pot, n):
     n_r0 = []
     print("lambda = ", str(lam), flush=True)
     for r0 in grids:
-        blue_potential = blue_potentials.blue_H2_1d(grids, pot, r0, lam)
+        blue_potential = blue_potentials.pure_blue_arb_pot_1d(grids, pot, r0, lam)
         solver = single_electron.EigenSolver(grids,
                                              potential_fn=functools.partial(
                                                  get_v_ext_lambda,

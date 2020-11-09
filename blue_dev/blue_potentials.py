@@ -92,7 +92,7 @@ def helium(grids, Z=2):
     return -Z / (np.abs(grids))
 
 
-def blue_H2_1d(grids, pot, r0, lam=1):
+def pure_blue_arb_pot_1d(grids, pot, r0, lam=1):
     # pot is the pre-generated external potential of the separated H2
     return pot - lam * ext_potentials.exp_hydrogenic(grids - r0)
 

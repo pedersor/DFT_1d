@@ -68,6 +68,19 @@ def get_v_ee_SCE_1d(grids, n, f_i_lst):
     return v_ee_SCE
 
 
+def get_Vee_SCE(grids, n, N=2):
+    f_i_exact = []
+
+    for i in np.arange(1, N):
+        f_i = get_f_i_1d(grids, i, n, N)
+        f_i_exact.append(f_i)
+
+    f_i_exact = np.asarray(f_i_exact)
+
+    v_ee_SCE_exact = get_v_ee_SCE_1d(grids, n, f_i_exact)
+    return f_i_exact, v_ee_SCE_exact
+
+
 if __name__ == '__main__':
     # 1d He example
 

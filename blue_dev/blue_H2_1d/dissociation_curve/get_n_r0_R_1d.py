@@ -32,7 +32,7 @@ if __name__ == '__main__':
         for r0 in grids:
             solver = single_electron.EigenSolver(grids,
                                                  potential_fn=functools.partial(
-                                                     blue_potentials.blue_H2_1d,
+                                                     blue_potentials.pure_blue_arb_pot_1d,
                                                      pot=potential, r0=r0,
                                                      lam=new_cusp_cond),
                                                  boundary_condition='open',

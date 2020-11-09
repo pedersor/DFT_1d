@@ -83,7 +83,7 @@ def convergence_test(Solver,
                               n_point_stencil=n_point_stencil)
 
         # solve ground state
-        exact_solver._solve_ground_state()
+        exact_solver.solve_ground_state()
 
         # obtain ground state energy as exact energy
         exact_gs_energy = exact_solver.eigenvalues[0]
@@ -99,7 +99,7 @@ def convergence_test(Solver,
                         boundary_condition=boundary_condition,
                         n_point_stencil=n_point_stencil)
 
-        solver._solve_ground_state()
+        solver.solve_ground_state()
 
         # obtain lowest eigenvalue from FDM
         ground_state_energy = solver.eigenvalues[0]
@@ -206,7 +206,7 @@ def plot_dispersion(Solver,
                         n_point_stencil=n_point_stencil,
                         tol=0)
 
-        solver._solve_ground_state()
+        solver.solve_ground_state()
 
         # obtain lowest eigenvalue from FDM
         energy = solver.eigenvalues[eigenvalue_index]

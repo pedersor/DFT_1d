@@ -104,7 +104,7 @@ class KS_Solver(SolverBase):
         self._initialize_density()
         self.set_energy_tol_threshold()
 
-    def set_energy_tol_threshold(self, energy_tol_threshold=1e-6):
+    def set_energy_tol_threshold(self, energy_tol_threshold=1e-4):
         self.energy_tol_threshold = energy_tol_threshold
         return self
 

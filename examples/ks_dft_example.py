@@ -19,7 +19,7 @@ def lda_run(grids, N_e, Z):
 
     solver = ks_dft.KS_Solver(grids, v_ext=v_ext, v_h=v_h, xc=ex_corr,
                               num_electrons=N_e)
-    solver.solve_self_consistent_density(v_ext=v_ext(grids), sym=1)
+    solver.solve_self_consistent_density(v_ext=v_ext(grids), verbose=1)
 
     return solver
 
@@ -81,7 +81,8 @@ def single_atom(grids, N_e, Z):
 
 
 if __name__ == '__main__':
-    grids = np.linspace(-10, 10, 501)
+    h = 0.08
+    grids = np.arange(-256, 257) * h
 
     single_atom(grids, 3, 3)
     # get_latex_table(grids)

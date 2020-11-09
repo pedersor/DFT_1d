@@ -2,6 +2,8 @@ import single_electron, functionals
 import numpy as np
 import functools
 import math
+import matplotlib.pyplot as plt
+import time
 
 
 def get_dx(grids):
@@ -117,15 +119,6 @@ class KS_Solver(SolverBase):
         self.num_up_electrons = num_up_electrons
         self.num_down_electrons = num_down_electrons
 
-        # uniform density (unused)
-        self.n_up = self.num_up_electrons / (
-                self.num_grids * self.dx) * np.ones(
-            self.num_grids)
-        self.n_down = self.num_down_electrons / (
-                self.num_grids * self.dx) * np.ones(self.num_grids)
-        self.density = self.n_up + self.n_down
-        self.zeta = (self.n_up - self.n_down) / (self.density)
-
         return self
 
     def _update_v_tot_up(self):
@@ -168,27 +161,17 @@ class KS_Solver(SolverBase):
           self
         """
 
-        self.kinetic_energy = 0.
+        self.kinetic_energy = 0
+        self.eps = 0
 
-        self.density = np.zeros(self.num_grids)
-        self.n_up = np.zeros(self.num_grids)
-        self.n_down = np.zeros(self.num_grids)
+        self.n_up = solver_up.density
+        self.kinetic_energy += solver_up.kinetic_energy
+        self.eps += solver_up.total_energy
 
-        self.wave_function_up = solver_up.wave_function
-        if solver_down is not None:
-            self.wave_function_down = solver_down.wave_function
-
-        for i in range(self.num_up_electrons):
-            self.n_up += self.wave_function_up[i] ** 2
-            self.kinetic_energy += quadratic(solver_up._t_mat,
-                                             solver_up.wave_function[
-                                                 i]) * self.dx
-
-        for i in range(self.num_down_electrons):
-            self.n_down += self.wave_function_down[i] ** 2
-            self.kinetic_energy += quadratic(solver_down._t_mat,
-                                             solver_down.wave_function[
-                                                 i]) * self.dx
+        if solver_down:
+            self.n_down = solver_down.density
+            self.kinetic_energy += solver_down.kinetic_energy
+            self.eps += solver_down.total_energy
 
         self.density = self.n_up + self.n_down
         self.zeta = (self.n_up - self.n_down) / (self.density)
@@ -215,21 +198,12 @@ class KS_Solver(SolverBase):
             solver_down.solve_ground_state()
             return self._update_ground_state(solver_up, solver_down)
 
-    def solve_self_consistent_density(self, v_ext, sym):
+    def solve_self_consistent_density(self, v_ext, mixing_param=0.3, verbose=0):
+        prev_densities = []
 
-        self.densityList = []
-
-        self.cuspList = []
-        for i in range(len(v_ext) - 1):
-            if v_ext[i - 1] >= v_ext[i] and v_ext[i + 1] >= v_ext[i]:
-                self.cuspList.append(i)
-
-        delta_E = 1.0
-        first_iter = True
-        while delta_E >= self.energy_tol_threshold:
-            if not first_iter:
-                old_E = self.E_tot
-
+        final_energy = 1E100
+        converged = False
+        while not converged:
             # solve KS system -> obtain new density
             self._solve_ground_state()
 
@@ -237,53 +211,41 @@ class KS_Solver(SolverBase):
             self._update_v_tot_up()
             self._update_v_tot_down()
 
-            # perturb spin up/down densities to break symmetry
-            if first_iter == True:
-                for i in range(0, len(self.cuspList), 2):
-                    for j in range(0, 10, 1):
-                        self.n_up[self.cuspList[i] - j] *= sym
-                        self.n_up[self.cuspList[i] + j] *= sym
-                        self.n_down[self.cuspList[i] - j] *= 1. / sym
-                        self.n_down[self.cuspList[i] + j] *= 1. / sym
-                    self.n_up[self.cuspList[i]] *= 1. / sym
-                    self.n_down[self.cuspList[i]] *= sym
-                for i in range(1, len(self.cuspList), 2):
-                    for j in range(0, 10, 1):
-                        self.n_up[self.cuspList[i] - j] *= 1. / sym
-                        self.n_up[self.cuspList[i] + j] *= 1. / sym
-                        self.n_down[self.cuspList[i] - j] *= sym
-                        self.n_down[self.cuspList[i] + j] *= sym
-                    self.n_up[self.cuspList[i]] *= sym
-                    self.n_down[self.cuspList[i]] *= 1. / sym
-                self.density = self.n_up + self.n_down
+            if (np.abs(self.eps - final_energy) < self.energy_tol_threshold):
+                converged = True
+                self._solved = True
 
-            self.densityList.append(self.density)
+            final_energy = self.eps
+            if prev_densities and mixing_param:
+                self.density = (1 - mixing_param) * self.density + \
+                               mixing_param * prev_densities[-1]
 
-            # Non-Interacting Kinetic Energy
-            self.T_s = self.kinetic_energy
+            prev_densities.append(self.density)
 
-            # External Potential Energy
-            self.V = (self.v_ext(self.grids) * self.density).sum() * self.dx
+            if verbose == 1 or verbose == 2:
+                print("i = " + str(len(prev_densities)) + ": eps = " + str(
+                    final_energy))
+            if verbose == 2:
+                plt.plot(self.grids, prev_densities[-1])
+                plt.show()
 
-            # Hartree Integral
-            self.U = .5 * (self.v_h(grids=self.grids,
-                                    n=self.density) * self.density).sum() * self.dx
+        # Non-Interacting Kinetic Energy
+        self.T_s = self.kinetic_energy
 
-            # Exchange Energy
-            self.E_x = self.xc.get_E_x(self.density, self.zeta)
+        # External Potential Energy
+        self.V = (self.v_ext(self.grids) * self.density).sum() * self.dx
 
-            # Correlation Energy
-            self.E_c = self.xc.get_E_c(self.density, self.zeta)
+        # Hartree Integral
+        self.U = .5 * (self.v_h(grids=self.grids,
+                                n=self.density) * self.density).sum() * self.dx
 
-            # Total Energy
-            self.E_tot = self.T_s + self.V + self.U + self.E_x + self.E_c
+        # Exchange Energy
+        self.E_x = self.xc.get_E_x(self.density, self.zeta)
 
-            if not first_iter:
-                delta_E = np.abs(old_E - self.E_tot).sum() * self.dx
-                # print("delta_E = ", delta_E)
-            else:
-                first_iter = False
+        # Correlation Energy
+        self.E_c = self.xc.get_E_c(self.density, self.zeta)
 
-        self._solved = True
+        # Total Energy
+        self.E_tot = self.T_s + self.V + self.U + self.E_x + self.E_c
 
         return self

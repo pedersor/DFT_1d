@@ -81,7 +81,7 @@ def single_atom(grids, N_e, Z):
 
 
 if __name__ == '__main__':
-    grids = np.linspace(-10, 10, 201)
+    grids = np.linspace(-10, 10, 501)
 
     single_atom(grids, 3, 3)
     # get_latex_table(grids)

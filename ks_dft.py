@@ -84,17 +84,6 @@ class SolverBase(object):
         """Returns whether this solver has been solved."""
         return self._solved
 
-    def solve_ground_state(self):
-        """Solve ground state. Need to be implemented in subclasses.
-
-        Compute attributes:
-        total_energy, kinetic_energy, potential_energy, density, wave_function.
-
-        Returns:
-          self
-        """
-        raise NotImplementedError('Must be implemented by subclass.')
-
 
 class KS_Solver(SolverBase):
     """Represents the Hamiltonian as a matrix and diagonalizes it directly."""
@@ -110,14 +99,14 @@ class KS_Solver(SolverBase):
         """
         super(KS_Solver, self).__init__(grids, v_ext, v_h, xc, num_electrons,
                                         k_point, boundary_condition)
-        self.initialize_density()
+        self._initialize_density()
         self.set_energy_tol_threshold()
 
-    def set_energy_tol_threshold(self, energy_tol_threshold = 1e-6):
+    def set_energy_tol_threshold(self, energy_tol_threshold=1e-6):
         self.energy_tol_threshold = energy_tol_threshold
         return self
 
-    def initialize_density(self):
+    def _initialize_density(self):
         # Get number of Up/Down Electrons. All unpaired electrons are defaulted to spin-up.
 
         num_up_electrons = int(self.num_electrons / 2)
@@ -139,7 +128,7 @@ class KS_Solver(SolverBase):
 
         return self
 
-    def update_v_tot_up(self):
+    def _update_v_tot_up(self):
         # total potential to be solved self consistently in the Kohn Sham system
 
         self.v_tot_up = functools.partial(functionals.tot_KS_potential,
@@ -149,7 +138,7 @@ class KS_Solver(SolverBase):
                                           v_xc=self.xc.v_xc_exp_up)
         return self
 
-    def update_v_tot_down(self):
+    def _update_v_tot_down(self):
         # total potential to be solved self consistently in the Kohn Sham system
 
         self.v_tot_down = functools.partial(functionals.tot_KS_potential,
@@ -206,23 +195,23 @@ class KS_Solver(SolverBase):
 
         return self
 
-    def solve_ground_state(self):
+    def _solve_ground_state(self):
         """Solve ground state by diagonalizing the Hamiltonian matrix directly and separately for up and down spins.
         """
 
         solver_up = single_electron.EigenSolver(self.grids,
-                                               potential_fn=self.v_tot_up,
-                                               num_electrons=self.num_up_electrons,
-                                               boundary_condition=self.boundary_condition)
+                                                potential_fn=self.v_tot_up,
+                                                num_electrons=self.num_up_electrons,
+                                                boundary_condition=self.boundary_condition)
         solver_up.solve_ground_state()
 
         if self.num_down_electrons == 0:
             return self._update_ground_state(solver_up)
         else:
             solver_down = single_electron.EigenSolver(self.grids,
-                                                     potential_fn=self.v_tot_down,
-                                                     num_electrons=self.num_down_electrons,
-                                                     boundary_condition=self.boundary_condition)
+                                                      potential_fn=self.v_tot_down,
+                                                      num_electrons=self.num_down_electrons,
+                                                      boundary_condition=self.boundary_condition)
             solver_down.solve_ground_state()
             return self._update_ground_state(solver_up, solver_down)
 
@@ -242,11 +231,11 @@ class KS_Solver(SolverBase):
                 old_E = self.E_tot
 
             # solve KS system -> obtain new density
-            self.solve_ground_state()
+            self._solve_ground_state()
 
             # update total potentials using new density
-            self.update_v_tot_up()
-            self.update_v_tot_down()
+            self._update_v_tot_up()
+            self._update_v_tot_down()
 
             # perturb spin up/down densities to break symmetry
             if first_iter == True:

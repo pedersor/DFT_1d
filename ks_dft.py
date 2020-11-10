@@ -198,7 +198,7 @@ class KS_Solver(SolverBase):
             solver_down.solve_ground_state()
             return self._update_ground_state(solver_up, solver_down)
 
-    def solve_self_consistent_density(self, v_ext, mixing_param=0.3, verbose=0):
+    def solve_self_consistent_density(self, v_ext, mixing_param=0.3, max_iter=20, verbose=0):
         prev_densities = []
 
         final_energy = 1E100
@@ -207,27 +207,40 @@ class KS_Solver(SolverBase):
             # solve KS system -> obtain new density
             self._solve_ground_state()
 
-            # update total potentials using new density
-            self._update_v_tot_up()
-            self._update_v_tot_down()
-
             if (np.abs(self.eps - final_energy) < self.energy_tol_threshold):
                 converged = True
                 self._solved = True
 
             final_energy = self.eps
             if prev_densities and mixing_param:
+                alpha = 0.5 * (0.9) ** (len(prev_densities))
+                print(alpha)
+                self.n_up = prev_densities[-1][0] + alpha * (
+                        self.n_up - prev_densities[-1][0])
+
+                self.n_down = prev_densities[-1][1] + alpha * (
+                        self.n_down - prev_densities[-1][1])
+
+                self.density = self.n_up + self.n_down
+                """
                 self.density = (1 - mixing_param) * self.density + \
                                mixing_param * prev_densities[-1]
+                """
 
-            prev_densities.append(self.density)
+            prev_densities.append([self.n_up, self.n_down])
+            # update total potentials using new density
+            self._update_v_tot_up()
+            self._update_v_tot_down()
 
             if verbose == 1 or verbose == 2:
                 print("i = " + str(len(prev_densities)) + ": eps = " + str(
                     final_energy))
             if verbose == 2:
-                plt.plot(self.grids, prev_densities[-1])
+                plt.plot(self.grids, prev_densities[-1][0])
                 plt.show()
+
+            if len(prev_densities) == max_iter:
+                break
 
         # Non-Interacting Kinetic Energy
         self.T_s = self.kinetic_energy

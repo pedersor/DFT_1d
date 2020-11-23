@@ -3,7 +3,6 @@ import numpy as np
 import functools
 import math
 import matplotlib.pyplot as plt
-import time
 
 
 def get_dx(grids):
@@ -143,7 +142,7 @@ class KS_Solver(SolverBase):
         return self
 
     def _update_ground_state(self, solver_up, solver_down=None):
-        """Helper function to solve_ground_state() method.
+        """Helper function to _solve_ground_state() method.
 
         Updates the attributes total_energy, wave_function, density, kinetic_energy,
         potential_enenrgy and _solved from the eigensolver's output (w, v).
@@ -199,6 +198,17 @@ class KS_Solver(SolverBase):
             return self._update_ground_state(solver_up, solver_down)
 
     def solve_self_consistent_density(self, v_ext, mixing_param=0.3, verbose=0):
+        """
+
+        Args:
+            mixing_param: linear mixing parameter, where 0.0 denotes no mixing.
+            verbose: convergence debug printing.
+
+        Returns:
+            self.
+        """
+
+        # TODO: use prev_densities for DIIS mixing
         prev_densities = []
 
         final_energy = 1E100

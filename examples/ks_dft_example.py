@@ -1,23 +1,27 @@
-# Test of LDA implementation on single atoms/ions
-
 import ks_dft, functionals, ext_potentials
 import matplotlib.pyplot as plt
 import numpy as np
 import functools
 
 
-def lda_run(grids, N_e, Z):
-    # N_e: Number of Electrons
-    # Z: Nuclear Charge
+def lda_ks_dft(grids, N_e, Z):
+    """ local density approximation (LDA) KS-DFT calculation for a 1D atom with
+        exponential interactions, see ext_potentials.exp_hydrogenic.
 
-    A = 1.071295
-    k = 1. / 2.385345
+    Args:
+        grids: grids: numpy array of grid points for evaluating 1d potential.
+        (num_grids,)
+        N_e: the number of electrons in the atom.
+        Z: the nuclear charge Z of the atom.
+
+    Returns:
+        KS-DFT solver class.
+    """
 
     v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=Z)
     v_h = functools.partial(functionals.hartree_potential)
-    ex_corr = functionals.exchange_correlation_functional(grids=grids, A=A, k=k)
-
-    solver = ks_dft.KS_Solver(grids, v_ext=v_ext, v_h=v_h, xc=ex_corr,
+    lda_xc = functionals.exchange_correlation_functional(grids=grids)
+    solver = ks_dft.KS_Solver(grids, v_ext=v_ext, v_h=v_h, xc=lda_xc,
                               num_electrons=N_e)
     solver.solve_self_consistent_density(v_ext=v_ext(grids), verbose=1)
 
@@ -25,12 +29,26 @@ def lda_run(grids, N_e, Z):
 
 
 def get_latex_table(grids):
-    # "atom/ion": [N_e, Z]
+    """ Reproduce table 2 LDA results in:
+
+        Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
+        and  Steven  R  White. One-dimensional mimicking of electronic structure:
+        The case for exponentials. Physical Review B,91(23):235141, 2015.
+
+    Args:
+        grids: grids: numpy array of grid points for evaluating 1d potential.
+        (num_grids,)
+
+    Prints:
+        copyable latex-formatted table.
+    """
+
     atom_dict = {"H": [1, 1], "He$^+$": [1, 2], "Li$^{2+}$": [1, 3],
                  "Be$^{3+}$": [1, 4], "He": [2, 2], "Li$^+$": [2, 3],
                  "Be$^{2+}$": [2, 4], "Li": [3, 3], "Be$^+$": [3, 4],
                  "Be": [4, 4]}
 
+    # table headers
     print("$N_e$", end=" & ")
     print("Atom/Ion", end=" & ")
     print("$T_s$", end=" & ")
@@ -46,7 +64,7 @@ def get_latex_table(grids):
         print(atom_dict[key][0], end=" & ")
         print(key, end=" & ")
 
-        solver = lda_run(grids, atom_dict[key][0], atom_dict[key][1])
+        solver = lda_ks_dft(grids, atom_dict[key][0], atom_dict[key][1])
         print(str(round(solver.T_s, 3)), end=" & ")
         print(str(round(solver.V, 3)), end=" & ")
         print(str(round(solver.U, 3)), end=" & ")
@@ -59,9 +77,9 @@ def get_latex_table(grids):
 
 
 def single_atom(grids, N_e, Z):
-    solver = lda_run(grids, N_e, Z)
+    solver = lda_ks_dft(grids, N_e, Z)
 
-    # Non-Interacting Kinetic Energy
+    # Non-Interacting (Kohn-Sham) Kinetic Energy
     print("T_s =", solver.T_s)
 
     # External Potential Energy
@@ -79,10 +97,18 @@ def single_atom(grids, N_e, Z):
     # Total Energy
     print("E =", solver.E_tot)
 
+    return solver
+
 
 if __name__ == '__main__':
     h = 0.08
     grids = np.arange(-256, 257) * h
 
-    single_atom(grids, 3, 3)
-    # get_latex_table(grids)
+    example = single_atom(grids, 3, 3)
+
+    # plot example self-consistent LDA density
+    plt.plot(grids, example.density)
+    plt.ylabel('$n(x)$', fontsize=16)
+    plt.xlabel('$x$', fontsize=16)
+    plt.grid(alpha=0.4)
+    plt.show()

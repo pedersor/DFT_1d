@@ -1,8 +1,5 @@
+import constants
 import numpy as np
-from scipy import special
-from scipy import integrate
-from scipy import optimize
-import math
 
 
 def gaussian_dips(grids, coeff, sigma, mu):
@@ -89,7 +86,8 @@ def kronig_penney(grids, a, b, v0):
     return np.asarray(vp)
 
 
-def exp_hydrogenic(grids, A=1.071295, k=(1. / 2.385345), a=0, Z=1):
+def exp_hydrogenic(grids, A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
+                   k=constants.EXPONENTIAL_COULOMB_KAPPA, a=0, Z=1):
     """Exponential potential for 1D Hydrogenic atom.
 
     A 1D potential which can be used to mimic corresponding 3D

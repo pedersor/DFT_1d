@@ -1,4 +1,5 @@
 import ext_potentials
+import constants
 import numpy as np
 import functools
 
@@ -13,7 +14,6 @@ def tot_HF_potential(grids, n, v_ext, v_h):
 
 def hartree_potential(grids, n, v_ee=functools.partial(
     ext_potentials.exp_hydrogenic)):
-
     N = len(grids)
     dx = np.abs(grids[1] - grids[0])
     v_H = np.zeros(N)
@@ -25,7 +25,8 @@ def hartree_potential(grids, n, v_ee=functools.partial(
 
 
 class fock_operator(object):
-    def __init__(self, grids, A, k):
+    def __init__(self, grids, A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
+                 k=constants.EXPONENTIAL_COULOMB_KAPPA):
         self.grids = grids
         self.num_grids = len(grids)
         self.A = A
@@ -85,7 +86,8 @@ class fock_operator(object):
 
 class exchange_correlation_functional(object):
 
-    def __init__(self, grids, A, k):
+    def __init__(self, grids, A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
+                 k=constants.EXPONENTIAL_COULOMB_KAPPA):
         self.grids = grids
         self.A = A
         self.k = k

@@ -171,6 +171,8 @@ class KS_Solver(SolverBase):
             self.n_down = solver_down.density
             self.kinetic_energy += solver_down.kinetic_energy
             self.eps += solver_down.total_energy
+        else:
+            self.n_down = 0
 
         self.density = self.n_up + self.n_down
         self.zeta = (self.n_up - self.n_down) / (self.density)

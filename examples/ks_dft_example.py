@@ -2,9 +2,10 @@ import ks_dft, functionals, ext_potentials
 import matplotlib.pyplot as plt
 import numpy as np
 import functools
+import sys
 
 
-def lda_ks_dft(grids, N_e, Z):
+def lda_ks_dft_atom(grids, N_e, Z):
     """ local density approximation (LDA) KS-DFT calculation for a 1D atom with
         exponential interactions, see ext_potentials.exp_hydrogenic.
 
@@ -23,13 +24,13 @@ def lda_ks_dft(grids, N_e, Z):
     lda_xc = functionals.exchange_correlation_functional(grids=grids)
     solver = ks_dft.KS_Solver(grids, v_ext=v_ext, v_h=v_h, xc=lda_xc,
                               num_electrons=N_e)
-    solver.solve_self_consistent_density(v_ext=v_ext(grids), verbose=1)
+    solver.solve_self_consistent_density(v_ext=v_ext(grids))
 
     return solver
 
 
-def get_latex_table(grids):
-    """ Reproduce table 2 LDA results in:
+def get_latex_table_atoms(grids):
+    """ Reproduce LDA results in table 2 of:
 
         Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
         and  Steven  R  White. One-dimensional mimicking of electronic structure:
@@ -64,7 +65,7 @@ def get_latex_table(grids):
         print(atom_dict[key][0], end=" & ")
         print(key, end=" & ")
 
-        solver = lda_ks_dft(grids, atom_dict[key][0], atom_dict[key][1])
+        solver = lda_ks_dft_atom(grids, atom_dict[key][0], atom_dict[key][1])
         print(str(round(solver.T_s, 3)), end=" & ")
         print(str(round(solver.V, 3)), end=" & ")
         print(str(round(solver.U, 3)), end=" & ")
@@ -77,7 +78,7 @@ def get_latex_table(grids):
 
 
 def single_atom(grids, N_e, Z):
-    solver = lda_ks_dft(grids, N_e, Z)
+    solver = lda_ks_dft_atom(grids, N_e, Z)
 
     # Non-Interacting (Kohn-Sham) Kinetic Energy
     print("T_s =", solver.T_s)
@@ -101,6 +102,7 @@ def single_atom(grids, N_e, Z):
 
 
 if __name__ == '__main__':
+    """ Li atom lda calculation example. """
     h = 0.08
     grids = np.arange(-256, 257) * h
 
@@ -112,3 +114,10 @@ if __name__ == '__main__':
     plt.xlabel('$x$', fontsize=16)
     plt.grid(alpha=0.4)
     plt.show()
+
+    sys.exit()
+
+    """ Generate atom table for various (N_e, Z) """
+    # use coarser grid for faster computation.
+    grids = np.linspace(-10, 10, 201)
+    get_latex_table_atoms(grids)

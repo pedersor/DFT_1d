@@ -1,0 +1,994 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Modules &mdash; 1D Solver 2020 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon-32x32.png"/>
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="User guide" href="userguide.html" />
+    <link rel="prev" title="1D Density Functional Theory Solver" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> 1D Solver
+          
+
+          
+            
+            <img src="_static/1DSolver.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="userguide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About and Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cite.html">Cite</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">1D Solver</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Modules</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-hf_scf">
+<span id="modules"></span><h1>Modules<a class="headerlink" href="#module-hf_scf" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="hf_scf.get_dx">
+<code class="sig-prename descclassname">hf_scf.</code><code class="sig-name descname">get_dx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#get_dx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.get_dx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the grid spacing from grids array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>grids</strong> – Numpy array with shape (num_grids,).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Grid spacing.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="hf_scf.quadratic">
+<code class="sig-prename descclassname">hf_scf.</code><code class="sig-name descname">quadratic</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mat</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#quadratic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.quadratic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the quadratic form of matrix and vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mat</strong> – matrix.
+(n, n)</p></li>
+<li><p><strong>x</strong> – vector.
+(n,)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>scalar value as result of x A x.T.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>output</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="hf_scf.SolverBase">
+<em class="property">class </em><code class="sig-prename descclassname">hf_scf.</code><code class="sig-name descname">SolverBase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">v_ext</span></em>, <em class="sig-param"><span class="n">v_h</span></em>, <em class="sig-param"><span class="n">fock_operator</span></em>, <em class="sig-param"><span class="n">num_electrons</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">k_point</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">boundary_condition</span><span class="o">=</span><span class="default_value">'open'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#SolverBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.SolverBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base Solver for non-interacting 1d system.</p>
+<p>Subclasses should define solve_ground_state method.</p>
+<dl class="py method">
+<dt id="hf_scf.SolverBase.is_solved">
+<code class="sig-name descname">is_solved</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#SolverBase.is_solved"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.SolverBase.is_solved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether this solver has been solved.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="hf_scf.SolverBase.solve_ground_state">
+<code class="sig-name descname">solve_ground_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#SolverBase.solve_ground_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.SolverBase.solve_ground_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve ground state. Need to be implemented in subclasses.</p>
+<p>Compute attributes:
+total_energy, kinetic_energy, potential_energy, density, wave_function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="hf_scf.HF_Solver">
+<em class="property">class </em><code class="sig-prename descclassname">hf_scf.</code><code class="sig-name descname">HF_Solver</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">v_ext</span></em>, <em class="sig-param"><span class="n">v_h</span></em>, <em class="sig-param"><span class="n">fock_operator</span></em>, <em class="sig-param"><span class="n">num_electrons</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">k_point</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">boundary_condition</span><span class="o">=</span><span class="default_value">'open'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#HF_Solver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.HF_Solver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#hf_scf.SolverBase" title="hf_scf.SolverBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">hf_scf.SolverBase</span></code></a></p>
+<p>Represents the Hamiltonian as a matrix and diagonalizes it directly.</p>
+<dl class="py method">
+<dt id="hf_scf.HF_Solver.initialize_density">
+<code class="sig-name descname">initialize_density</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#HF_Solver.initialize_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.HF_Solver.initialize_density" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="hf_scf.HF_Solver.update_v_tot_up">
+<code class="sig-name descname">update_v_tot_up</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#HF_Solver.update_v_tot_up"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.HF_Solver.update_v_tot_up" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="hf_scf.HF_Solver.update_v_tot_down">
+<code class="sig-name descname">update_v_tot_down</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#HF_Solver.update_v_tot_down"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.HF_Solver.update_v_tot_down" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="hf_scf.HF_Solver.update_fock_matrix_up">
+<code class="sig-name descname">update_fock_matrix_up</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#HF_Solver.update_fock_matrix_up"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.HF_Solver.update_fock_matrix_up" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="hf_scf.HF_Solver.update_fock_matrix_down">
+<code class="sig-name descname">update_fock_matrix_down</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#HF_Solver.update_fock_matrix_down"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.HF_Solver.update_fock_matrix_down" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="hf_scf.HF_Solver.get_E_x_HF">
+<code class="sig-name descname">get_E_x_HF</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#HF_Solver.get_E_x_HF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.HF_Solver.get_E_x_HF" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="hf_scf.HF_Solver.solve_ground_state">
+<code class="sig-name descname">solve_ground_state</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">first_iter</span></em>, <em class="sig-param"><span class="n">sym</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#HF_Solver.solve_ground_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.HF_Solver.solve_ground_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve ground state by diagonalizing the Hamiltonian matrix directly and separately for up and down spins.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="hf_scf.HF_Solver.solve_self_consistent_density">
+<code class="sig-name descname">solve_self_consistent_density</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sym</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#HF_Solver.solve_self_consistent_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.HF_Solver.solve_self_consistent_density" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-ks_dft"></span><dl class="py function">
+<dt id="ks_dft.get_dx">
+<code class="sig-prename descclassname">ks_dft.</code><code class="sig-name descname">get_dx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_dft.html#get_dx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_dft.get_dx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the grid spacing from grids array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>grids</strong> – Numpy array with shape (num_grids,).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Grid spacing.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ks_dft.quadratic">
+<code class="sig-prename descclassname">ks_dft.</code><code class="sig-name descname">quadratic</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mat</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_dft.html#quadratic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_dft.quadratic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the quadratic form of matrix and vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mat</strong> – matrix.
+(n, n)</p></li>
+<li><p><strong>x</strong> – vector.
+(n,)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>scalar value as result of x A x.T.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>output</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="ks_dft.SolverBase">
+<em class="property">class </em><code class="sig-prename descclassname">ks_dft.</code><code class="sig-name descname">SolverBase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">v_ext</span></em>, <em class="sig-param"><span class="n">v_h</span></em>, <em class="sig-param"><span class="n">xc</span></em>, <em class="sig-param"><span class="n">num_electrons</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">k_point</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">boundary_condition</span><span class="o">=</span><span class="default_value">'open'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_dft.html#SolverBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_dft.SolverBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base Solver for non-interacting 1d system.</p>
+<p>Subclasses should define solve_ground_state method.</p>
+<dl class="py method">
+<dt id="ks_dft.SolverBase.is_solved">
+<code class="sig-name descname">is_solved</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_dft.html#SolverBase.is_solved"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_dft.SolverBase.is_solved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether this solver has been solved.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ks_dft.KS_Solver">
+<em class="property">class </em><code class="sig-prename descclassname">ks_dft.</code><code class="sig-name descname">KS_Solver</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">v_ext</span></em>, <em class="sig-param"><span class="n">v_h</span></em>, <em class="sig-param"><span class="n">xc</span></em>, <em class="sig-param"><span class="n">num_electrons</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">k_point</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">boundary_condition</span><span class="o">=</span><span class="default_value">'open'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_dft.html#KS_Solver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_dft.KS_Solver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ks_dft.SolverBase" title="ks_dft.SolverBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">ks_dft.SolverBase</span></code></a></p>
+<p>Represents the Hamiltonian as a matrix and diagonalizes it directly.</p>
+<dl class="py method">
+<dt id="ks_dft.KS_Solver.set_energy_tol_threshold">
+<code class="sig-name descname">set_energy_tol_threshold</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">energy_tol_threshold</span><span class="o">=</span><span class="default_value">0.0001</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_dft.html#KS_Solver.set_energy_tol_threshold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_dft.KS_Solver.set_energy_tol_threshold" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ks_dft.KS_Solver.solve_self_consistent_density">
+<code class="sig-name descname">solve_self_consistent_density</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v_ext</span></em>, <em class="sig-param"><span class="n">mixing_param</span><span class="o">=</span><span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_dft.html#KS_Solver.solve_self_consistent_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_dft.KS_Solver.solve_self_consistent_density" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mixing_param</strong> – linear mixing parameter, where 0.0 denotes no mixing.</p></li>
+<li><p><strong>verbose</strong> – convergence debug printing.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-ks_inversion"></span><dl class="py class">
+<dt id="ks_inversion.KSInversion">
+<em class="property">class </em><code class="sig-prename descclassname">ks_inversion.</code><code class="sig-name descname">KSInversion</code><span class="sig-paren">(</span><em class="sig-param">full_grids</em>, <em class="sig-param">v_Z_fn</em>, <em class="sig-param">full_target_density</em>, <em class="sig-param">truncation</em>, <em class="sig-param">n_point_stencil=5</em>, <em class="sig-param">init_v_XC_fn=&lt;function KSInversion.&lt;lambda&gt;&gt;</em>, <em class="sig-param">Solver=&lt;class 'single_electron.SparseEigenSolver'&gt;</em>, <em class="sig-param">num_electrons=1</em>, <em class="sig-param">tol=0.1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_inversion.html#KSInversion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_inversion.KSInversion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="ks_inversion.KSInversion.append_exp">
+<code class="sig-name descname">append_exp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x0</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">ignored_points</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">f</span><span class="o">=</span><span class="default_value">'cfexp'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_inversion.html#KSInversion.append_exp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_inversion.KSInversion.append_exp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ks_inversion.KSInversion.solve_v_XC">
+<code class="sig-name descname">solve_v_XC</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x0</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">ignored_points</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">f</span><span class="o">=</span><span class="default_value">'cfexp'</span></em>, <em class="sig-param"><span class="n">truncated</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_inversion.html#KSInversion.solve_v_XC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_inversion.KSInversion.solve_v_XC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="ks_inversion.two_iter_KS_inversion">
+<code class="sig-prename descclassname">ks_inversion.</code><code class="sig-name descname">two_iter_KS_inversion</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f_grids</span></em>, <em class="sig-param"><span class="n">f_v_Z_fn</span></em>, <em class="sig-param"><span class="n">f_tar_density</span></em>, <em class="sig-param"><span class="n">num_electrons</span></em>, <em class="sig-param"><span class="n">n_point_stencil</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">t_tol</span><span class="o">=</span><span class="default_value">0.0001</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_inversion.html#two_iter_KS_inversion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_inversion.two_iter_KS_inversion" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-single_electron"></span><p>Solvers for non-interacting 1d system.</p>
+<p>Solve non-interacting 1d system numerically on grids. Each eigenstate will be
+occupied by one electron.</p>
+<p>Note both solver (EigenSolver, SparseEigenSolver) here are based on directly
+diagonalizing the Hamiltonian matrix, which are straightforward to understand,
+but not as accurate as other delicate numerical methods, like density matrix
+renormalization group (DMRG).</p>
+<dl class="py function">
+<dt id="single_electron.get_dx">
+<code class="sig-prename descclassname">single_electron.</code><code class="sig-name descname">get_dx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_electron.html#get_dx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#single_electron.get_dx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the grid spacing from grids array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>grids</strong> – Numpy array with shape (num_grids,).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Grid spacing.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="single_electron.vw_grid">
+<code class="sig-prename descclassname">single_electron.</code><code class="sig-name descname">vw_grid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">density</span></em>, <em class="sig-param"><span class="n">dx</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_electron.html#vw_grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#single_electron.vw_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>von Weizsacker kinetic energy functional on grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>density</strong> – numpy array, density on grid.
+(num_grids,)</p></li>
+<li><p><strong>dx</strong> – grid spacing.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>von Weizsacker kinetic energy.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>kinetic_energy</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="single_electron.quadratic">
+<code class="sig-prename descclassname">single_electron.</code><code class="sig-name descname">quadratic</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mat</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_electron.html#quadratic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#single_electron.quadratic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the quadratic form of matrix and vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mat</strong> – matrix.
+(n, n)</p></li>
+<li><p><strong>x</strong> – vector.
+(n,)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>scalar value as result of x A x.T.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>output</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="single_electron.SolverBase">
+<em class="property">class </em><code class="sig-prename descclassname">single_electron.</code><code class="sig-name descname">SolverBase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">potential_fn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_electrons</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">k_point</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">boundary_condition</span><span class="o">=</span><span class="default_value">'open'</span></em>, <em class="sig-param"><span class="n">n_point_stencil</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">fock_mat</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_electron.html#SolverBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#single_electron.SolverBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base Solver for non-interacting 1d system.</p>
+<p>Subclasses should define solve_ground_state method.</p>
+<dl class="py method">
+<dt id="single_electron.SolverBase.is_solved">
+<code class="sig-name descname">is_solved</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_electron.html#SolverBase.is_solved"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#single_electron.SolverBase.is_solved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether this solver has been solved.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="single_electron.SolverBase.solve_ground_state">
+<code class="sig-name descname">solve_ground_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_electron.html#SolverBase.solve_ground_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#single_electron.SolverBase.solve_ground_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve ground state. Need to be implemented in subclasses.</p>
+<p>Compute attributes:
+total_energy, kinetic_energy, potential_energy, density, wave_function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="single_electron.EigenSolver">
+<em class="property">class </em><code class="sig-prename descclassname">single_electron.</code><code class="sig-name descname">EigenSolver</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">potential_fn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_electrons</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">k_point</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">boundary_condition</span><span class="o">=</span><span class="default_value">'open'</span></em>, <em class="sig-param"><span class="n">n_point_stencil</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">fock_mat</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_electron.html#EigenSolver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#single_electron.EigenSolver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#single_electron.SolverBase" title="single_electron.SolverBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">single_electron.SolverBase</span></code></a></p>
+<p>Represents the Hamiltonian as a matrix and diagonalizes it directly.</p>
+<p>This is the most stable and accurate eigensolver. Use SparseEigenSolver
+for a faster iterative eigensolver.</p>
+<dl class="py method">
+<dt id="single_electron.EigenSolver.update_potential">
+<code class="sig-name descname">update_potential</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">potential_fn</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_electron.html#EigenSolver.update_potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#single_electron.EigenSolver.update_potential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace the current potential grids with a new potential grids.
+Delete all attributes created by solving eigenvalues, set _solved to
+False.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>potential_fn</strong> – potential function taking grids as argument.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="single_electron.EigenSolver.get_kinetic_matrix">
+<code class="sig-name descname">get_kinetic_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_electron.html#EigenSolver.get_kinetic_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#single_electron.EigenSolver.get_kinetic_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Kinetic matrix. Here the finite difference method is used to
+generate a kinetic energy operator in discrete space while satisfying
+desired boundary conditions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Kinetic matrix.</dt><dd><p>(num_grids, num_grids)</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>mat</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="single_electron.EigenSolver.get_potential_matrix">
+<code class="sig-name descname">get_potential_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_electron.html#EigenSolver.get_potential_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#single_electron.EigenSolver.get_potential_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Potential matrix. A diagonal matrix corresponding to the one-body
+potential input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Potential matrix.</dt><dd><p>(num_grids, num_grids)</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>mat</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="single_electron.EigenSolver.solve_ground_state">
+<code class="sig-name descname">solve_ground_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_electron.html#EigenSolver.solve_ground_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#single_electron.EigenSolver.solve_ground_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve ground state by diagonalize the Hamiltonian matrix directly.</p>
+<p>Compute attributes:
+total_energy, kinetic_energy, potential_energy, density, wave_function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="single_electron.SparseEigenSolver">
+<em class="property">class </em><code class="sig-prename descclassname">single_electron.</code><code class="sig-name descname">SparseEigenSolver</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">potential_fn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_electrons</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">k_point</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">boundary_condition</span><span class="o">=</span><span class="default_value">'open'</span></em>, <em class="sig-param"><span class="n">n_point_stencil</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">1e-06</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_electron.html#SparseEigenSolver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#single_electron.SparseEigenSolver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#single_electron.EigenSolver" title="single_electron.EigenSolver"><code class="xref py py-class docutils literal notranslate"><span class="pre">single_electron.EigenSolver</span></code></a></p>
+<p>Represents the Hamiltonian as a matrix and solve with sparse eigensolver.</p>
+<p>This eigensolver is iterative and approximate. It is in general much
+faster than EigenSolver but less robust.</p>
+<dl class="py method">
+<dt id="single_electron.SparseEigenSolver.solve_ground_state">
+<code class="sig-name descname">solve_ground_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_electron.html#SparseEigenSolver.solve_ground_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#single_electron.SparseEigenSolver.solve_ground_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve ground state by sparse eigensolver.</p>
+<p>Compute attributes:
+total_energy, kinetic_energy, potential_energy, density, wave_function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="single_electron.solved_1dsolver_to_example">
+<code class="sig-prename descclassname">single_electron.</code><code class="sig-name descname">solved_1dsolver_to_example</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">solver</span></em>, <em class="sig-param"><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_electron.html#solved_1dsolver_to_example"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#single_electron.solved_1dsolver_to_example" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts an solved solver with a name to a tf.Example proto.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>solver</strong> – A Solver instance with attribute solved=True.</p></li>
+<li><p><strong>params</strong> – dict, other parameters to store in the tf.Example proto.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tf.Example proto with the following populated fields:</dt><dd><p>density, kinetic_energy, total_energy, potential, and other keys in
+params dict.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>example</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the solver is not solved.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-constants"></span><p>Default constants used in this library.</p>
+<p>Exponential Coulomb interaction.</p>
+<p>v(x) = amplitude * exp(-abs(x) * kappa)</p>
+<p>See also ext_potentials.exp_hydrogenic. Further details in:</p>
+<p>Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
+and  Steven  R  White. One-dimensional mimicking of electronic structure:
+The case for exponentials. Physical Review B,91(23):235141, 2015.</p>
+<span class="target" id="module-ext_potentials"></span><dl class="py function">
+<dt id="ext_potentials.gaussian_dips">
+<code class="sig-prename descclassname">ext_potentials.</code><code class="sig-name descname">gaussian_dips</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">coeff</span></em>, <em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">mu</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ext_potentials.html#gaussian_dips"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ext_potentials.gaussian_dips" title="Permalink to this definition">¶</a></dt>
+<dd><p>Potential of sum of Gaussian dips.</p>
+<dl class="simple">
+<dt>The i-th Gaussian dip is</dt><dd><p>-coeff[i] * np.exp(-(grids - mu[i]) ** 2 / (2 * sigma[i] ** 2))</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>grids</strong> – numpy array of grid points for evaluating 1d potential.
+(num_grids,)</p></li>
+<li><p><strong>coeff</strong> – numpy array of coefficient for each gaussian dip.
+(num_dips,)</p></li>
+<li><p><strong>sigma</strong> – numpy array of standard deviation for each gaussian dip.
+(num_dips,)</p></li>
+<li><p><strong>mu</strong> – numpy array of mean for each gaussian dip.
+(num_dips,)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Potential on grid.</dt><dd><p>(num_grids,)</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>vp</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ext_potentials.harmonic_oscillator">
+<code class="sig-prename descclassname">ext_potentials.</code><code class="sig-name descname">harmonic_oscillator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ext_potentials.html#harmonic_oscillator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ext_potentials.harmonic_oscillator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Potential of quantum harmonic oscillator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>grids</strong> – numpy array of grid points for evaluating 1d potential.
+(num_grids,)</p></li>
+<li><p><strong>k</strong> – strength constant for potential vp = 0.5 * k * grids ** 2</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Potential on grid.</dt><dd><p>(num_grid,)</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>vp</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ext_potentials.quartic_oscillator">
+<code class="sig-prename descclassname">ext_potentials.</code><code class="sig-name descname">quartic_oscillator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ext_potentials.html#quartic_oscillator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ext_potentials.quartic_oscillator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="ext_potentials.kronig_penney">
+<code class="sig-prename descclassname">ext_potentials.</code><code class="sig-name descname">kronig_penney</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">b</span></em>, <em class="sig-param"><span class="n">v0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ext_potentials.html#kronig_penney"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ext_potentials.kronig_penney" title="Permalink to this definition">¶</a></dt>
+<dd><p>Kronig-Penney model potential. For more information, see:</p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Particle_in_a_one-dimensional_lattice#Kronig%E2%80%93Penney_model">https://en.wikipedia.org/wiki/Particle_in_a_one-dimensional_lattice#Kronig%E2%80%93Penney_model</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>grids</strong> – numpy array of grid points for evaluating 1d potential.
+(num_grids,)</p></li>
+<li><p><strong>a</strong> – periodicity of 1d lattice</p></li>
+<li><p><strong>b</strong> – width of potential well</p></li>
+<li><p><strong>v0</strong> – negative float. It is the depth of potential well.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Potential on grid.</dt><dd><p>(num_grid,)</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>vp</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ext_potentials.exp_hydrogenic">
+<code class="sig-prename descclassname">ext_potentials.</code><code class="sig-name descname">exp_hydrogenic</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">A</span><span class="o">=</span><span class="default_value">1.071295</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">0.4192265689030308</span></em>, <em class="sig-param"><span class="n">a</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">Z</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ext_potentials.html#exp_hydrogenic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ext_potentials.exp_hydrogenic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exponential potential for 1D Hydrogenic atom.</p>
+<p>A 1D potential which can be used to mimic corresponding 3D
+electronic structure. Similar in form to the soft-Coulomb
+interaction, however there is a cusp occurring at x = 0 for
+a -&gt; 0. Please refer to:</p>
+<p>Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
+and  Steven  R  White. One-dimensional mimicking of electronic structure:
+The case for exponentials. Physical Review B,91(23):235141, 2015.</p>
+<p>The cusp should lie exactly on a grid point to avoid missing any
+kinetic energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>grids</strong> – numpy array of grid points for evaluating 1d potential.
+(num_grids,)</p></li>
+<li><p><strong>Z</strong> – the “charge” felt by an electron from the nucleus.</p></li>
+<li><p><strong>A</strong> – fitting parameter.</p></li>
+<li><p><strong>k</strong> – fitting parameter.</p></li>
+<li><p><strong>a</strong> – fitting parameter used to soften the cusp at the origin.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Potential on grid.</dt><dd><p>(num_grid,)</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>vp</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ext_potentials.get_gridded_potential">
+<code class="sig-prename descclassname">ext_potentials.</code><code class="sig-name descname">get_gridded_potential</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">potential</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ext_potentials.html#get_gridded_potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ext_potentials.get_gridded_potential" title="Permalink to this definition">¶</a></dt>
+<dd><p>If a potential .npy file has already been generated on a grid. Necessary
+for utilizing ks_dft.py and hf_scf.py where potential(grids) is assumed.
+This should always be called using
+functools.partial(get_potential_from_npy_file, potential=potential)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>potential</strong> – numpy array of potential values already evaluated on grid</p></li>
+<li><p><strong>points</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the same potential inputted. See above for reasoning.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>potential</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ext_potentials.poschl_teller">
+<code class="sig-prename descclassname">ext_potentials.</code><code class="sig-name descname">poschl_teller</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">lam</span></em>, <em class="sig-param"><span class="n">a</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">center</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ext_potentials.html#poschl_teller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ext_potentials.poschl_teller" title="Permalink to this definition">¶</a></dt>
+<dd><p>Poschl-Teller potential.</p>
+<p>Poschl-Teller potential is a special class of potentials for which the
+one-dimensional Schrodinger equation can be solved in terms of Special
+functions.</p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/P%C3%B6schl%E2%80%93Teller_potential">https://en.wikipedia.org/wiki/P%C3%B6schl%E2%80%93Teller_potential</a></p>
+<p>The general form of the potential is</p>
+<p>v(x) = -frac{lambda(lambda + 1)}{2} a^2 frac{1}{cosh^2(a x)}</p>
+<p>It holds M=ceil(lambda) levels, where lambda is a positive float.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>grids</strong> – numpy array of grid points for evaluating 1d potential.
+(num_grids,)</p></li>
+<li><p><strong>lam</strong> – float, lambda in the Poschl-Teller potential function.</p></li>
+<li><p><strong>a</strong> – float, coefficient in the Poschl-Teller potential function.</p></li>
+<li><p><strong>center</strong> – float, the center of the potential.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Potential on grid with shape (num_grid,)</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If lam is not positive.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ext_potentials.poschl_teller_energy">
+<code class="sig-prename descclassname">ext_potentials.</code><code class="sig-name descname">poschl_teller_energy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">level</span></em>, <em class="sig-param"><span class="n">lam</span></em>, <em class="sig-param"><span class="n">a</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ext_potentials.html#poschl_teller_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ext_potentials.poschl_teller_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Analytic solution of the total energy filled up to level-th eigenstate.</p>
+<p>The solution can be found in second row of Table 1 in</p>
+<p>Leading corrections to local approximations. II. The case with turning points
+Raphael F. Ribeiro and Kieron Burke, Phys. Rev. B 95, 115115
+<a class="reference external" href="https://journals.aps.org/prb/abstract/10.1103/PhysRevB.95.115115">https://journals.aps.org/prb/abstract/10.1103/PhysRevB.95.115115</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>level</strong> – positive integer, the ground state is level=1.</p></li>
+<li><p><strong>lam</strong> – positive float, lambda.</p></li>
+<li><p><strong>a</strong> – float, coefficient in Poschl-Teller potential.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Float, the total energy from first to the level-th eigenstate.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ext_potentials.poschl_teller_eigen_energy">
+<code class="sig-prename descclassname">ext_potentials.</code><code class="sig-name descname">poschl_teller_eigen_energy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">level</span></em>, <em class="sig-param"><span class="n">lam</span></em>, <em class="sig-param"><span class="n">a</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ext_potentials.html#poschl_teller_eigen_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ext_potentials.poschl_teller_eigen_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Analytic solution of the level-th eigen energy for Poschl-Teller potential.</p>
+<p>This is the energy level for Poschl-Teller potential with float lambda. The
+solution can be found in second row of Table 1 in</p>
+<p>Leading corrections to local approximations. II. The case with turning points
+Raphael F. Ribeiro and Kieron Burke, Phys. Rev. B 95, 115115
+<a class="reference external" href="https://journals.aps.org/prb/abstract/10.1103/PhysRevB.95.115115">https://journals.aps.org/prb/abstract/10.1103/PhysRevB.95.115115</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>level</strong> – positive integer, the ground state is level=1.</p></li>
+<li><p><strong>lam</strong> – positive float, lambda.</p></li>
+<li><p><strong>a</strong> – float, coefficient in Poschl-Teller potential.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Float, the energy of the level-th eigenstate.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-formula"></span><dl class="py class">
+<dt id="formula.IntegralTool">
+<em class="property">class </em><code class="sig-prename descclassname">formula.</code><code class="sig-name descname">IntegralTool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">A</span><span class="o">=</span><span class="default_value">1.071295</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">0.4192265689030308</span></em>, <em class="sig-param"><span class="n">init</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/formula.html#IntegralTool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#formula.IntegralTool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Containing integral matrices.</p>
+<dl class="py method">
+<dt id="formula.IntegralTool.integral">
+<code class="sig-name descname">integral</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func_grids</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/formula.html#IntegralTool.integral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#formula.IntegralTool.integral" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="formula.DerivativeTool">
+<em class="property">class </em><code class="sig-prename descclassname">formula.</code><code class="sig-name descname">DerivativeTool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">n_point_stencil</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">init</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/formula.html#DerivativeTool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#formula.DerivativeTool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Containing derivative matrices.</p>
+</dd></dl>
+
+<span class="target" id="module-functionals"></span><dl class="py function">
+<dt id="functionals.tot_KS_potential">
+<code class="sig-prename descclassname">functionals.</code><code class="sig-name descname">tot_KS_potential</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">v_ext</span></em>, <em class="sig-param"><span class="n">v_h</span></em>, <em class="sig-param"><span class="n">v_xc</span></em>, <em class="sig-param"><span class="n">n_up</span></em>, <em class="sig-param"><span class="n">n_down</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#tot_KS_potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.tot_KS_potential" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="functionals.tot_HF_potential">
+<code class="sig-prename descclassname">functionals.</code><code class="sig-name descname">tot_HF_potential</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">v_ext</span></em>, <em class="sig-param"><span class="n">v_h</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#tot_HF_potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.tot_HF_potential" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="functionals.hartree_potential">
+<code class="sig-prename descclassname">functionals.</code><code class="sig-name descname">hartree_potential</code><span class="sig-paren">(</span><em class="sig-param">grids</em>, <em class="sig-param">n</em>, <em class="sig-param">v_ee=functools.partial(&lt;function exp_hydrogenic&gt;)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#hartree_potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.hartree_potential" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="functionals.fock_operator">
+<em class="property">class </em><code class="sig-prename descclassname">functionals.</code><code class="sig-name descname">fock_operator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">A</span><span class="o">=</span><span class="default_value">1.071295</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">0.4192265689030308</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#fock_operator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.fock_operator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="functionals.fock_operator.update_fock_matrix">
+<code class="sig-name descname">update_fock_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wave_function</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#fock_operator.update_fock_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.fock_operator.update_fock_matrix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="functionals.fock_operator.get_E_x">
+<code class="sig-name descname">get_E_x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wave_function</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#fock_operator.get_E_x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.fock_operator.get_E_x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="functionals.exchange_correlation_functional">
+<em class="property">class </em><code class="sig-prename descclassname">functionals.</code><code class="sig-name descname">exchange_correlation_functional</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">A</span><span class="o">=</span><span class="default_value">1.071295</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">0.4192265689030308</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#exchange_correlation_functional"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.exchange_correlation_functional" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="functionals.exchange_correlation_functional.set_pade_approx_params">
+<code class="sig-name descname">set_pade_approx_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#exchange_correlation_functional.set_pade_approx_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.exchange_correlation_functional.set_pade_approx_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>parameters derived in:</p>
+<p>Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
+and  Steven  R  White. One-dimensional mimicking of electronic structure:
+The case for exponentials. Physical Review B,91(23):235141, 2015.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="functionals.exchange_correlation_functional.first">
+<code class="sig-name descname">first</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">alpha</span></em>, <em class="sig-param"><span class="n">beta</span></em>, <em class="sig-param"><span class="n">gamma</span></em>, <em class="sig-param"><span class="n">delta</span></em>, <em class="sig-param"><span class="n">eta</span></em>, <em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">nu</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#exchange_correlation_functional.first"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.exchange_correlation_functional.first" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="functionals.exchange_correlation_functional.second">
+<code class="sig-name descname">second</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">alpha</span></em>, <em class="sig-param"><span class="n">beta</span></em>, <em class="sig-param"><span class="n">gamma</span></em>, <em class="sig-param"><span class="n">delta</span></em>, <em class="sig-param"><span class="n">eta</span></em>, <em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">nu</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#exchange_correlation_functional.second"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.exchange_correlation_functional.second" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="functionals.exchange_correlation_functional.v_xc_exp_up">
+<code class="sig-name descname">v_xc_exp_up</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">n_up</span></em>, <em class="sig-param"><span class="n">n_down</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#exchange_correlation_functional.v_xc_exp_up"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.exchange_correlation_functional.v_xc_exp_up" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="functionals.exchange_correlation_functional.v_xc_exp_down">
+<code class="sig-name descname">v_xc_exp_down</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">n_up</span></em>, <em class="sig-param"><span class="n">n_down</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#exchange_correlation_functional.v_xc_exp_down"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.exchange_correlation_functional.v_xc_exp_down" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="functionals.exchange_correlation_functional.e_x">
+<code class="sig-name descname">e_x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">zeta</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#exchange_correlation_functional.e_x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.exchange_correlation_functional.e_x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="functionals.exchange_correlation_functional.e_c">
+<code class="sig-name descname">e_c</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">zeta</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#exchange_correlation_functional.e_c"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.exchange_correlation_functional.e_c" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="functionals.exchange_correlation_functional.corrExpression">
+<code class="sig-name descname">corrExpression</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">alpha</span></em>, <em class="sig-param"><span class="n">beta</span></em>, <em class="sig-param"><span class="n">gamma</span></em>, <em class="sig-param"><span class="n">delta</span></em>, <em class="sig-param"><span class="n">eta</span></em>, <em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">nu</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#exchange_correlation_functional.corrExpression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.exchange_correlation_functional.corrExpression" title="Permalink to this definition">¶</a></dt>
+<dd><p>parameters derived in:</p>
+<p>Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
+and  Steven  R  White. One-dimensional mimicking of electronic structure:
+The case for exponentials. Physical Review B,91(23):235141, 2015.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="functionals.exchange_correlation_functional.get_E_x">
+<code class="sig-name descname">get_E_x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">zeta</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#exchange_correlation_functional.get_E_x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.exchange_correlation_functional.get_E_x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="functionals.exchange_correlation_functional.get_E_c">
+<code class="sig-name descname">get_E_c</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">zeta</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#exchange_correlation_functional.get_E_c"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.exchange_correlation_functional.get_E_c" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="userguide.html" class="btn btn-neutral float-right" title="User guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="1D Density Functional Theory Solver" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Ryan Pederson, and others too
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

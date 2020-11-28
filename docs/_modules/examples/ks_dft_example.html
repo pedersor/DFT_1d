@@ -1,0 +1,329 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>examples.ks_dft_example &mdash; 1D Solver 2020 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/favicon-32x32.png"/>
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> 1D Solver
+          
+
+          
+            
+            <img src="../../_static/1DSolver.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../userguide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../about.html">About and Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cite.html">Cite</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">1D Solver</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>examples.ks_dft_example</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for examples.ks_dft_example</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">ks_dft</span><span class="o">,</span> <span class="nn">functionals</span><span class="o">,</span> <span class="nn">ext_potentials</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+
+<div class="viewcode-block" id="lda_ks_dft_atom"><a class="viewcode-back" href="../../examples.html#examples.ks_dft_example.lda_ks_dft_atom">[docs]</a><span class="k">def</span> <span class="nf">lda_ks_dft_atom</span><span class="p">(</span><span class="n">grids</span><span class="p">,</span> <span class="n">N_e</span><span class="p">,</span> <span class="n">Z</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; local density approximation (LDA) KS-DFT calculation for a 1D atom with</span>
+<span class="sd">        exponential interactions, see ext_potentials.exp_hydrogenic.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        grids: grids: numpy array of grid points for evaluating 1d potential.</span>
+<span class="sd">        (num_grids,)</span>
+<span class="sd">        N_e: the number of electrons in the atom.</span>
+<span class="sd">        Z: the nuclear charge Z of the atom.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        KS-DFT solver class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">v_ext</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">ext_potentials</span><span class="o">.</span><span class="n">exp_hydrogenic</span><span class="p">,</span> <span class="n">Z</span><span class="o">=</span><span class="n">Z</span><span class="p">)</span>
+    <span class="n">v_h</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">functionals</span><span class="o">.</span><span class="n">hartree_potential</span><span class="p">)</span>
+    <span class="n">lda_xc</span> <span class="o">=</span> <span class="n">functionals</span><span class="o">.</span><span class="n">exchange_correlation_functional</span><span class="p">(</span><span class="n">grids</span><span class="o">=</span><span class="n">grids</span><span class="p">)</span>
+    <span class="n">solver</span> <span class="o">=</span> <span class="n">ks_dft</span><span class="o">.</span><span class="n">KS_Solver</span><span class="p">(</span><span class="n">grids</span><span class="p">,</span> <span class="n">v_ext</span><span class="o">=</span><span class="n">v_ext</span><span class="p">,</span> <span class="n">v_h</span><span class="o">=</span><span class="n">v_h</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="n">lda_xc</span><span class="p">,</span>
+                              <span class="n">num_electrons</span><span class="o">=</span><span class="n">N_e</span><span class="p">)</span>
+    <span class="n">solver</span><span class="o">.</span><span class="n">solve_self_consistent_density</span><span class="p">(</span><span class="n">v_ext</span><span class="o">=</span><span class="n">v_ext</span><span class="p">(</span><span class="n">grids</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">solver</span></div>
+
+
+<div class="viewcode-block" id="get_latex_table_atoms"><a class="viewcode-back" href="../../examples.html#examples.ks_dft_example.get_latex_table_atoms">[docs]</a><span class="k">def</span> <span class="nf">get_latex_table_atoms</span><span class="p">(</span><span class="n">grids</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Reproduce LDA results in table 2 of:</span>
+
+<span class="sd">        Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,</span>
+<span class="sd">        and  Steven  R  White. One-dimensional mimicking of electronic structure:</span>
+<span class="sd">        The case for exponentials. Physical Review B,91(23):235141, 2015.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        grids: grids: numpy array of grid points for evaluating 1d potential.</span>
+<span class="sd">        (num_grids,)</span>
+
+<span class="sd">    Prints:</span>
+<span class="sd">        copyable latex-formatted table.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">atom_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;H&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;He$^+$&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;Li$^{2+}$&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                 <span class="s2">&quot;Be$^{3+}$&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;He&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;Li$^+$&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                 <span class="s2">&quot;Be$^{2+}$&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;Li&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;Be$^+$&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+                 <span class="s2">&quot;Be&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">]}</span>
+
+    <span class="c1"># table headers</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;$N_e$&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &amp; &quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Atom/Ion&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &amp; &quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;$T_s$&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &amp; &quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;$V$&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &amp; &quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;$U$&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &amp; &quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$E^{\text</span><span class="si">{LDA}</span><span class="s2">}_x$&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &amp; &quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$E^{\text</span><span class="si">{LDA}</span><span class="s2">}_c$&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &amp; &quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$E^{\text</span><span class="si">{LDA}</span><span class="s2">}$&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;\hline&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">atom_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">atom_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &amp; &quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &amp; &quot;</span><span class="p">)</span>
+
+        <span class="n">solver</span> <span class="o">=</span> <span class="n">lda_ks_dft_atom</span><span class="p">(</span><span class="n">grids</span><span class="p">,</span> <span class="n">atom_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">atom_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">solver</span><span class="o">.</span><span class="n">T_s</span><span class="p">,</span> <span class="mi">3</span><span class="p">)),</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &amp; &quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">solver</span><span class="o">.</span><span class="n">V</span><span class="p">,</span> <span class="mi">3</span><span class="p">)),</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &amp; &quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">solver</span><span class="o">.</span><span class="n">U</span><span class="p">,</span> <span class="mi">3</span><span class="p">)),</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &amp; &quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">solver</span><span class="o">.</span><span class="n">E_x</span><span class="p">,</span> <span class="mi">3</span><span class="p">)),</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &amp; &quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">solver</span><span class="o">.</span><span class="n">E_c</span><span class="p">,</span> <span class="mi">3</span><span class="p">)),</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &amp; &quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">solver</span><span class="o">.</span><span class="n">E_tot</span><span class="p">,</span> <span class="mi">3</span><span class="p">)),</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;\hline&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="single_atom"><a class="viewcode-back" href="../../examples.html#examples.ks_dft_example.single_atom">[docs]</a><span class="k">def</span> <span class="nf">single_atom</span><span class="p">(</span><span class="n">grids</span><span class="p">,</span> <span class="n">N_e</span><span class="p">,</span> <span class="n">Z</span><span class="p">):</span>
+    <span class="n">solver</span> <span class="o">=</span> <span class="n">lda_ks_dft_atom</span><span class="p">(</span><span class="n">grids</span><span class="p">,</span> <span class="n">N_e</span><span class="p">,</span> <span class="n">Z</span><span class="p">)</span>
+
+    <span class="c1"># Non-Interacting (Kohn-Sham) Kinetic Energy</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;T_s =&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">T_s</span><span class="p">)</span>
+
+    <span class="c1"># External Potential Energy</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;V =&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">V</span><span class="p">)</span>
+
+    <span class="c1"># Hartree Energy</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;U =&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">U</span><span class="p">)</span>
+
+    <span class="c1"># Exchange Energy</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;E_x =&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">E_x</span><span class="p">)</span>
+
+    <span class="c1"># Correlation Energy</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;E_c =&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">E_c</span><span class="p">)</span>
+
+    <span class="c1"># Total Energy</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;E =&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">E_tot</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">solver</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; Li atom lda calculation example. &quot;&quot;&quot;</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="mf">0.08</span>
+    <span class="n">grids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">256</span><span class="p">,</span> <span class="mi">257</span><span class="p">)</span> <span class="o">*</span> <span class="n">h</span>
+
+    <span class="n">example</span> <span class="o">=</span> <span class="n">single_atom</span><span class="p">(</span><span class="n">grids</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="c1"># plot example self-consistent LDA density</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grids</span><span class="p">,</span> <span class="n">example</span><span class="o">.</span><span class="n">density</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;$n(x)$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$x$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+
+    <span class="sd">&quot;&quot;&quot; Generate atom table for various (N_e, Z) &quot;&quot;&quot;</span>
+    <span class="c1"># use coarser grid for faster computation.</span>
+    <span class="n">grids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
+    <span class="n">get_latex_table_atoms</span><span class="p">(</span><span class="n">grids</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Ryan Pederson, and others too
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

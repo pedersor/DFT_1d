@@ -1,3 +1,8 @@
+"""
+External Potentials
+###################
+"""
+
 import constants
 import numpy as np
 
@@ -173,12 +178,12 @@ def _valid_poschl_teller_level_lambda(level, lam):
     """Checks whether level and lambda is valid.
 
     Args:
-      level: positive integer, the ground state is level=1.
-      lam: positive float, lambda.
+        level: positive integer, the ground state is level=1.
+        lam: positive float, lambda.
 
     Raises:
-      ValueError: If lam is not positive; level is less than 1 or level is greater
-        than the total number of levels the potential can hold.
+        ValueError: If lam is not positive; level is less than 1 or level is greater
+            than the total number of levels the potential can hold.
     """
     if lam <= 0:
         raise ValueError('lam is expected to be positive but got %4.2f.' % lam)
@@ -202,12 +207,12 @@ def poschl_teller_energy(level, lam, a=1.):
     https://journals.aps.org/prb/abstract/10.1103/PhysRevB.95.115115
 
     Args:
-      level: positive integer, the ground state is level=1.
-      lam: positive float, lambda.
-      a: float, coefficient in Poschl-Teller potential.
+        level: positive integer, the ground state is level=1.
+        lam: positive float, lambda.
+        a: float, coefficient in Poschl-Teller potential.
 
     Returns:
-      Float, the total energy from first to the level-th eigenstate.
+        Float, the total energy from first to the level-th eigenstate.
     """
     total_energy = 0.
     for i in range(1, int(level) + 1):
@@ -226,12 +231,12 @@ def poschl_teller_eigen_energy(level, lam, a=1.):
     https://journals.aps.org/prb/abstract/10.1103/PhysRevB.95.115115
 
     Args:
-      level: positive integer, the ground state is level=1.
-      lam: positive float, lambda.
-      a: float, coefficient in Poschl-Teller potential.
+        level: positive integer, the ground state is level=1.
+        lam: positive float, lambda.
+        a: float, coefficient in Poschl-Teller potential.
 
     Returns:
-      Float, the energy of the level-th eigenstate.
+        Float, the energy of the level-th eigenstate.
     """
     level = int(level)
     _valid_poschl_teller_level_lambda(level, lam)

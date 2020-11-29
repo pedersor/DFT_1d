@@ -89,6 +89,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../userguide.html">User guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../about.html">About and Contact</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cite.html">Cite</a></li>
 </ul>
@@ -155,7 +156,27 @@
            <div itemprop="articleBody">
             
   <h1>Source code for hf_scf</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">single_electron</span><span class="o">,</span> <span class="nn">functionals</span><span class="o">,</span> <span class="nn">ext_potentials</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Hartree-Fock DFT solver</span>
+<span class="sd">#######################</span>
+
+<span class="sd">**Summary** </span>
+<span class="sd">    This is the summary</span>
+
+<span class="sd">.. moduleauthor::</span>
+<span class="sd">    EXAMPLE &lt;Example@university.edu&gt; &lt;https://dft.uci.edu/&gt; ORCID: `000-0000-0000-0000 &lt;https://orcid.org/0000-0000-0000-0000&gt;`_</span>
+
+<span class="sd">.. todo::</span>
+
+<span class="sd">    * Authors?</span>
+<span class="sd">    * Is get_dx repeated across several modules? </span>
+<span class="sd">    * Comments in KS solver funciton should be in doc format</span>
+<span class="sd">    * *solve_self_consistent_density* needs summary sentence</span>
+<span class="sd">    * Clean out unused example rst content in here.</span>
+<span class="sd">    * Has this been linted?</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">single_electron</span><span class="o">,</span> <span class="nn">functionals</span><span class="o">,</span> <span class="nn">ext_potentials</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">import</span> <span class="nn">math</span>

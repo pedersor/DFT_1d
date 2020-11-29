@@ -1,10 +1,30 @@
+"""
+.. _single_electron_test:
+
+Test for Single Electron Module
+###############################
+
+.. todo::
+
+    * Authors? -RJM
+    * Docs need love
+    * Should validate correct instiliation/completion. Right now just spits printouts. -RJM
+    * Ideally a single test script would test EVERY module, and can be easily run after each git commit. May need to make a another test script which calls this one and all others. -RJM
+    * Has this been linted yet? -RJM
+
+"""
+
+import sys
+import os
+currentpath = os.path.abspath('.')
+sys.path.insert(0, os.path.dirname(currentpath))
+
 import single_electron, ext_potentials
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.polynomial.polynomial import polyfit
 from scipy import stats
 import functools
-import os
 import time
 import warnings
 
@@ -37,8 +57,11 @@ def convergence_test(Solver,
                      num_grids_list=None,
                      analytical_energy=None,
                      plot_index=''):
-    # TODO: please fill out
     """Description.
+
+    .. todo::
+
+        * Please fill out docs
 
     Args:
       ...

@@ -21,22 +21,14 @@ A HF calculation can be preformed... Behold:
 .. code-block:: python
   :linenos:
 
+    #This doesn't work but is just placeholder for someone to edit
     from DFT_1d import hf_scf
     Answer = hf_scf.CALCULATECALCULATECALCULATE
     print(Answer)
 
-For detailed settings or outputs, please see the module documentation.
-:ref:`unrestricted WY <unrestrictedwy>` and :ref:`restricted WY <restrictedwy>` classes.
-
 The examples directory includes:
 
-- :ref:`Restricted WY on a beryllium atom <Full-example>`
+- :ref:`An example of 1D Hartree-Fock <hf_scf_example>`
+- :ref:`An example of 1D Kohn-Sham DFT <ks_dft_example>`
+- :ref:`A posh example of  Poschl Teller wells <two_poschl_teller>`
 
-
-.. code-block:: python
-  :linenos:
-
-    mz = zmp.RZMP(mol, dm_tar)
-    for l in [ 8, 16, 32, 64, 128, 256, 512, 1024]:
-        mz.level_shift_factor = l*0.1
-        mz.zscf(l)

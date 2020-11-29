@@ -87,10 +87,19 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#hartree-fock-dft-solver">Hartree-Fock DFT solver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#kohn-sham-dft-solver">Kohn-Sham DFT solver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#external-potentials">External Potentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#non-interacting-system">Non-interacting system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id9">External Potentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#functionals">Functionals</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="userguide.html">User guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About and Contact</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cite.html">Cite</a></li>
 </ul>
@@ -158,8 +167,33 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-hf_scf">
-<span id="modules"></span><h1>Modules<a class="headerlink" href="#module-hf_scf" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="modules">
+<h1>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h1>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<ul class="simple">
+<li><p>Authors? I always think its nice to have authors defined in the module, so that when you want to contact the right person you know who to follow up with. -RJM</p></li>
+<li><p>Imports seem to have a random order. Set lint to give us a specific order and then stick to that. -RJM</p></li>
+</ul>
+</div>
+<span class="target" id="module-hf_scf"></span><div class="section" id="hartree-fock-dft-solver">
+<h2>Hartree-Fock DFT solver<a class="headerlink" href="#hartree-fock-dft-solver" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt><strong>Summary</strong></dt><dd><p>This is the summary</p>
+</dd>
+</dl>
+<p><em>Module author: EXAMPLE &lt;<a class="reference external" href="mailto:Example&#37;&#52;&#48;university&#46;edu">Example<span>&#64;</span>university<span>&#46;</span>edu</a>&gt; &lt;<a class="reference external" href="https://dft.uci.edu/">https://dft.uci.edu/</a>&gt; ORCID: <a class="reference external" href="https://orcid.org/0000-0000-0000-0000">000-0000-0000-0000</a></em></p>
+<div class="admonition-todo admonition" id="id3">
+<p class="admonition-title">Todo</p>
+<ul class="simple">
+<li><p>Authors?</p></li>
+<li><p>Is get_dx repeated across several modules?</p></li>
+<li><p>Comments in KS solver funciton should be in doc format</p></li>
+<li><p><em>solve_self_consistent_density</em> needs summary sentence</p></li>
+<li><p>Clean out unused example rst content in here.</p></li>
+<li><p>Has this been linted?</p></li>
+</ul>
+</div>
 <dl class="py function">
 <dt id="hf_scf.get_dx">
 <code class="sig-prename descclassname">hf_scf.</code><code class="sig-name descname">get_dx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#get_dx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.get_dx" title="Permalink to this definition">¶</a></dt>
@@ -271,7 +305,26 @@ total_energy, kinetic_energy, potential_energy, density, wave_function.</p>
 
 </dd></dl>
 
-<span class="target" id="module-ks_dft"></span><dl class="py function">
+</div>
+<span class="target" id="module-ks_dft"></span><div class="section" id="kohn-sham-dft-solver">
+<h2>Kohn-Sham DFT solver<a class="headerlink" href="#kohn-sham-dft-solver" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt><strong>Summary</strong></dt><dd><p>This is the summary</p>
+</dd>
+</dl>
+<p><em>Module author: EXAMPLE &lt;<a class="reference external" href="mailto:Example&#37;&#52;&#48;university&#46;edu">Example<span>&#64;</span>university<span>&#46;</span>edu</a>&gt; &lt;<a class="reference external" href="https://dft.uci.edu/">https://dft.uci.edu/</a>&gt; ORCID: <a class="reference external" href="https://orcid.org/0000-0000-0000-0000">000-0000-0000-0000</a></em></p>
+<div class="admonition-todo admonition" id="id5">
+<p class="admonition-title">Todo</p>
+<ul class="simple">
+<li><p>Authors?</p></li>
+<li><p>Is get_dx repeated across several modules?</p></li>
+<li><p>Comments in KS solver funciton should be in doc format</p></li>
+<li><p><em>solve_self_consistent_density</em> needs summary sentence</p></li>
+<li><p>Clean out unused example rst content in here.</p></li>
+<li><p>Has this been linted?</p></li>
+</ul>
+</div>
+<dl class="py function">
 <dt id="ks_dft.get_dx">
 <code class="sig-prename descclassname">ks_dft.</code><code class="sig-name descname">get_dx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_dft.html#get_dx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_dft.get_dx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the grid spacing from grids array.</p>
@@ -349,7 +402,20 @@ total_energy, kinetic_energy, potential_energy, density, wave_function.</p>
 
 </dd></dl>
 
-<span class="target" id="module-ks_inversion"></span><dl class="py class">
+</div>
+<span class="target" id="module-ks_inversion"></span><div class="section" id="external-potentials">
+<h2>External Potentials<a class="headerlink" href="#external-potentials" title="Permalink to this headline">¶</a></h2>
+<div class="admonition-todo admonition" id="id6">
+<p class="admonition-title">Todo</p>
+<ul class="simple">
+<li><p>Needs code documentation</p></li>
+<li><p>Needs more specific name (since there are many inversions)</p></li>
+<li><p>Needs ref</p></li>
+<li><p>RJM: Re-format ah-la KS-pies?</p></li>
+<li><p>Who was original author of this code?</p></li>
+</ul>
+</div>
+<dl class="py class">
 <dt id="ks_inversion.KSInversion">
 <em class="property">class </em><code class="sig-prename descclassname">ks_inversion.</code><code class="sig-name descname">KSInversion</code><span class="sig-paren">(</span><em class="sig-param">full_grids</em>, <em class="sig-param">v_Z_fn</em>, <em class="sig-param">full_target_density</em>, <em class="sig-param">truncation</em>, <em class="sig-param">n_point_stencil=5</em>, <em class="sig-param">init_v_XC_fn=&lt;function KSInversion.&lt;lambda&gt;&gt;</em>, <em class="sig-param">Solver=&lt;class 'single_electron.SparseEigenSolver'&gt;</em>, <em class="sig-param">num_electrons=1</em>, <em class="sig-param">tol=0.1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_inversion.html#KSInversion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_inversion.KSInversion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
@@ -370,13 +436,31 @@ total_energy, kinetic_energy, potential_energy, density, wave_function.</p>
 <code class="sig-prename descclassname">ks_inversion.</code><code class="sig-name descname">two_iter_KS_inversion</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f_grids</span></em>, <em class="sig-param"><span class="n">f_v_Z_fn</span></em>, <em class="sig-param"><span class="n">f_tar_density</span></em>, <em class="sig-param"><span class="n">num_electrons</span></em>, <em class="sig-param"><span class="n">n_point_stencil</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">t_tol</span><span class="o">=</span><span class="default_value">0.0001</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_inversion.html#two_iter_KS_inversion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_inversion.two_iter_KS_inversion" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<span class="target" id="module-single_electron"></span><p>Solvers for non-interacting 1d system.</p>
-<p>Solve non-interacting 1d system numerically on grids. Each eigenstate will be
-occupied by one electron.</p>
-<p>Note both solver (EigenSolver, SparseEigenSolver) here are based on directly
+</div>
+<span class="target" id="module-single_electron"></span><div class="section" id="non-interacting-system">
+<h2>Non-interacting system<a class="headerlink" href="#non-interacting-system" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt><strong>Summary</strong></dt><dd><dl class="simple">
+<dt>Solve non-interacting 1d system numerically on grids. Each eigenstate will be</dt><dd><p>occupied by one electron.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p><em>Module author: EXAMPLE &lt;<a class="reference external" href="mailto:Example&#37;&#52;&#48;university&#46;edu">Example<span>&#64;</span>university<span>&#46;</span>edu</a>&gt; &lt;<a class="reference external" href="https://dft.uci.edu/">https://dft.uci.edu/</a>&gt; ORCID: <a class="reference external" href="https://orcid.org/0000-0000-0000-0000">000-0000-0000-0000</a></em></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Both solver (EigenSolver, SparseEigenSolver) here are based on directly
 diagonalizing the Hamiltonian matrix, which are straightforward to understand,
 but not as accurate as other delicate numerical methods, like density matrix
 renormalization group (DMRG).</p>
+</div>
+<div class="admonition-todo admonition" id="id8">
+<p class="admonition-title">Todo</p>
+<ul class="simple">
+<li><p>Figure out what to do about joint copyright holders (Google + other)</p></li>
+<li><p>Clean out unused example rst content in here.</p></li>
+</ul>
+</div>
 <dl class="py function">
 <dt id="single_electron.get_dx">
 <code class="sig-prename descclassname">single_electron.</code><code class="sig-name descname">get_dx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_electron.html#get_dx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#single_electron.get_dx" title="Permalink to this definition">¶</a></dt>
@@ -585,6 +669,7 @@ params dict.</p>
 </dl>
 </dd></dl>
 
+</div>
 <span class="target" id="module-constants"></span><p>Default constants used in this library.</p>
 <p>Exponential Coulomb interaction.</p>
 <p>v(x) = amplitude * exp(-abs(x) * kappa)</p>
@@ -592,7 +677,9 @@ params dict.</p>
 <p>Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
 and  Steven  R  White. One-dimensional mimicking of electronic structure:
 The case for exponentials. Physical Review B,91(23):235141, 2015.</p>
-<span class="target" id="module-ext_potentials"></span><dl class="py function">
+<span class="target" id="module-ext_potentials"></span><div class="section" id="id9">
+<h2>External Potentials<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
 <dt id="ext_potentials.gaussian_dips">
 <code class="sig-prename descclassname">ext_potentials.</code><code class="sig-name descname">gaussian_dips</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">coeff</span></em>, <em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">mu</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ext_potentials.html#gaussian_dips"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ext_potentials.gaussian_dips" title="Permalink to this definition">¶</a></dt>
 <dd><p>Potential of sum of Gaussian dips.</p>
@@ -819,6 +906,7 @@ Raphael F. Ribeiro and Kieron Burke, Phys. Rev. B 95, 115115
 </dl>
 </dd></dl>
 
+</div>
 <span class="target" id="module-formula"></span><dl class="py class">
 <dt id="formula.IntegralTool">
 <em class="property">class </em><code class="sig-prename descclassname">formula.</code><code class="sig-name descname">IntegralTool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">A</span><span class="o">=</span><span class="default_value">1.071295</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">0.4192265689030308</span></em>, <em class="sig-param"><span class="n">init</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/formula.html#IntegralTool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#formula.IntegralTool" title="Permalink to this definition">¶</a></dt>
@@ -838,7 +926,22 @@ Raphael F. Ribeiro and Kieron Burke, Phys. Rev. B 95, 115115
 <p>Containing derivative matrices.</p>
 </dd></dl>
 
-<span class="target" id="module-functionals"></span><dl class="py function">
+<span class="target" id="module-functionals"></span><div class="section" id="functionals">
+<h2>Functionals<a class="headerlink" href="#functionals" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt><strong>Summary</strong></dt><dd><p>Defined grid based exchange-correlation functionals, fock operator, and potentials for 1D systems.</p>
+</dd>
+</dl>
+<p><em>Module author: EXAMPLE &lt;<a class="reference external" href="mailto:Example&#37;&#52;&#48;university&#46;edu">Example<span>&#64;</span>university<span>&#46;</span>edu</a>&gt; &lt;<a class="reference external" href="https://dft.uci.edu/">https://dft.uci.edu/</a>&gt; ORCID: <a class="reference external" href="https://orcid.org/0000-0000-0000-0000">000-0000-0000-0000</a></em></p>
+<div class="admonition-todo admonition" id="id11">
+<p class="admonition-title">Todo</p>
+<ul class="simple">
+<li><p>Authors? -RJM</p></li>
+<li><p>Check summary written by RJM. -RJM</p></li>
+<li><p>Docs might need love; judgement call. -RJM</p></li>
+</ul>
+</div>
+<dl class="py function">
 <dt id="functionals.tot_KS_potential">
 <code class="sig-prename descclassname">functionals.</code><code class="sig-name descname">tot_KS_potential</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">v_ext</span></em>, <em class="sig-param"><span class="n">v_h</span></em>, <em class="sig-param"><span class="n">v_xc</span></em>, <em class="sig-param"><span class="n">n_up</span></em>, <em class="sig-param"><span class="n">n_down</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#tot_KS_potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.tot_KS_potential" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -876,10 +979,7 @@ Raphael F. Ribeiro and Kieron Burke, Phys. Rev. B 95, 115115
 <dl class="py method">
 <dt id="functionals.exchange_correlation_functional.set_pade_approx_params">
 <code class="sig-name descname">set_pade_approx_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#exchange_correlation_functional.set_pade_approx_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.exchange_correlation_functional.set_pade_approx_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>parameters derived in:</p>
-<p>Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
-and  Steven  R  White. One-dimensional mimicking of electronic structure:
-The case for exponentials. Physical Review B,91(23):235141, 2015.</p>
+<dd><p>Parameters are derived in <a class="reference internal" href="references.html#baker2015" id="id12"><span>[Baker2015]</span></a>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -915,10 +1015,7 @@ The case for exponentials. Physical Review B,91(23):235141, 2015.</p>
 <dl class="py method">
 <dt id="functionals.exchange_correlation_functional.corrExpression">
 <code class="sig-name descname">corrExpression</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">alpha</span></em>, <em class="sig-param"><span class="n">beta</span></em>, <em class="sig-param"><span class="n">gamma</span></em>, <em class="sig-param"><span class="n">delta</span></em>, <em class="sig-param"><span class="n">eta</span></em>, <em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">nu</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#exchange_correlation_functional.corrExpression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.exchange_correlation_functional.corrExpression" title="Permalink to this definition">¶</a></dt>
-<dd><p>parameters derived in:</p>
-<p>Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
-and  Steven  R  White. One-dimensional mimicking of electronic structure:
-The case for exponentials. Physical Review B,91(23):235141, 2015.</p>
+<dd><p>Parameters are derived in <a class="reference internal" href="references.html#baker2015" id="id13"><span>[Baker2015]</span></a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -933,6 +1030,7 @@ The case for exponentials. Physical Review B,91(23):235141, 2015.</p>
 
 </dd></dl>
 
+</div>
 </div>
 
 

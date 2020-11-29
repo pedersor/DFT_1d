@@ -1,8 +1,23 @@
+"""
+
+.. _ks_dft_example:
+
+Kohn-Sham DFT Example
+#####################
+
+Summary:
+    Generates LDA DFT values from a tabel from the [Baker2015]_ paper which includes Li atom and Li, Be, He, and H atoms.
+"""
+
+import sys
+import os
+currentpath = os.path.abspath('.')
+sys.path.insert(0, os.path.dirname(currentpath))
+
 import ks_dft, functionals, ext_potentials
 import matplotlib.pyplot as plt
 import numpy as np
 import functools
-import sys
 
 
 def lda_ks_dft_atom(grids, N_e, Z):
@@ -30,11 +45,7 @@ def lda_ks_dft_atom(grids, N_e, Z):
 
 
 def get_latex_table_atoms(grids):
-    """ Reproduce LDA results in table 2 of:
-
-        Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
-        and  Steven  R  White. One-dimensional mimicking of electronic structure:
-        The case for exponentials. Physical Review B,91(23):235141, 2015.
+    """ Reproduce LDA results in table 2 of [Baker2015]_.
 
     Args:
         grids: grids: numpy array of grid points for evaluating 1d potential.
@@ -102,7 +113,7 @@ def single_atom(grids, N_e, Z):
 
 
 if __name__ == '__main__':
-    """ Li atom lda calculation example. """
+    """Li atom LDA calculation example."""
     h = 0.08
     grids = np.arange(-256, 257) * h
 

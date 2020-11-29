@@ -95,6 +95,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About and Contact</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cite.html">Cite</a></li>
 </ul>
@@ -178,26 +179,19 @@ For a scientific discussion on theory and examples on use, read the literature.<
 <p>A HF calculation can be preformed… Behold:</p>
 <div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
-3</pre></div></td><td class="code"><div class="highlight"><pre><span></span>  <span class="kn">from</span> <span class="nn">DFT_1d</span> <span class="kn">import</span> <span class="n">hf_scf</span>
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span></span>  <span class="c1">#This doesn&#39;t work but is just placeholder for someone to edit</span>
+  <span class="kn">from</span> <span class="nn">DFT_1d</span> <span class="kn">import</span> <span class="n">hf_scf</span>
   <span class="n">Answer</span> <span class="o">=</span> <span class="n">hf_scf</span><span class="o">.</span><span class="n">CALCULATECALCULATECALCULATE</span>
   <span class="nb">print</span><span class="p">(</span><span class="n">Answer</span><span class="p">)</span>
 </pre></div>
 </td></tr></table></div>
-<p>For detailed settings or outputs, please see the module documentation.
-<span class="xref std std-ref">unrestricted WY</span> and <span class="xref std std-ref">restricted WY</span> classes.</p>
 <p>The examples directory includes:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="examples.html#full-example"><span class="std std-ref">Restricted WY on a beryllium atom</span></a></p></li>
+<li><p><a class="reference internal" href="examples.html#hf-scf-example"><span class="std std-ref">An example of 1D Hartree-Fock</span></a></p></li>
+<li><p><a class="reference internal" href="examples.html#ks-dft-example"><span class="std std-ref">An example of 1D Kohn-Sham DFT</span></a></p></li>
+<li><p><a class="reference internal" href="examples.html#two-poschl-teller"><span class="std std-ref">A posh example of  Poschl Teller wells</span></a></p></li>
 </ul>
-<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4</pre></div></td><td class="code"><div class="highlight"><pre><span></span>  <span class="n">mz</span> <span class="o">=</span> <span class="n">zmp</span><span class="o">.</span><span class="n">RZMP</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm_tar</span><span class="p">)</span>
-  <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="p">[</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">]:</span>
-      <span class="n">mz</span><span class="o">.</span><span class="n">level_shift_factor</span> <span class="o">=</span> <span class="n">l</span><span class="o">*</span><span class="mf">0.1</span>
-      <span class="n">mz</span><span class="o">.</span><span class="n">zscf</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
-</pre></div>
-</td></tr></table></div>
 </div>
 </div>
 

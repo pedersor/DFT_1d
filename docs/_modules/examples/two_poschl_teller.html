@@ -89,6 +89,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../userguide.html">User guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">References</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../about.html">About and Contact</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../cite.html">Cite</a></li>
 </ul>
@@ -155,12 +156,27 @@
            <div itemprop="articleBody">
             
   <h1>Source code for examples.two_poschl_teller</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">.. _two_poschl_teller:</span>
+
+<span class="sd">Poschl-Teller potentials</span>
+<span class="sd">########################</span>
+
+<span class="sd">Summary:</span>
+<span class="sd">    Calculates a system with two Poschl-Teller wells</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="n">currentpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">currentpath</span><span class="p">))</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">ext_potentials</span> <span class="kn">import</span> <span class="n">poschl_teller</span>
 <span class="kn">from</span> <span class="nn">single_electron</span> <span class="kn">import</span> <span class="n">SparseEigenSolver</span>
 <span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">os</span>
 
 
 <div class="viewcode-block" id="get_plotting_params"><a class="viewcode-back" href="../../examples.html#examples.two_poschl_teller.get_plotting_params">[docs]</a><span class="k">def</span> <span class="nf">get_plotting_params</span><span class="p">():</span>

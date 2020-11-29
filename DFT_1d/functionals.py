@@ -1,3 +1,21 @@
+"""
+Functionals
+###########
+
+**Summary** 
+    Defined grid based exchange-correlation functionals, fock operator, and potentials for 1D systems.
+
+.. moduleauthor::
+    EXAMPLE <Example@university.edu> <https://dft.uci.edu/> ORCID: `000-0000-0000-0000 <https://orcid.org/0000-0000-0000-0000>`_
+
+
+.. todo::
+
+    * Authors? -RJM
+    * Check summary written by RJM. -RJM
+    * Docs might need love; judgement call. -RJM
+"""
+
 import ext_potentials
 import constants
 import numpy as np
@@ -94,13 +112,9 @@ class exchange_correlation_functional(object):
         self.dx = (grids[-1] - grids[0]) / (len(grids) - 1)
 
     def set_pade_approx_params(self, n):
-        '''
-        parameters derived in:
-
-        Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
-        and  Steven  R  White. One-dimensional mimicking of electronic structure:
-        The case for exponentials. Physical Review B,91(23):235141, 2015.
-        '''
+        """
+        Parameters are derived in [Baker2015]_.
+        """
 
         # these expressions are used to compute v_xc in the exponential coulomb potential case
         first_U = self.first(n, 2, -1.00077, 6.26099, -11.9041, 9.62614,
@@ -188,13 +202,9 @@ class exchange_correlation_functional(object):
         return unpol + (zeta ** 2) * (pol - unpol)
 
     def corrExpression(self, n, alpha, beta, gamma, delta, eta, sigma, nu):
-        '''
-        parameters derived in:
-
-        Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
-        and  Steven  R  White. One-dimensional mimicking of electronic structure:
-        The case for exponentials. Physical Review B,91(23):235141, 2015.
-        '''
+        """
+        Parameters are derived in [Baker2015]_
+        """
 
         y = np.pi * n / self.k
         return (-self.A * self.k * (y ** 2) / (np.pi ** 2)) / (

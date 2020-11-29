@@ -7,7 +7,9 @@
 ===================================
 
 This is a python based 1D Density Functional Theory Software package.
-    It is used for solving a single D. Also called One-D.
+    It is used for solving problems in a single dimension, also called "One-D".
+    What gets confusing is that its for solving DFT problems, (Adding a second D).
+    This is not, however, a 2D solver despite being solving 1DDFT problems.
 
 Git Repository
     `https://github.com/pedersor/DFT_1d <https://github.com/pedersor/DFT_1d>`_
@@ -20,6 +22,7 @@ Git Repository
    userguide.rst
    examples.rst
    install.rst
+   references.rst
    about.rst
    cite.rst
 

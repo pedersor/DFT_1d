@@ -89,6 +89,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../userguide.html">User guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">References</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../about.html">About and Contact</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../cite.html">Cite</a></li>
 </ul>
@@ -155,15 +156,29 @@
            <div itemprop="articleBody">
             
   <h1>Source code for examples.hf_scf_example</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">hf_scf</span><span class="o">,</span> <span class="nn">functionals</span><span class="o">,</span> <span class="nn">ext_potentials</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">.. _hf_scf_example:</span>
+
+<span class="sd">Hartree-Fock Self-Consistent Field Example</span>
+<span class="sd">##########################################</span>
+
+<span class="sd">Summary:</span>
+<span class="sd">    Generates Hartree-Fock (HF) a tabel from the [Baker2015]_ paper which includes Li atom and Li, Be, He, and H atoms.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="n">currentpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">currentpath</span><span class="p">))</span>
+
+<span class="kn">import</span> <span class="nn">hf_scf</span><span class="o">,</span> <span class="nn">functionals</span><span class="o">,</span> <span class="nn">ext_potentials</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">functools</span>
-<span class="kn">import</span> <span class="nn">sys</span>
 
 
 <div class="viewcode-block" id="hf_scf_atom"><a class="viewcode-back" href="../../examples.html#examples.hf_scf_example.hf_scf_atom">[docs]</a><span class="k">def</span> <span class="nf">hf_scf_atom</span><span class="p">(</span><span class="n">grids</span><span class="p">,</span> <span class="n">N_e</span><span class="p">,</span> <span class="n">Z</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; HF-SCF calculation for a 1D atom with</span>
+    <span class="sd">&quot;&quot;&quot; Example HF-SCF calculation for a 1D atom with</span>
 <span class="sd">        exponential interactions, see ext_potentials.exp_hydrogenic.</span>
 
 <span class="sd">    Args:</span>
@@ -187,11 +202,7 @@
 
 
 <div class="viewcode-block" id="get_latex_table_atoms"><a class="viewcode-back" href="../../examples.html#examples.hf_scf_example.get_latex_table_atoms">[docs]</a><span class="k">def</span> <span class="nf">get_latex_table_atoms</span><span class="p">(</span><span class="n">grids</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Reproduce HF results in table 2 of:</span>
-
-<span class="sd">        Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,</span>
-<span class="sd">        and  Steven  R  White. One-dimensional mimicking of electronic structure:</span>
-<span class="sd">        The case for exponentials. Physical Review B,91(23):235141, 2015.</span>
+    <span class="sd">&quot;&quot;&quot; Example Reproduce HF results in table 2 of [Baker2015]_.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        grids: grids: numpy array of grid points for evaluating 1d potential.</span>

@@ -1,3 +1,23 @@
+"""
+Kohn-Sham DFT solver
+####################
+
+**Summary** 
+    This is the summary
+
+.. moduleauthor::
+    EXAMPLE <Example@university.edu> <https://dft.uci.edu/> ORCID: `000-0000-0000-0000 <https://orcid.org/0000-0000-0000-0000>`_
+
+.. todo::
+
+    * Authors?
+    * Is get_dx repeated across several modules? 
+    * Comments in KS solver funciton should be in doc format
+    * *solve_self_consistent_density* needs summary sentence
+    * Clean out unused example rst content in here.
+    * Has this been linted?
+"""
+
 import single_electron, functionals
 import numpy as np
 import functools

@@ -1,3 +1,18 @@
+"""
+External Potentials
+###################
+
+
+.. todo::
+
+    * Needs code documentation
+    * Needs more specific name (since there are many inversions)
+    * Needs ref
+    * RJM: Re-format ah-la KS-pies?
+    * Who was original author of this code?
+
+"""
+
 import numpy as np
 from single_electron import SparseEigenSolver
 from formula import IntegralTool, DerivativeTool

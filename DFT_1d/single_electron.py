@@ -13,15 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Solvers for non-interacting 1d system.
+"""
+Non-interacting system
+######################
 
-Solve non-interacting 1d system numerically on grids. Each eigenstate will be
-occupied by one electron.
+**Summary** 
+    Solve non-interacting 1d system numerically on grids. Each eigenstate will be
+        occupied by one electron.
 
-Note both solver (EigenSolver, SparseEigenSolver) here are based on directly
-diagonalizing the Hamiltonian matrix, which are straightforward to understand,
-but not as accurate as other delicate numerical methods, like density matrix
-renormalization group (DMRG).
+.. moduleauthor::
+    EXAMPLE <Example@university.edu> <https://dft.uci.edu/> ORCID: `000-0000-0000-0000 <https://orcid.org/0000-0000-0000-0000>`_
+
+.. note::
+    Both solver (EigenSolver, SparseEigenSolver) here are based on directly
+    diagonalizing the Hamiltonian matrix, which are straightforward to understand,
+    but not as accurate as other delicate numerical methods, like density matrix
+    renormalization group (DMRG).
+
+.. todo::
+
+    * Figure out what to do about joint copyright holders (Google + other)
+    * Clean out unused example rst content in here.
+
 """
 
 from __future__ import absolute_import

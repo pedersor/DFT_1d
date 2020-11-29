@@ -7,16 +7,13 @@ Installation
 Pip install
 ###########
 
+.. warning::
 
+    PIP INSTALL NOT SET UP YET
 
 .. code:: bash
 
     pip install 1dDFT_or_whatever
-
-
-.. warning::
-
-    NOT SET UP YET
 
 
 Manual install
@@ -57,7 +54,7 @@ On your system, extract to a local folder and note the full path of the folder.
 Check download
 ++++++++++++++
 
-A test example is provided as the example folder which can be used to verify that DFT_1d is working correctly: :ref:`single_electron_test` .
+A test example is provided as the test folder which can be used to verify that DFT_1d is working correctly: :ref: `single_electron_test.py <single_electron_test>` .
 
 
 Finished

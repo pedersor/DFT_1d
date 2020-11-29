@@ -1,9 +1,24 @@
+"""
+.. _two_poschl_teller:
+
+Poschl-Teller potentials
+########################
+
+Summary:
+    Calculates a system with two Poschl-Teller wells
+"""
+
+
+import sys
+import os
+currentpath = os.path.abspath('.')
+sys.path.insert(0, os.path.dirname(currentpath))
+
 import numpy as np
 from ext_potentials import poschl_teller
 from single_electron import SparseEigenSolver
 import functools
 import matplotlib.pyplot as plt
-import os
 
 
 def get_plotting_params():

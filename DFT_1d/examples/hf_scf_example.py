@@ -1,12 +1,26 @@
+"""
+.. _hf_scf_example:
+
+Hartree-Fock Self-Consistent Field Example
+##########################################
+
+Summary:
+    Generates Hartree-Fock (HF) a tabel from the [Baker2015]_ paper which includes Li atom and Li, Be, He, and H atoms.
+"""
+
+import sys
+import os
+currentpath = os.path.abspath('.')
+sys.path.insert(0, os.path.dirname(currentpath))
+
 import hf_scf, functionals, ext_potentials
 import matplotlib.pyplot as plt
 import numpy as np
 import functools
-import sys
 
 
 def hf_scf_atom(grids, N_e, Z):
-    """ HF-SCF calculation for a 1D atom with
+    """ Example HF-SCF calculation for a 1D atom with
         exponential interactions, see ext_potentials.exp_hydrogenic.
 
     Args:
@@ -30,11 +44,7 @@ def hf_scf_atom(grids, N_e, Z):
 
 
 def get_latex_table_atoms(grids):
-    """ Reproduce HF results in table 2 of:
-
-        Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
-        and  Steven  R  White. One-dimensional mimicking of electronic structure:
-        The case for exponentials. Physical Review B,91(23):235141, 2015.
+    """ Example Reproduce HF results in table 2 of [Baker2015]_.
 
     Args:
         grids: grids: numpy array of grid points for evaluating 1d potential.

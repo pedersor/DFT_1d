@@ -1,0 +1,11 @@
+
+*.pyc
+*.xml
+*.iml
+.DS_Store
+.idea/.name
+*.npy
+
+
+documentaiton/_static
+documentaiton/_build

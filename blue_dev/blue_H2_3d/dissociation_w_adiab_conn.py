@@ -149,6 +149,17 @@ plt.ylabel('$E_0(R)$', fontsize=16)
 plt.xlabel('$R$', fontsize=16)
 plt.show()
 
+# write to multi-column file
+out_column = [R_grid, E_blue + get_Vpp(R_grid) - two_H_atoms_E,
+              E_exact + get_Vpp(R_grid) - two_H_atoms_E]
+with open("fig_1_b.dat", "w") as file:
+    file.write("R\t E_0_CP \t E_0_exact \n")
+    for x in zip(*out_column):
+        R_print = x[0]
+        to_print = [format(val, '.6f') for val in x[1:]]
+
+        file.write("{0}\t{1}\t{2}\n".format(R_print, *to_print))
+
 # E_c plots
 
 E_c_blue = [h2_R.blue_E_c for h2_R in h2_results]

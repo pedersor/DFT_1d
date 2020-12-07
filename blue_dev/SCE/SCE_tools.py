@@ -22,14 +22,14 @@ def get_inv_cumulant_funct_1d(N_e, value):
     # returns index (idx) of closest grid value that yields N_e.
     # e.g. inv_N_e(2.0) = grid[idx] -> N_e(grid[idx]) = 2.0.
 
-    idx_left = np.searchsorted(N_e - 0.000000000001, value, side="left")
+    idx_left = np.searchsorted(N_e - 0.0000000000001, value, side="left")
     if idx_left > 0 and (
             idx_left == len(N_e) or math.fabs(
         value - N_e[idx_left - 1]) < math.fabs(
         value - N_e[idx_left])):
         idx_left = idx_left - 1
 
-    idx_right = np.searchsorted(N_e + 0.000000000001, value, side="right")
+    idx_right = np.searchsorted(N_e + 0.0000000000001, value, side="right")
     if idx_right > 0 and (
             idx_right == len(N_e) or math.fabs(
         value - N_e[idx_right - 1]) < math.fabs(

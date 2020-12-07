@@ -87,12 +87,20 @@ if run == 'r_s':
 # dispersion plots etc.
 if run == 'disp':
     # exact results
-    R, T = txt_file_to_array('H2_from_srwhite/T.dat')
-    R, T_s = txt_file_to_array('H2_from_srwhite/T_s.dat')
+
+    _, T = txt_file_to_array('H2_from_srwhite/T.dat')
+    # remove R > 4 values
+    T = T[:-4]
+    _, T_s = txt_file_to_array('H2_from_srwhite/T_s.dat')
+    T_s = T_s[:-4]
+    _, U_plus_Ex = txt_file_to_array('H2_from_srwhite/U_plus_Ex.dat')
+    U_plus_Ex = U_plus_Ex[:-4]
+    _, E = txt_file_to_array('H2_from_srwhite/E.dat')
+    E = E[:-4]
+    _, Vee = txt_file_to_array('H2_from_srwhite/Vee.dat')
+    Vee = Vee[:-4]
     R, V_ext_plus_T = txt_file_to_array('H2_from_srwhite/H1en.dat')
-    R, U_plus_Ex = txt_file_to_array('H2_from_srwhite/U_plus_Ex.dat')
-    R, E = txt_file_to_array('H2_from_srwhite/E.dat')
-    R, Vee = txt_file_to_array('H2_from_srwhite/Vee.dat')
+
     V_ext = V_ext_plus_T - 2 * T
 
     E_xc = E - (2 * T_s + V_ext + 2 * U_plus_Ex)
@@ -111,8 +119,13 @@ if run == 'disp':
     V_ee_blue = []
     U_c_blue = []
     for gam in gam_files:
-        R, V_ee_blue_gam = txt_file_to_array(
+        _, V_ee_blue_gam = txt_file_to_array(
             'H2_from_srwhite/Vee_blue_gam_' + gam + '.dat')
+
+        if gam == '1or_s':
+            # remove R > 4 values
+            V_ee_blue_gam = V_ee_blue_gam[:-4]
+
         U_c_blue_gam = V_ee_blue_gam - U_plus_Ex
 
         V_ee_blue.append(V_ee_blue_gam)
@@ -123,15 +136,16 @@ if run == 'disp':
     def do_plot():
         plt.xlabel('$R$', fontsize=18)
         plt.legend(fontsize=16)
-        #plt.xlim(1,4)
-        #plt.ylim(-.2,0)
+        # plt.xlim(1,4)
+        # plt.ylim(-.2,0)
         plt.grid(alpha=0.4)
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
         plt.show()
 
+
     # energy of two infinitely separated H atoms
-    two_H_atoms_E = -2*0.5
+    two_H_atoms_E = -2 * 0.5
 
     # total energy dissociation
     for i, gam in enumerate(gam_disp):
@@ -143,11 +157,23 @@ if run == 'disp':
     do_plot()
 
     # U_c plot
+    out_column = [R]
     for i, gam in enumerate(gam_disp):
-        plt.plot(R, U_c_blue[i], label='$\gamma = '+gam+'$', linewidth=3)
+        out_column.append(U_c_blue[i])
+        plt.plot(R, U_c_blue[i], label='$\gamma = ' + gam + '$', linewidth=3)
 
+    out_column.append(U_c)
     plt.plot(R, U_c, label='Exact', color='black', linewidth=3)
     plt.ylabel('$U_c(R)$', fontsize=18)
+
+    # write to multi-column file
+    with open("blue_U_c_R.dat", "w") as file:
+        file.write("R\t r_s(n(r)) \t r_s->0  \t r_s -> \inf \t exact \n")
+        for x in zip(*out_column):
+            R_print = x[0]
+            to_print = [format(val, '.6f') for val in x[1:]]
+
+            file.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(R_print, *to_print))
 
     do_plot()
 

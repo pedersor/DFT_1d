@@ -3,7 +3,8 @@ Functionals
 ###########
 
 **Summary** 
-    Defined grid based exchange-correlation functionals, fock operator, and potentials for 1D systems.
+    Defined grid-based exchange-correlation functionals, fock operator,
+    and potentials for 1D systems.
 
 .. moduleauthor::
     EXAMPLE <Example@university.edu> <https://dft.uci.edu/> ORCID: `000-0000-0000-0000 <https://orcid.org/0000-0000-0000-0000>`_
@@ -20,6 +21,7 @@ import ext_potentials
 import constants
 import numpy as np
 import functools
+from utils import get_dx
 
 
 def tot_KS_potential(grids, n, v_ext, v_h, v_xc, n_up, n_down):
@@ -49,7 +51,7 @@ class fock_operator(object):
         self.num_grids = len(grids)
         self.A = A
         self.k = k
-        self.dx = (grids[-1] - grids[0]) / (len(grids) - 1)
+        self.dx = get_dx(grids)
 
     def update_fock_matrix(self, wave_function):
         # fock matrix will be implemented as fock operator,
@@ -109,7 +111,7 @@ class exchange_correlation_functional(object):
         self.grids = grids
         self.A = A
         self.k = k
-        self.dx = (grids[-1] - grids[0]) / (len(grids) - 1)
+        self.dx = get_dx(grids)
 
     def set_pade_approx_params(self, n):
         """

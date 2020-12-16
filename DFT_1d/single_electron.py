@@ -14,21 +14,19 @@
 # limitations under the License.
 
 """
-Non-interacting system
+Solve non-interacting system
 ######################
 
 **Summary** 
-    Solve non-interacting 1d system numerically on grids. Each eigenstate will be
-        occupied by one electron.
+    Solve non-interacting 1d system numerically on a grid
+    (position-space basis). Each eigenstate will be occupied by one electron.
 
 .. moduleauthor::
     EXAMPLE <Example@university.edu> <https://dft.uci.edu/> ORCID: `000-0000-0000-0000 <https://orcid.org/0000-0000-0000-0000>`_
 
 .. note::
-    Both solver (EigenSolver, SparseEigenSolver) here are based on directly
-    diagonalizing the Hamiltonian matrix, which are straightforward to understand,
-    but not as accurate as other delicate numerical methods, like density matrix
-    renormalization group (DMRG).
+    Both solvers (EigenSolver, SparseEigenSolver) here are based on directly
+    diagonalizing the Hamiltonian matrix.
 
 .. todo::
 
@@ -37,58 +35,10 @@ Non-interacting system
 
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 from scipy import sparse
 from scipy.sparse import linalg
-
-
-# import tensorflow as tf
-
-
-def get_dx(grids):
-    """Gets the grid spacing from grids array.
-
-    Args:
-      grids: Numpy array with shape (num_grids,).
-
-    Returns:
-      Grid spacing.
-    """
-    return (grids[-1] - grids[0]) / (len(grids) - 1)
-
-
-def vw_grid(density, dx):
-    """von Weizsacker kinetic energy functional on grid.
-
-    Args:
-      density: numpy array, density on grid.
-        (num_grids,)
-      dx: grid spacing.
-
-    Returns:
-      kinetic_energy: von Weizsacker kinetic energy.
-    """
-    gradient = np.gradient(density) / dx
-    return np.sum(0.125 * gradient * gradient / density) * dx
-
-
-def quadratic(mat, x):
-    """Compute the quadratic form of matrix and vector.
-
-    Args:
-      mat: matrix.
-        (n, n)
-      x: vector.
-        (n,)
-
-    Returns:
-      output: scalar value as result of x A x.T.
-    """
-    return np.dot(x, np.dot(mat, x))
+from utils import get_dx, quadratic
 
 
 class SolverBase:
@@ -97,13 +47,13 @@ class SolverBase:
     Subclasses should define solve_ground_state method.
     """
 
-    def __init__(self, 
-                 grids, 
-                 potential_fn=None, 
-                 num_electrons=1, 
+    def __init__(self,
+                 grids,
+                 potential_fn=None,
+                 num_electrons=1,
                  k_point=None,
                  boundary_condition='open',
-                 n_point_stencil=3, 
+                 n_point_stencil=3,
                  fock_mat=None):
         """Initialize the solver with potential function and grid.
 
@@ -186,13 +136,13 @@ class EigenSolver(SolverBase):
     for a faster iterative eigensolver.
     """
 
-    def __init__(self, 
-                 grids, 
-                 potential_fn=None, 
-                 num_electrons=1, 
+    def __init__(self,
+                 grids,
+                 potential_fn=None,
+                 num_electrons=1,
                  k_point=None,
                  boundary_condition='open',
-                 n_point_stencil=3, 
+                 n_point_stencil=3,
                  fock_mat=None):
         """Initialize the solver with potential function and grid.
 
@@ -224,20 +174,20 @@ class EigenSolver(SolverBase):
           _v_mat: numpy matrix, potential matrix in Hamiltonian.
           _h: numpy matrix, Hamiltonian matrix.
         """
-        
+
         # Kinetic matrix
         self._t_mat = self.get_kinetic_matrix()
-        
+
         if self.potential_fn != None:
             # Potential matrix
             self._v_mat = self.get_potential_matrix()
             # Hamiltonian matrix
             self._h = self._t_mat + self._v_mat
-            
+
         # Fock-Matrix (exact exchange)
         if self.fock_mat is not None:
             self._h += self.fock_mat
-            
+
     def update_potential(self, potential_fn):
         """Replace the current potential grids with a new potential grids.
         Delete all attributes created by solving eigenvalues, set _solved to
@@ -246,7 +196,7 @@ class EigenSolver(SolverBase):
         Args:
           potential_fn: potential function taking grids as argument.
         """
-        
+
         self.potential_fn = potential_fn
         self.vp = potential_fn(self.grids)
         # Potential matrix
@@ -257,7 +207,7 @@ class EigenSolver(SolverBase):
         if self.fock_mat is not None:
             self._h += self.fock_mat
 
-        if self._solved:    
+        if self._solved:
             del self.total_energy
             del self.wave_function
             del self.density
@@ -382,9 +332,10 @@ class EigenSolver(SolverBase):
           mat: Potential matrix.
             (num_grids, num_grids)
         """
-        
+
         if self.potential_fn == None:
-            raise ValueError('potential_fn is None, unable to get potential matrix.')
+            raise ValueError(
+                'potential_fn is None, unable to get potential matrix.')
 
         return self._diagonal_matrix('potential')
 
@@ -436,10 +387,11 @@ class EigenSolver(SolverBase):
         Returns:
           self
         """
-        
+
         if self.potential_fn == None:
-            raise ValueError('potential_fn is None, unable to solve for ground state.')   
-        
+            raise ValueError(
+                'potential_fn is None, unable to solve for ground state.')
+
         if (self.boundary_condition == 'open'
                 or self.boundary_condition == 'periodic'):
             eigenvalues, eigenvectors = np.linalg.eigh(self._h)
@@ -463,7 +415,7 @@ class SparseEigenSolver(EigenSolver):
                  grids,
                  potential_fn=None,
                  num_electrons=1,
-                 k_point=None, 
+                 k_point=None,
                  boundary_condition='open',
                  n_point_stencil=3,
                  tol=10 ** -6):
@@ -532,41 +484,3 @@ class SparseEigenSolver(EigenSolver):
 
         return self._update_ground_state(
             eigenvalues, eigenvectors, self._sparse_quadratic)
-
-
-def solved_1dsolver_to_example(solver, params):
-    """Converts an solved solver with a name to a tf.Example proto.
-
-    Args:
-      solver: A Solver instance with attribute solved=True.
-      params: dict, other parameters to store in the tf.Example proto.
-
-    Returns:
-      example: A tf.Example proto with the following populated fields:
-        density, kinetic_energy, total_energy, potential, and other keys in
-        params dict.
-
-    Raises:
-      ValueError: If the solver is not solved.
-    """
-    if not solver.is_solved():
-        raise ValueError('Input solver is not solved.')
-
-    example = tf.train.Example()
-    example.features.feature['density'].float_list.value.extend(
-        list(solver.density))
-    example.features.feature['kinetic_energy'].float_list.value.append(
-        solver.kinetic_energy)
-    example.features.feature['total_energy'].float_list.value.append(
-        solver.total_energy)
-    example.features.feature['dx'].float_list.value.append(
-        solver.dx)
-    example.features.feature['potential'].float_list.value.extend(
-        list(solver.vp))
-    for key, value in six.iteritems(params):
-        if isinstance(value, (list, np.ndarray)):
-            example.features.feature[key].float_list.value.extend(list(value))
-        else:
-            example.features.feature[key].float_list.value.append(value)
-
-    return example

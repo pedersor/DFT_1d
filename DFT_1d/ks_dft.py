@@ -21,35 +21,8 @@ Kohn-Sham DFT solver
 import single_electron, functionals
 import numpy as np
 import functools
-import math
 import matplotlib.pyplot as plt
-
-
-def get_dx(grids):
-    """Gets the grid spacing from grids array.
-
-    Args:
-      grids: Numpy array with shape (num_grids,).
-
-    Returns:
-      Grid spacing.
-    """
-    return (grids[-1] - grids[0]) / (len(grids) - 1)
-
-
-def quadratic(mat, x):
-    """Compute the quadratic form of matrix and vector.
-
-    Args:
-      mat: matrix.
-        (n, n)
-      x: vector.
-        (n,)
-
-    Returns:
-      output: scalar value as result of x A x.T.
-    """
-    return np.dot(x, np.dot(mat, x))
+from utils import get_dx, quadratic
 
 
 class SolverBase(object):

@@ -3,6 +3,52 @@ import ext_potentials
 import constants
 
 
+def get_dx(grids):
+    """Gets the grid spacing from a grids array.
+
+    Args:
+        grids: Numpy array with shape (num_grids,).
+
+    Returns:
+        h: Grid spacing.
+    """
+    h = (grids[-1] - grids[0]) / (len(grids) - 1)
+    if np.isclose(h, grids[1] - grids[0]):
+        return h
+    else:
+        raise ValueError('grids is not uniformly spaced.')
+
+
+def vw_grid(density, dx):
+    """von Weizsacker kinetic energy functional on grid.
+
+    Args:
+      density: numpy array, density on grid.
+        (num_grids,)
+      dx: grid spacing.
+
+    Returns:
+      kinetic_energy: von Weizsacker kinetic energy.
+    """
+    gradient = np.gradient(density) / dx
+    return np.sum(0.125 * gradient * gradient / density) * dx
+
+
+def quadratic(mat, x):
+    """Compute the quadratic form of matrix and vector.
+
+    Args:
+      mat: matrix.
+        (n, n)
+      x: vector.
+        (n,)
+
+    Returns:
+      output: scalar value as result of x A x.T.
+    """
+    return np.dot(x, np.dot(mat, x))
+
+
 class IntegralTool:
     '''Containing integral matrices.
     '''

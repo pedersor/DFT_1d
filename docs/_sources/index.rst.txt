@@ -1,0 +1,36 @@
+.. 1D Density Functional Theory Solver documentation, created by
+   sphinx-quickstart on Mon Nov  24 11:34:34 2020.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+1D Density Functional Theory Solver
+===================================
+
+This is a python based 1D Density Functional Theory Software package.
+    It is used for solving problems in a single dimension, also called "One-D".
+    What gets confusing is that its for solving DFT problems, (Adding a second D).
+    This is not, however, a 2D solver despite being solving 1DDFT problems.
+
+Git Repository
+    `https://github.com/pedersor/DFT_1d <https://github.com/pedersor/DFT_1d>`_
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   modules.rst
+   userguide.rst
+   examples.rst
+   install.rst
+   references.rst
+   about.rst
+   cite.rst
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
+.. todolist::

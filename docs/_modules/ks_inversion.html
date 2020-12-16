@@ -1,0 +1,669 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ks_inversion &mdash; 1D Solver 2020 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon-32x32.png"/>
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> 1D Solver
+          
+
+          
+            
+            <img src="../_static/1DSolver.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About and Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cite.html">Cite</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">1D Solver</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>ks_inversion</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for ks_inversion</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">External Potentials</span>
+<span class="sd">###################</span>
+
+
+<span class="sd">.. todo::</span>
+
+<span class="sd">    * Needs code documentation</span>
+<span class="sd">    * Needs more specific name (since there are many inversions)</span>
+<span class="sd">    * Needs ref</span>
+<span class="sd">    * RJM: Re-format ah-la KS-pies?</span>
+<span class="sd">    * Who was original author of this code?</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">single_electron</span> <span class="kn">import</span> <span class="n">SparseEigenSolver</span>
+<span class="kn">from</span> <span class="nn">formula</span> <span class="kn">import</span> <span class="n">IntegralTool</span><span class="p">,</span> <span class="n">DerivativeTool</span>
+<span class="kn">from</span> <span class="nn">ext_potentials</span> <span class="kn">import</span> <span class="n">exp_hydrogenic</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">scipy</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+
+<span class="c1"># https://link.springer.com/article/10.1007%2Fs00214-018-2209-0</span>
+<div class="viewcode-block" id="KSInversion"><a class="viewcode-back" href="../modules.html#ks_inversion.KSInversion">[docs]</a><span class="k">class</span> <span class="nc">KSInversion</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">full_grids</span><span class="p">,</span>
+                 <span class="n">v_Z_fn</span><span class="p">,</span>
+                 <span class="n">full_target_density</span><span class="p">,</span>
+                 <span class="n">truncation</span><span class="p">,</span>
+                 <span class="n">n_point_stencil</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                 <span class="n">init_v_XC_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span>
+                 <span class="n">Solver</span><span class="o">=</span><span class="n">SparseEigenSolver</span><span class="p">,</span>
+                 <span class="n">num_electrons</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">tol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+
+        <span class="c1"># get truncation based on the tolerance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">truncation</span> <span class="o">=</span> <span class="n">truncation</span>
+
+        <span class="c1"># number of electrons</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_electrons</span> <span class="o">=</span> <span class="n">num_electrons</span>
+
+        <span class="c1"># full grids/density and truncated grids/density</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_grids</span> <span class="o">=</span> <span class="n">full_grids</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_f_grids</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_grids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_grids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_grids</span><span class="p">[</span><span class="n">truncation</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">num_f_grids</span> <span class="o">-</span> <span class="n">truncation</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_t_grids</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_grids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dx</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_grids</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_grids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_t_grids</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_tar_density</span> <span class="o">=</span> <span class="n">full_target_density</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tar_density</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_tar_density</span><span class="p">[</span>
+                           <span class="n">truncation</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">num_f_grids</span> <span class="o">-</span> <span class="n">truncation</span><span class="p">]</span>
+
+        <span class="c1"># pass truncated versions to tools</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_derivative_tool</span> <span class="o">=</span> <span class="n">DerivativeTool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_grids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_derivative_tool</span> <span class="o">=</span> <span class="n">DerivativeTool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_grids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_integral_tool</span> <span class="o">=</span> <span class="n">IntegralTool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_grids</span><span class="p">)</span>
+
+        <span class="c1"># initialize full and truncated potentials</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_v_Z</span> <span class="o">=</span> <span class="n">v_Z_fn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_grids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_v_H</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_integral_tool</span><span class="o">.</span><span class="n">hartree_matrix</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_tar_density</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_v_W_tar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_v_W</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tar_density</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_v_XC</span> <span class="o">=</span> <span class="n">init_v_XC_fn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_grids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_v_XC</span><span class="p">[</span><span class="n">truncation</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">num_f_grids</span> <span class="o">-</span> <span class="n">truncation</span><span class="p">]</span>
+
+        <span class="c1"># set tolerance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>
+
+        <span class="c1"># initialize solver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_point_stencil</span> <span class="o">=</span> <span class="n">n_point_stencil</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span> <span class="o">=</span> <span class="n">Solver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_grids</span><span class="p">,</span> <span class="n">n_point_stencil</span><span class="o">=</span><span class="n">n_point_stencil</span><span class="p">,</span>
+                             <span class="n">num_electrons</span><span class="o">=</span><span class="n">num_electrons</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># initialize density and kinetic energy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">previous_f_density</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_density</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_density</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">previous_KE</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">KE</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># whether has solved full v_XC</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solved</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_get_v_eff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">f_v_Z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_v_Z</span>
+        <span class="n">f_v_H</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_v_H</span>
+        <span class="n">f_v_XC</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_v_XC</span>
+        <span class="k">return</span> <span class="n">f_v_Z</span> <span class="o">+</span> <span class="n">f_v_H</span> <span class="o">+</span> <span class="n">f_v_XC</span>
+
+    <span class="k">def</span> <span class="nf">_get_v_W</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">density</span><span class="p">):</span>
+        <span class="n">d1_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_derivative_tool</span><span class="o">.</span><span class="n">d1_mat</span>
+        <span class="n">d2_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_derivative_tool</span><span class="o">.</span><span class="n">d2_mat</span>
+        <span class="n">v_W_n1</span> <span class="o">=</span> <span class="p">((</span><span class="n">d1_mat</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">density</span><span class="p">)</span> <span class="o">/</span> <span class="n">density</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">8</span>
+        <span class="n">v_W_n2</span> <span class="o">=</span> <span class="p">(</span><span class="n">d2_mat</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">density</span><span class="p">)</span> <span class="o">/</span> <span class="n">density</span><span class="p">)</span> <span class="o">/</span> <span class="mi">4</span>
+        <span class="n">v_W_n</span> <span class="o">=</span> <span class="n">v_W_n1</span> <span class="o">-</span> <span class="n">v_W_n2</span>
+        <span class="k">return</span> <span class="n">v_W_n</span>
+
+    <span class="k">def</span> <span class="nf">_update_density</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># d2_mat = self.f_derivative_tool.d2_mat</span>
+        <span class="n">potential_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_v_eff</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">update_potential</span><span class="p">(</span><span class="n">potential_fn</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">solve_ground_state</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">previous_KE</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">KE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">KE</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">kinetic_energy</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">previous_f_density</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_density</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_density</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">density</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_density</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_density</span><span class="p">[</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">truncation</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">num_f_grids</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncation</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_update_v_XC</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">ignored_points</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+        <span class="n">t_v_W_n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_v_W</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_density</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_v_W_tar</span> <span class="o">+</span> <span class="n">t_v_W_n</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncation</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">f_v_XC</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_exp</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">ignored_points</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_tar_density_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># cost betwen target_density and density</span>
+        <span class="n">s_v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_integral_tool</span><span class="o">.</span><span class="n">simpson_vector</span>
+        <span class="n">d_n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_density</span>
+        <span class="n">d_tar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_tar_density</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">s_v</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="n">d_n</span> <span class="o">-</span> <span class="n">d_tar</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_electrons</span>
+
+    <span class="k">def</span> <span class="nf">_get_f_density_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">previous_f_density</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">s_v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_integral_tool</span><span class="o">.</span><span class="n">simpson_vector</span>
+            <span class="n">d_n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_density</span>
+            <span class="n">d_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">previous_f_density</span>
+            <span class="k">return</span> <span class="p">((</span><span class="n">s_v</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">d_n</span> <span class="o">-</span> <span class="n">d_p</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_electrons</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_get_KE_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">previous_KE</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">previous_KE</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">KE</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_append_exp_cfexp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">ignored_points</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Central point formula at the end, but including </span>
+<span class="sd">        exponential decay inside the FDM formula.&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_point_stencil</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">d1_h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">12</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">12</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_point_stencil</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">d1_h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.</span><span class="p">])</span>
+
+        <span class="n">ip</span> <span class="o">=</span> <span class="n">ignored_points</span>
+        <span class="c1"># k_value</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="mf">2.385345</span>
+
+        <span class="c1"># grid value at right end</span>
+        <span class="n">xr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_grids</span><span class="p">[</span><span class="o">-</span><span class="n">ip</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># use right end value to calculate the middle offset</span>
+        <span class="n">vr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span><span class="p">[</span><span class="o">-</span><span class="n">ip</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">Ar0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xr</span> <span class="o">-</span> <span class="n">x0</span><span class="p">))</span>
+        <span class="n">Ar1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xr</span> <span class="o">-</span> <span class="n">x0</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span><span class="p">))</span>
+        <span class="n">Ar2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xr</span> <span class="o">-</span> <span class="n">x0</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span><span class="p">))</span>
+
+        <span class="n">Cr_numerator</span> <span class="o">=</span> <span class="n">d1_h</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span><span class="p">[</span><span class="o">-</span><span class="n">ip</span> <span class="o">-</span> <span class="mi">3</span><span class="p">:</span><span class="o">-</span><span class="n">ip</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="n">vr</span><span class="p">,</span> <span class="n">vr</span><span class="p">,</span> <span class="n">vr</span><span class="p">]))</span>
+        <span class="n">Cr_denominator</span> <span class="o">=</span> <span class="n">d1_h</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">Ar0</span> <span class="o">-</span> <span class="n">Ar1</span><span class="p">,</span> <span class="n">Ar0</span> <span class="o">-</span> <span class="n">Ar2</span><span class="p">]))</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="n">Ar0</span>
+
+        <span class="n">Cr</span> <span class="o">=</span> <span class="n">Cr_numerator</span> <span class="o">/</span> <span class="n">Cr_denominator</span>
+        <span class="n">offset_m</span> <span class="o">=</span> <span class="n">Cr</span> <span class="o">*</span> <span class="n">Ar0</span> <span class="o">-</span> <span class="n">vr</span>
+
+        <span class="n">exp_r</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">Cr</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">))</span>
+
+        <span class="c1"># adjust v_XC with offset_m, append right exponential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">r_grids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_grids</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">num_f_grids</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncation</span> <span class="o">-</span> <span class="n">ip</span><span class="p">:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_v_XC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span><span class="p">[</span><span class="n">ip</span><span class="p">:</span><span class="o">-</span><span class="n">ip</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset_m</span><span class="p">,</span>
+                                <span class="n">exp_r</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">r_grids</span><span class="p">))</span>
+
+        <span class="c1"># grid value at left end</span>
+        <span class="n">xl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_grids</span><span class="p">[</span><span class="n">ip</span><span class="p">]</span>
+        <span class="c1"># use middle-left end value to calculate the left offset</span>
+        <span class="n">vl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span><span class="p">[</span><span class="n">ip</span><span class="p">]</span>
+
+        <span class="n">Al0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xl</span> <span class="o">-</span> <span class="n">x0</span><span class="p">))</span>
+        <span class="n">Al1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xl</span> <span class="o">-</span> <span class="n">x0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span><span class="p">))</span>
+        <span class="n">Al2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xl</span> <span class="o">-</span> <span class="n">x0</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span><span class="p">))</span>
+
+        <span class="n">Cl_numerator</span> <span class="o">=</span> <span class="n">d1_h</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">vl</span><span class="p">,</span> <span class="n">vl</span><span class="p">,</span> <span class="n">vl</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span><span class="p">[</span><span class="n">ip</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="n">ip</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]))</span>
+        <span class="n">Cl_denominator</span> <span class="o">=</span> <span class="n">d1_h</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">Al0</span> <span class="o">-</span> <span class="n">Al2</span><span class="p">,</span> <span class="n">Al0</span> <span class="o">-</span> <span class="n">Al1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="n">Al0</span>
+
+        <span class="n">Cl</span> <span class="o">=</span> <span class="n">Cl_numerator</span> <span class="o">/</span> <span class="n">Cl_denominator</span>
+        <span class="n">offset_l</span> <span class="o">=</span> <span class="n">vl</span> <span class="o">+</span> <span class="n">offset_m</span> <span class="o">-</span> <span class="n">Cl</span> <span class="o">*</span> <span class="n">Al0</span>
+
+        <span class="n">exp_l</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">Cl</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">))</span>
+
+        <span class="c1"># append left exponential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_grids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_grids</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">truncation</span> <span class="o">+</span> <span class="n">ip</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_v_XC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exp_l</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l_grids</span><span class="p">)</span> <span class="o">+</span> <span class="n">offset_l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_v_XC</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_append_exp_cf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">ignored_points</span><span class="p">):</span>
+        <span class="c1"># append C*exp[-k|x-x0|] to both ends with central formula</span>
+
+        <span class="n">ip</span> <span class="o">=</span> <span class="n">ignored_points</span>
+        <span class="k">if</span> <span class="n">ip</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;ignored_points should be &gt;= 3, got </span><span class="si">{</span><span class="n">ignored_points</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># set up central-point derivative formula</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_point_stencil</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">d1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">12</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">12</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_point_stencil</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">d1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span>
+
+        <span class="c1"># k_value</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="mf">2.385345</span>
+
+        <span class="c1"># grid value at right end</span>
+        <span class="n">xr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_grids</span><span class="p">[</span><span class="o">-</span><span class="n">ip</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># right end derivative</span>
+        <span class="n">dr</span> <span class="o">=</span> <span class="n">d1</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span><span class="p">[</span><span class="o">-</span><span class="n">ip</span> <span class="o">-</span> <span class="mi">3</span><span class="p">:</span><span class="o">-</span><span class="n">ip</span> <span class="o">+</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="c1"># A for right end</span>
+        <span class="n">Cr</span> <span class="o">=</span> <span class="n">dr</span> <span class="o">/</span> <span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xr</span><span class="p">)))</span>
+        <span class="n">exp_r</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">Cr</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">))</span>
+
+        <span class="c1"># use right end value to calculate the middle offset</span>
+        <span class="n">vr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span><span class="p">[</span><span class="o">-</span><span class="n">ip</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">offset_m</span> <span class="o">=</span> <span class="n">exp_r</span><span class="p">(</span><span class="n">xr</span><span class="p">)</span> <span class="o">-</span> <span class="n">vr</span>
+
+        <span class="c1"># adjust v_XC with offset_m, append right exponential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">r_grids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_grids</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">num_f_grids</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncation</span> <span class="o">-</span> <span class="n">ip</span><span class="p">:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_v_XC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span><span class="p">[</span><span class="n">ip</span><span class="p">:</span><span class="o">-</span><span class="n">ip</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset_m</span><span class="p">,</span>
+                                <span class="n">exp_r</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">r_grids</span><span class="p">))</span>
+
+        <span class="c1"># grid value at left end</span>
+        <span class="n">xl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_grids</span><span class="p">[</span><span class="n">ip</span><span class="p">]</span>
+        <span class="c1"># left end derivative</span>
+        <span class="n">dl</span> <span class="o">=</span> <span class="n">d1</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span><span class="p">[</span><span class="n">ip</span> <span class="o">-</span> <span class="mi">2</span><span class="p">:</span><span class="n">ip</span> <span class="o">+</span> <span class="mi">3</span><span class="p">])</span>
+        <span class="c1"># C for left end</span>
+        <span class="n">Cl</span> <span class="o">=</span> <span class="n">dl</span> <span class="o">/</span> <span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xl</span><span class="p">)))</span>
+        <span class="n">exp_l</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">Cl</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">))</span>
+
+        <span class="c1"># use middle-left end value to calculate the left offset</span>
+        <span class="n">vl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span><span class="p">[</span><span class="n">ip</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset_m</span>
+        <span class="n">offset_l</span> <span class="o">=</span> <span class="n">vl</span> <span class="o">-</span> <span class="n">exp_l</span><span class="p">(</span><span class="n">xl</span><span class="p">)</span>
+
+        <span class="c1"># append left exponential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_grids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_grids</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">truncation</span> <span class="o">+</span> <span class="n">ip</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_v_XC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exp_l</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l_grids</span><span class="p">)</span> <span class="o">+</span> <span class="n">offset_l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_v_XC</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_append_exp_endf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">ignored_points</span><span class="p">):</span>
+        <span class="c1"># append C*exp[-k|x-x0|] to both ends with end formula</span>
+
+        <span class="n">ip</span> <span class="o">=</span> <span class="n">ignored_points</span>
+
+        <span class="c1"># set up end-point derivative formula</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_point_stencil</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">d1_l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">25</span> <span class="o">/</span> <span class="mi">12</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.</span><span class="p">,</span> <span class="mi">4</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">4</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_point_stencil</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">d1_l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span>
+        <span class="n">d1_r</span> <span class="o">=</span> <span class="o">-</span><span class="n">d1_l</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># k_value</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="mf">2.385345</span>
+
+        <span class="c1"># grid value at right end</span>
+        <span class="n">xr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_grids</span><span class="p">[</span><span class="o">-</span><span class="n">ip</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># right end derivative</span>
+        <span class="n">dr</span> <span class="o">=</span> <span class="n">d1_r</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span><span class="p">[</span><span class="o">-</span><span class="n">ip</span> <span class="o">-</span> <span class="mi">5</span><span class="p">:</span><span class="o">-</span><span class="n">ip</span><span class="p">])</span>
+        <span class="c1"># A for right end</span>
+        <span class="n">Cr</span> <span class="o">=</span> <span class="n">dr</span> <span class="o">/</span> <span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xr</span><span class="p">)))</span>
+        <span class="n">exp_r</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">Cr</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">))</span>
+
+        <span class="c1"># use right end value to calculate the middle offset</span>
+        <span class="n">vr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span><span class="p">[</span><span class="o">-</span><span class="n">ip</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">offset_m</span> <span class="o">=</span> <span class="n">exp_r</span><span class="p">(</span><span class="n">xr</span><span class="p">)</span> <span class="o">-</span> <span class="n">vr</span>
+
+        <span class="c1"># adjust v_XC with offset_m, append right exponential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">r_grids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_grids</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">num_f_grids</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncation</span> <span class="o">-</span> <span class="n">ip</span><span class="p">:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_v_XC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span><span class="p">[</span><span class="n">ip</span><span class="p">:</span><span class="o">-</span><span class="n">ip</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset_m</span><span class="p">,</span>
+                                <span class="n">exp_r</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">r_grids</span><span class="p">))</span>
+
+        <span class="c1"># grid value at left end</span>
+        <span class="n">xl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_grids</span><span class="p">[</span><span class="n">ip</span><span class="p">]</span>
+        <span class="c1"># left end derivative</span>
+        <span class="n">dl</span> <span class="o">=</span> <span class="n">d1_l</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span><span class="p">[</span><span class="n">ip</span><span class="p">:</span><span class="n">ip</span> <span class="o">+</span> <span class="mi">5</span><span class="p">])</span>
+        <span class="c1"># C for left end</span>
+        <span class="n">Cl</span> <span class="o">=</span> <span class="n">dl</span> <span class="o">/</span> <span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xl</span><span class="p">)))</span>
+        <span class="n">exp_l</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">Cl</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">))</span>
+
+        <span class="c1"># use middle-left end value to calculate the left offset</span>
+        <span class="n">vl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_v_XC</span><span class="p">[</span><span class="n">ip</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset_m</span>
+        <span class="n">offset_l</span> <span class="o">=</span> <span class="n">vl</span> <span class="o">-</span> <span class="n">exp_l</span><span class="p">(</span><span class="n">xl</span><span class="p">)</span>
+
+        <span class="c1"># print(dl, k*exp_l(xl))</span>
+
+        <span class="c1"># append left exponential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_grids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_grids</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">truncation</span> <span class="o">+</span> <span class="n">ip</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_v_XC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exp_l</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l_grids</span><span class="p">)</span> <span class="o">+</span> <span class="n">offset_l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_v_XC</span><span class="p">)</span>
+
+<div class="viewcode-block" id="KSInversion.append_exp"><a class="viewcode-back" href="../modules.html#ks_inversion.KSInversion.append_exp">[docs]</a>    <span class="k">def</span> <span class="nf">append_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ignored_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="s1">&#39;cfexp&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">f</span> <span class="o">==</span> <span class="s1">&#39;cf&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_append_exp_cf</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">ignored_points</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">f</span> <span class="o">==</span> <span class="s1">&#39;endf&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_append_exp_endf</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">ignored_points</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">f</span> <span class="o">==</span> <span class="s1">&#39;cfexp&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_append_exp_cfexp</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">ignored_points</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="KSInversion.solve_v_XC"><a class="viewcode-back" href="../modules.html#ks_inversion.KSInversion.solve_v_XC">[docs]</a>    <span class="k">def</span> <span class="nf">solve_v_XC</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ignored_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="s1">&#39;cfexp&#39;</span><span class="p">,</span> <span class="n">truncated</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cost_list</span> <span class="o">=</span> <span class="p">[[],</span> <span class="p">[],</span> <span class="p">[]]</span>
+        <span class="n">f_density_cost</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">tar_density_cost</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_density</span><span class="p">()</span>
+            <span class="n">step</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">tar_density_cost</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tar_density_cost</span><span class="p">()</span>
+            <span class="n">f_density_cost</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_f_density_cost</span><span class="p">()</span>
+            <span class="n">KE_cost</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_KE_cost</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">step_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cost_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tar_density_cost</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cost_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f_density_cost</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cost_list</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">KE_cost</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;Step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s1">: current target density cost </span><span class="si">{</span><span class="n">tar_density_cost</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s1">: current full density cost </span><span class="si">{</span><span class="n">f_density_cost</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s1">: current KE cost </span><span class="si">{</span><span class="n">KE_cost</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">f_density_cost</span> <span class="o">!=</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">KE_cost</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span>
+                        <span class="n">tar_density_cost</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">truncated</span><span class="p">)</span> <span class="ow">and</span> <span class="n">KE_cost</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_v_XC</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">ignored_points</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solved</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div></div>
+
+
+<span class="c1"># Kohn-Sham inversion with two iterations: one with truncated region</span>
+<span class="c1"># and the other with full region</span>
+<div class="viewcode-block" id="two_iter_KS_inversion"><a class="viewcode-back" href="../modules.html#ks_inversion.two_iter_KS_inversion">[docs]</a><span class="k">def</span> <span class="nf">two_iter_KS_inversion</span><span class="p">(</span><span class="n">f_grids</span><span class="p">,</span> <span class="n">f_v_Z_fn</span><span class="p">,</span> <span class="n">f_tar_density</span><span class="p">,</span> <span class="n">num_electrons</span><span class="p">,</span>
+                          <span class="n">n_point_stencil</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">0.00001</span><span class="p">,</span> <span class="n">t_tol</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">find_truncation</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">t_tol</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">density</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">density</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">t_tol</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">t</span>
+
+    <span class="k">def</span> <span class="nf">set_up_truncation</span><span class="p">(</span><span class="n">f_grids</span><span class="p">,</span> <span class="n">f_v_Z_fn</span><span class="p">,</span> <span class="n">f_tar_density</span><span class="p">,</span> <span class="n">truncation</span><span class="p">):</span>
+        <span class="n">t_grids</span> <span class="o">=</span> <span class="n">f_grids</span><span class="p">[</span><span class="n">truncation</span><span class="p">:</span><span class="o">-</span><span class="n">truncation</span><span class="p">]</span>
+        <span class="n">t_v_Z_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">grids</span><span class="p">:</span> <span class="n">f_v_Z_fn</span><span class="p">(</span><span class="n">grids</span><span class="p">)[</span><span class="n">truncation</span><span class="p">:</span><span class="o">-</span><span class="n">truncation</span><span class="p">]</span>
+        <span class="n">t_tar_density</span> <span class="o">=</span> <span class="n">f_tar_density</span><span class="p">[</span><span class="n">truncation</span><span class="p">:</span><span class="o">-</span><span class="n">truncation</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">t_grids</span><span class="p">,</span> <span class="n">t_v_Z_fn</span><span class="p">,</span> <span class="n">t_tar_density</span>
+
+    <span class="n">truncation</span> <span class="o">=</span> <span class="n">find_truncation</span><span class="p">(</span><span class="n">f_tar_density</span><span class="p">,</span> <span class="n">t_tol</span><span class="p">)</span>
+    <span class="n">t_grids</span><span class="p">,</span> <span class="n">t_v_Z_fn</span><span class="p">,</span> <span class="n">t_tar_density</span> <span class="o">=</span> \
+        <span class="n">set_up_truncation</span><span class="p">(</span><span class="n">f_grids</span><span class="p">,</span> <span class="n">f_v_Z_fn</span><span class="p">,</span> <span class="n">f_tar_density</span><span class="p">,</span> <span class="n">truncation</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Running truncation </span><span class="si">{</span><span class="n">truncation</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="n">t_ksi</span> <span class="o">=</span> <span class="n">KSInversion</span><span class="p">(</span><span class="n">t_grids</span><span class="p">,</span>
+                        <span class="n">t_v_Z_fn</span><span class="p">,</span>
+                        <span class="n">t_tar_density</span><span class="p">,</span>
+                        <span class="n">truncation</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                        <span class="n">n_point_stencil</span><span class="o">=</span><span class="n">n_point_stencil</span><span class="p">,</span>
+                        <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span>
+                        <span class="n">num_electrons</span><span class="o">=</span><span class="n">num_electrons</span><span class="p">,</span> <span class="p">)</span>
+
+    <span class="n">t_ksi</span><span class="o">.</span><span class="n">solve_v_XC</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="s1">&#39;cfexp&#39;</span><span class="p">)</span>
+
+    <span class="n">old_truncation</span> <span class="o">=</span> <span class="n">truncation</span>
+    <span class="n">truncation</span> <span class="o">+=</span> <span class="n">find_truncation</span><span class="p">(</span><span class="n">t_ksi</span><span class="o">.</span><span class="n">f_density</span><span class="p">,</span> <span class="n">t_tol</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;truncation updated from </span><span class="si">{</span><span class="n">old_truncation</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="n">truncation</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+    <span class="n">t_grids</span><span class="p">,</span> <span class="n">t_v_Z_fn</span><span class="p">,</span> <span class="n">t_tar_density</span> <span class="o">=</span> \
+        <span class="n">set_up_truncation</span><span class="p">(</span><span class="n">f_grids</span><span class="p">,</span> <span class="n">f_v_Z_fn</span><span class="p">,</span> <span class="n">f_tar_density</span><span class="p">,</span> <span class="n">truncation</span><span class="p">)</span>
+
+    <span class="n">ksi</span> <span class="o">=</span> <span class="n">KSInversion</span><span class="p">(</span><span class="n">f_grids</span><span class="p">,</span>
+                      <span class="n">f_v_Z_fn</span><span class="p">,</span>
+                      <span class="n">f_tar_density</span><span class="p">,</span>
+                      <span class="n">truncation</span><span class="o">=</span><span class="n">truncation</span><span class="p">,</span>
+                      <span class="n">n_point_stencil</span><span class="o">=</span><span class="n">n_point_stencil</span><span class="p">,</span>
+                      <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span>
+                      <span class="n">num_electrons</span><span class="o">=</span><span class="n">num_electrons</span><span class="p">,</span> <span class="p">)</span>
+
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">truncation</span> <span class="o">-</span> <span class="n">old_truncation</span>
+    <span class="n">ksi</span><span class="o">.</span><span class="n">t_v_XC</span> <span class="o">=</span> <span class="n">t_ksi</span><span class="o">.</span><span class="n">t_v_XC</span><span class="p">[</span><span class="n">delta</span><span class="p">:</span><span class="o">-</span><span class="n">delta</span><span class="p">]</span>
+
+    <span class="n">ksi</span><span class="o">.</span><span class="n">append_exp</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ignored_points</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="s1">&#39;cfexp&#39;</span><span class="p">)</span>
+    <span class="n">ksi</span><span class="o">.</span><span class="n">solve_v_XC</span><span class="p">(</span><span class="n">ignored_points</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="s1">&#39;cfexp&#39;</span><span class="p">,</span> <span class="n">truncated</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;done!&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ksi</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">f_grids</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">256</span><span class="p">,</span> <span class="mi">257</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.08</span><span class="p">)</span>
+    <span class="n">example_dir</span> <span class="o">=</span> <span class="s1">&#39;H4&#39;</span>
+
+    <span class="n">f_v_Z_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> \
+    <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;ks_inversion_npy/&#39;</span> <span class="o">+</span> <span class="n">example_dir</span> <span class="o">+</span> <span class="s1">&#39;/potentials.npy&#39;</span><span class="p">)[</span><span class="mi">74</span><span class="p">]</span>
+    <span class="n">f_tar_density</span> <span class="o">=</span> \
+    <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;ks_inversion_npy/&#39;</span> <span class="o">+</span> <span class="n">example_dir</span> <span class="o">+</span> <span class="s1">&#39;/densities.npy&#39;</span><span class="p">)[</span><span class="mi">74</span><span class="p">]</span>
+    <span class="n">num_electrons</span> <span class="o">=</span> <span class="mi">4</span>
+
+    <span class="n">ksi</span> <span class="o">=</span> <span class="n">two_iter_KS_inversion</span><span class="p">(</span><span class="n">f_grids</span><span class="p">,</span> <span class="n">f_v_Z_fn</span><span class="p">,</span> <span class="n">f_tar_density</span><span class="p">,</span> <span class="n">num_electrons</span><span class="p">)</span>
+
+    <span class="n">f_v_XC</span> <span class="o">=</span> <span class="n">ksi</span><span class="o">.</span><span class="n">f_v_XC</span>
+    <span class="n">step_list</span> <span class="o">=</span> <span class="n">ksi</span><span class="o">.</span><span class="n">step_list</span>
+    <span class="n">cost_list</span> <span class="o">=</span> <span class="n">ksi</span><span class="o">.</span><span class="n">cost_list</span>
+    <span class="n">truncation</span> <span class="o">=</span> <span class="n">ksi</span><span class="o">.</span><span class="n">truncation</span>
+
+    <span class="c1"># Example plot</span>
+    <span class="n">v_s</span> <span class="o">=</span> <span class="n">ksi</span><span class="o">.</span><span class="n">_get_v_eff</span><span class="p">()</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">ksi</span><span class="o">.</span><span class="n">f_density</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f_grids</span><span class="p">,</span> <span class="n">v_s</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f_grids</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f_grids</span><span class="p">,</span> <span class="n">f_tar_density</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    folder = f&#39;ks_inversion_plots/Be_{truncation}_test&#39;</span>
+<span class="sd">    from plot_tools import plot_and_save, plot_multiple_and_save</span>
+
+<span class="sd">    ip = 6 #ignored points</span>
+<span class="sd">    t = truncation</span>
+<span class="sd">    </span>
+<span class="sd">    plot_and_save(f_grids, f_v_Z_fn(f_grids), &#39;x&#39;, &#39;v_Z&#39;, &#39;v_Z&#39;, folder=folder)</span>
+<span class="sd">    </span>
+<span class="sd">    t_grids = ksi.t_grids</span>
+<span class="sd">    t1 = t+ip</span>
+<span class="sd">    t2 = len(t_grids)-ip*2</span>
+<span class="sd">    vl = list(ksi.f_v_XC)</span>
+<span class="sd">    plot_multiple_and_save([[&#39;truncated v_XC&#39;, f_grids, [None]*t1+vl[t1:t1+t2]+[None]*t1, &#39;-&#39;, &#39;blue&#39;],</span>
+<span class="sd">                            [&#39;exponential decay&#39;, f_grids, vl[:t1]+[None]*t2+vl[t1+t2:], &#39;-&#39;, &#39;red&#39;]],</span>
+<span class="sd">                            f&#39;full_v_XC_{truncation}_truncated_{ip}_ignored_2&#39;, &#39;step&#39;, &#39;cost&#39;, </span>
+<span class="sd">                            legend_loc=3, folder=folder)</span>
+<span class="sd">    </span>
+<span class="sd">    d = ksi.f_v_XC[-t-ip-1]-ksi.t_v_XC[-ip-1]</span>
+<span class="sd">    </span>
+<span class="sd">    plot_multiple_and_save([[&#39;kept&#39;, f_grids[-t-15:-t-ip], ksi.t_v_XC[-15:-ip]+d, &#39;-&#39;, &#39;blue&#39;],</span>
+<span class="sd">                            [&#39;ignored&#39;, f_grids[-t-ip-1:-t], ksi.t_v_XC[-ip-1:]+d, &#39;-&#39;, &#39;green&#39;],</span>
+<span class="sd">                            [&#39;exponential decay&#39;, f_grids[-t-ip-1:-t+5], ksi.f_v_XC[-t-ip-1:-t+5], &#39;-&#39;, &#39;red&#39;]],</span>
+<span class="sd">                            f&#39;what_happens_at_the_ends&#39;, marker=&#39;o&#39;, legend_loc=1, folder=folder)</span>
+<span class="sd">    </span>
+<span class="sd">    plot_multiple_and_save([[&#39;full v_XC&#39;, f_grids, ksi.f_v_XC, &#39;-&#39;, &#39;blue&#39;],</span>
+<span class="sd">                            [&#39;truncated v_XC&#39;, t_grids, ksi.t_v_XC+d, &#39;--&#39;, &#39;green&#39;]],</span>
+<span class="sd">                            f&#39;truncated vs. full&#39;, legend_loc=3, folder=folder)</span>
+<span class="sd">    </span>
+<span class="sd">    plot_multiple_and_save([[&#39;target_density_cost&#39;, step_list, cost_list[0], &#39;-&#39;, &#39;red&#39;],</span>
+<span class="sd">                            [&#39;density_cost&#39;, step_list, cost_list[1], &#39;-&#39;, &#39;blue&#39;],</span>
+<span class="sd">                            [&#39;KE_cost&#39;, step_list, cost_list[2], &#39;-&#39;, &#39;green&#39;]],</span>
+<span class="sd">                            &#39;step&amp;cost1&#39;, &#39;step&#39;, &#39;cost&#39;, folder=folder)</span>
+<span class="sd">    </span>
+<span class="sd">    plot_multiple_and_save([[&#39;target_density_cost&#39;, step_list, cost_list[0], &#39;-&#39;, &#39;red&#39;],</span>
+<span class="sd">                            [&#39;density_cost&#39;, step_list, cost_list[1], &#39;-&#39;, &#39;blue&#39;],</span>
+<span class="sd">                            [&#39;KE_cost&#39;, step_list, cost_list[2], &#39;-&#39;, &#39;green&#39;]],</span>
+<span class="sd">                            &#39;step&amp;cost2&#39;, &#39;step&#39;, &#39;cost&#39;, ylim=(0, 0.0001), folder=folder)</span>
+<span class="sd">    </span>
+<span class="sd">    plot_multiple_and_save([[&#39;solved density&#39;, f_grids, ksi.f_density, &#39;-&#39;, &#39;blue&#39;],</span>
+<span class="sd">                            [&#39;target density&#39;, f_grids, f_tar_density, &#39;--&#39;, &#39;orange&#39;]], </span>
+<span class="sd">                            &#39;densities&#39;, &#39;x&#39;, &#39;density&#39;, folder=folder)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Ryan Pederson, and others too
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

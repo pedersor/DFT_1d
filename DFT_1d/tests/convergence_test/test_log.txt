@@ -1,8 +1,0 @@
-==== 2020-11-29 11:09:14 ====
-SparseEigenSolver: sin_periodic_(0, 6.283185307179586)_5_5000_grids
-Time: 41.3168568611145
-
-==== 2020-11-29 11:17:28 ====
-SparseEigenSolver: sin_periodic_(0, 6.283185307179586)_5_5000_grids
-Time: 41.21751570701599
-

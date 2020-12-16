@@ -43,7 +43,7 @@ def harmonic_oscillator(grids, k=1.):
     Args:
       grids: numpy array of grid points for evaluating 1d potential.
         (num_grids,)
-      k: strength constant for potential vp = 0.5 * k * grids ** 2
+      k: strength constant for potential vp = 0.5 * k * grids ** 2.
 
     Returns:
       vp: Potential on grid.
@@ -54,9 +54,18 @@ def harmonic_oscillator(grids, k=1.):
 
 
 def quartic_oscillator(grids, k=1.):
-    # quartic oscillator potential
+    """Potential of quantum quartic oscillator.
 
-    vp = 0.5 * k * (grids ** 4)
+    Args:
+      grids: numpy array of grid points for evaluating 1d potential.
+        (num_grids,)
+      k: strength constant for potential.
+
+    Returns:
+      vp: Potential on grid.
+        (num_grid,)
+    """
+    vp = 0.5 * k * grids ** 4
     return vp
 
 
@@ -121,24 +130,6 @@ def exp_hydrogenic(grids, A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
     """
     vp = -Z * A * np.exp(-k * (grids ** 2 + a ** 2) ** .5)
     return vp
-
-
-def get_gridded_potential(grids, potential):
-    '''
-    If a potential .npy file has already been generated on a grid. Necessary
-    for utilizing ks_dft.py and hf_scf.py where potential(grids) is assumed.
-    This should always be called using
-    functools.partial(get_potential_from_npy_file, potential=potential)
-
-    Args:
-        potential: numpy array of potential values already evaluated on grid
-        points
-
-    Returns:
-        potential: the same potential inputted. See above for reasoning.
-    '''
-
-    return potential
 
 
 def poschl_teller(grids, lam, a=1., center=0.):
@@ -240,5 +231,5 @@ def poschl_teller_eigen_energy(level, lam, a=1.):
     """
     level = int(level)
     _valid_poschl_teller_level_lambda(level, lam)
-    a2 = a ** 2  # a square
+    a2 = a ** 2
     return -a2 * (np.sqrt(lam * (lam + 1) / a2 + 0.25) - level + 0.5) ** 2 / 2

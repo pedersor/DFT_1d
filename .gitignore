@@ -5,3 +5,5 @@
 .DS_Store
 .idea/.name
 *.npy
+
+logbook/logbook_data/

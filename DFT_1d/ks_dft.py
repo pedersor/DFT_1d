@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 from utils import get_dx, quadratic
 
 
-class SolverBase(object):
+class SolverBase:
     """Base Solver for non-interacting Kohn-Sham (KS) 1d systems."""
 
     def __init__(self, grids, v_ext, xc, num_electrons=1,

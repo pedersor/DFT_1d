@@ -26,7 +26,7 @@ import math
 from utils import get_dx, quadratic
 
 
-class SolverBase(object):
+class SolverBase:
     """Base Solver for non-interacting 1d system.
 
     Subclasses should define solve_ground_state method.
@@ -40,7 +40,6 @@ class SolverBase(object):
           grids: numpy array of grid points for evaluating 1d potential.
               (num_grids,)
           v_ext: Kohn Sham external potential function taking grids as argument.
-          v_h: Kohn Sham hartree potential function taking grids as argument.
           hf: hf class used to assemble fock matrix and compute exchange.
           num_electrons: integer, the number of electrons in the system. Must be
               greater or equal to 1.
@@ -66,7 +65,8 @@ class SolverBase(object):
             raise ValueError('num_electrons is not an integer.')
         elif num_electrons < 1:
             raise ValueError(
-                'num_electrons must be greater or equal to 1, but got %d' % num_electrons)
+                'num_electrons must be greater or equal to 1, but got %d' %
+                num_electrons)
         else:
             self.num_electrons = num_electrons
 
@@ -116,13 +116,6 @@ class HF_Solver(SolverBase):
         self.num_UP_electrons = num_UP_electrons
         self.num_DOWN_electrons = num_DOWN_electrons
 
-        # uniform density
-        self.nUP = self.num_UP_electrons / (self.num_grids * self.dx) * np.ones(
-            self.num_grids)
-        self.nDOWN = self.num_DOWN_electrons / (
-                self.num_grids * self.dx) * np.ones(self.num_grids)
-        self.density = self.nUP + self.nDOWN
-        self.zeta = (self.nUP - self.nDOWN) / (self.density)
         return self
 
     def update_v_tot_up(self):

@@ -28,10 +28,6 @@ from utils import get_dx, quadratic
 class SolverBase(object):
     """Base Solver for non-interacting Kohn-Sham (KS) 1d systems."""
 
-    def is_converged(self):
-        """Returns whether this solver has been solved."""
-        return self._converged
-
     def __init__(self, grids, v_ext, xc, num_electrons=1,
                  boundary_condition="open"):
         """Initialize the solver with potential function and grid.
@@ -54,8 +50,6 @@ class SolverBase(object):
 
         self.v_ext = v_ext
         self.xc = xc
-        self.v_s_up = v_ext
-        self.v_s_down = v_ext
 
         if not isinstance(num_electrons, int):
             raise ValueError('num_electrons is not an integer.')
@@ -89,6 +83,10 @@ class SolverBase(object):
 
         return self
 
+    def is_converged(self):
+        """Returns whether this solver has been solved."""
+        return self._converged
+
 
 class KS_Solver(SolverBase):
     """KS-DFT solver for non-periodic systems."""
@@ -104,6 +102,15 @@ class KS_Solver(SolverBase):
         """
         super(KS_Solver, self).__init__(grids, v_ext, xc, num_electrons,
                                         boundary_condition)
+        self.init_v_s()
+
+    def init_v_s(self, v_s_up=v_ext, v_s_down=v_ext):
+        """ Initialize starting v_s_up and v_s_down. The default
+        corresponds to v_hxc_up = v_hxc_down = 0. """
+
+        self.v_s_up = v_s_up
+        self.v_s_down = v_s_down
+        return self
 
     def _update_v_s_up(self):
         """Total up spin potential to be solved self consistently in the
@@ -187,7 +194,7 @@ class KS_Solver(SolverBase):
             solver_down.solve_ground_state()
             return self._update_ground_state(solver_up, solver_down)
 
-    def solve_self_consistent_density(self, v_ext, mixing_param=0.3, verbose=0):
+    def solve_self_consistent_density(self, mixing_param=0.3, verbose=0):
         """
 
         Args:

@@ -14,7 +14,7 @@ External Potentials
 """
 
 import numpy as np
-from single_electron import SparseEigenSolver
+from non_interacting_solver import SparseEigenSolver
 from utils import IntegralTool, DerivativeTool
 from ext_potentials import exp_hydrogenic
 import functools

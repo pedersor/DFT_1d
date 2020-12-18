@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(currentpath))
 
 import numpy as np
 from ext_potentials import poschl_teller
-from single_electron import SparseEigenSolver
+from non_interacting_solver import SparseEigenSolver
 import functools
 import matplotlib.pyplot as plt
 

@@ -18,7 +18,7 @@ Hartree-Fock DFT solver
     * Has this been linted?
 """
 
-import single_electron, functionals
+import non_interacting_solver, functionals
 import numpy as np
 import functools
 import math
@@ -232,21 +232,21 @@ class HF_Solver(SolverBase):
         """Solve ground state by diagonalizing the Hamiltonian matrix directly and separately for up and down spins.
         """
 
-        solverUP = single_electron.EigenSolver(self.grids,
-                                               potential_fn=self.v_tot_up,
-                                               num_electrons=self.num_UP_electrons,
-                                               boundary_condition=self.boundary_condition,
-                                               fock_mat=self.fock_mat_up)
+        solverUP = non_interacting_solver.EigenSolver(self.grids,
+                                                      potential_fn=self.v_tot_up,
+                                                      num_electrons=self.num_UP_electrons,
+                                                      boundary_condition=self.boundary_condition,
+                                                      fock_mat=self.fock_mat_up)
         solverUP.solve_ground_state()
 
         if self.num_DOWN_electrons == 0:
             return self._update_ground_state(solverUP, first_iter, sym)
         else:
-            solverDOWN = single_electron.EigenSolver(self.grids,
-                                                     potential_fn=self.v_tot_down,
-                                                     num_electrons=self.num_DOWN_electrons,
-                                                     boundary_condition=self.boundary_condition,
-                                                     fock_mat=self.fock_mat_down)
+            solverDOWN = non_interacting_solver.EigenSolver(self.grids,
+                                                            potential_fn=self.v_tot_down,
+                                                            num_electrons=self.num_DOWN_electrons,
+                                                            boundary_condition=self.boundary_condition,
+                                                            fock_mat=self.fock_mat_down)
             solverDOWN.solve_ground_state()
             return self._update_ground_state(solverUP, first_iter, sym,
                                              solverDOWN)

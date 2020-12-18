@@ -19,7 +19,7 @@ import os
 currentpath = os.path.abspath('.')
 sys.path.insert(0, os.path.dirname(currentpath))
 
-import single_electron, ext_potentials
+import non_interacting_solver, ext_potentials
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.polynomial.polynomial import polyfit
@@ -277,7 +277,7 @@ if __name__ == "__main__":
                                                  lam=1), 'open'),
                               ((0, 2 * np.pi), np.sin, 'periodic')]
 
-    solvers = [single_electron.SparseEigenSolver, single_electron.EigenSolver]
+    solvers = [non_interacting_solver.SparseEigenSolver, non_interacting_solver.EigenSolver]
 
     # convergence test for the sin periodic potential on arbitrary k_point
     r, p, b = test_potential_fn_list[3]

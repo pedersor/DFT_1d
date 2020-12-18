@@ -18,7 +18,7 @@ Kohn-Sham DFT solver
     * Has this been linted?
 """
 
-import single_electron, functionals
+import non_interacting_solver, functionals
 import numpy as np
 import functools
 import matplotlib.pyplot as plt
@@ -171,19 +171,19 @@ class KS_Solver(SolverBase):
         and separately for up and down spins.
         """
 
-        solver_up = single_electron.EigenSolver(self.grids,
-                                                potential_fn=self.v_tot_up,
-                                                num_electrons=self.num_up_electrons,
-                                                boundary_condition=self.boundary_condition)
+        solver_up = non_interacting_solver.EigenSolver(self.grids,
+                                                       potential_fn=self.v_tot_up,
+                                                       num_electrons=self.num_up_electrons,
+                                                       boundary_condition=self.boundary_condition)
         solver_up.solve_ground_state()
 
         if self.num_down_electrons == 0:
             return self._update_ground_state(solver_up)
         else:
-            solver_down = single_electron.EigenSolver(self.grids,
-                                                      potential_fn=self.v_tot_down,
-                                                      num_electrons=self.num_down_electrons,
-                                                      boundary_condition=self.boundary_condition)
+            solver_down = non_interacting_solver.EigenSolver(self.grids,
+                                                             potential_fn=self.v_tot_down,
+                                                             num_electrons=self.num_down_electrons,
+                                                             boundary_condition=self.boundary_condition)
             solver_down.solve_ground_state()
             return self._update_ground_state(solver_up, solver_down)
 

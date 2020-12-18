@@ -40,7 +40,21 @@ def hartree_potential(grids, n, v_ee=functools.partial(
     return v_h
 
 
-class fock_operator(object):
+class BaseHartreeFock:
+    def __init__(self, grids):
+        self.grids = grids
+        self.dx = get_dx(grids)
+
+    def v_hf(self, grids, n, v_ext):
+        """Total HF potential, v_{eff}."""
+        v_h = self.v_h()
+        return v_ext(grids) + v_h(grids=grids, n=n)
+
+    def v_h(self):
+        return NotImplementedError()
+
+
+class ExponentialHF(BaseHartreeFock):
     def __init__(self, grids, A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
                  k=constants.EXPONENTIAL_COULOMB_KAPPA):
         self.grids = grids
@@ -48,6 +62,9 @@ class fock_operator(object):
         self.A = A
         self.k = k
         self.dx = get_dx(grids)
+
+    def v_h(self):
+        return hartree_potential
 
     def update_fock_matrix(self, wave_function):
         # fock matrix will be implemented as fock operator,
@@ -72,7 +89,7 @@ class fock_operator(object):
         return mat
 
     def get_E_x(self, wave_function):
-        # obtain E_x 'exactly' from double integral over HF orbitals
+        """Obtain E_x 'exactly' from double integral over HF orbitals """
         num_electrons = len(wave_function)
 
         E_x = 0
@@ -100,7 +117,7 @@ class fock_operator(object):
         return E_x
 
 
-class base_exchange_correlation_functional:
+class BaseExchangeCorrelationFunctional:
     def __init__(self, grids):
         self.grids = grids
         self.dx = get_dx(grids)
@@ -141,7 +158,7 @@ class base_exchange_correlation_functional:
         return self.e_c(n, zeta).sum() * self.dx
 
 
-class exponential_lda_xc_functional(base_exchange_correlation_functional):
+class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
     """local density approximation (LDA) for exponentially repelling electrons.
 
 
@@ -154,7 +171,7 @@ class exponential_lda_xc_functional(base_exchange_correlation_functional):
 
     def __init__(self, grids, A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
                  k=constants.EXPONENTIAL_COULOMB_KAPPA):
-        super(exponential_lda_xc_functional, self).__init__(grids=grids)
+        super(ExponentialLDAFunctional, self).__init__(grids=grids)
         self.A = A
         self.k = k
         self.dx = get_dx(grids)

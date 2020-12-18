@@ -31,8 +31,8 @@ class SolverBase(object):
     Subclasses should define solve_ground_state method.
     """
 
-    def __init__(self, grids, v_ext, v_h, fock_operator, num_electrons=1,
-                 k_point=None, boundary_condition="open"):
+    def __init__(self, grids, v_ext, hf, num_electrons=1,
+                 boundary_condition="open"):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -40,26 +40,21 @@ class SolverBase(object):
               (num_grids,)
           v_ext: Kohn Sham external potential function taking grids as argument.
           v_h: Kohn Sham hartree potential function taking grids as argument.
-          fock_operator: fock_operator class used to assemble fock matrix and compute exchange
+          hf: hf class used to assemble fock matrix and compute exchange.
           num_electrons: integer, the number of electrons in the system. Must be
               greater or equal to 1.
-          k_point: the k-point in reciprocal space used to evaluate Schrodinger Equation
-              for the case of a periodic potential. It should be chosen to be within
-              the first Brillouin zone.
 
         Raises:
           ValueError: If num_electrons is less than 1; or num_electrons is not
               an integer.
         """
-        self.k = k_point
         self.boundary_condition = boundary_condition
         self.grids = grids
         self.dx = get_dx(grids)
         self.num_grids = len(grids)
 
         self.v_ext = v_ext
-        self.v_h = v_h
-        self.fock_operator = fock_operator
+        self.hf = hf
         self.v_tot_up = v_ext
         self.v_tot_down = v_ext
 
@@ -96,8 +91,8 @@ class SolverBase(object):
 class HF_Solver(SolverBase):
     """Represents the Hamiltonian as a matrix and diagonalizes it directly."""
 
-    def __init__(self, grids, v_ext, v_h, fock_operator, num_electrons=1,
-                 k_point=None, boundary_condition='open'):
+    def __init__(self, grids, v_ext, hf, num_electrons=1,
+                 boundary_condition='open'):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -105,9 +100,8 @@ class HF_Solver(SolverBase):
             (num_grids,)
           num_electrons: Integer, the number of electrons in the system.
         """
-        super(HF_Solver, self).__init__(grids, v_ext, v_h, fock_operator,
-                                        num_electrons, k_point,
-                                        boundary_condition)
+        super(HF_Solver, self).__init__(grids, v_ext, hf,
+                                        num_electrons, boundary_condition)
         self.initialize_density()
 
     def initialize_density(self):
@@ -133,21 +127,19 @@ class HF_Solver(SolverBase):
     def update_v_tot_up(self):
         # total potential to be solved self consistently in the Kohn Sham system
 
-        self.v_tot_up = functools.partial(functionals.tot_HF_potential,
-                                          n=self.density, v_ext=self.v_ext,
-                                          v_h=self.v_h)
+        self.v_tot_up = functools.partial(self.hf.v_hf, n=self.density,
+                                          v_ext=self.v_ext)
         return self
 
     def update_v_tot_down(self):
         # total potential to be solved self consistently in the Kohn Sham system
 
-        self.v_tot_down = functools.partial(functionals.tot_HF_potential,
-                                            n=self.density, v_ext=self.v_ext,
-                                            v_h=self.v_h)
+        self.v_tot_down = functools.partial(self.hf.v_hf, n=self.density,
+                                            v_ext=self.v_ext)
         return self
 
     def update_fock_matrix_up(self):
-        self.fock_mat_up = self.fock_operator.update_fock_matrix(
+        self.fock_mat_up = self.hf.update_fock_matrix(
             wave_function=self.wave_functionUP[:self.num_UP_electrons])
 
         return self
@@ -156,19 +148,19 @@ class HF_Solver(SolverBase):
         if self.num_DOWN_electrons == 0:
             return self
         else:
-            self.fock_mat_down = self.fock_operator.update_fock_matrix(
+            self.fock_mat_down = self.hf.update_fock_matrix(
                 wave_function=self.wave_functionDOWN[:self.num_DOWN_electrons])
 
             return self
 
     def get_E_x_HF(self):
         if self.num_DOWN_electrons == 0:
-            return self.fock_operator.get_E_x(
+            return self.hf.get_E_x(
                 wave_function=self.wave_functionUP[:self.num_UP_electrons])
         else:
-            E_x_up = self.fock_operator.get_E_x(
+            E_x_up = self.hf.get_E_x(
                 wave_function=self.wave_functionUP[:self.num_UP_electrons])
-            E_x_down = self.fock_operator.get_E_x(
+            E_x_down = self.hf.get_E_x(
                 wave_function=self.wave_functionDOWN[:self.num_DOWN_electrons])
             return E_x_up + E_x_down
 
@@ -274,9 +266,10 @@ class HF_Solver(SolverBase):
             # External Potential Energy
             self.V = (self.v_ext(self.grids) * self.density).sum() * self.dx
 
+            v_h = self.hf.v_h()
             # Hartree Integral
-            self.U = .5 * (self.v_h(grids=self.grids,
-                                    n=self.density) * self.density).sum() * self.dx
+            self.U = .5 * (v_h(grids=self.grids,
+                               n=self.density) * self.density).sum() * self.dx
 
             # Exchange Energy
             self.E_x = self.get_E_x_HF()

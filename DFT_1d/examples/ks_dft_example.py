@@ -36,7 +36,7 @@ def lda_ks_dft_atom(grids, N_e, Z):
     """
 
     v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=Z)
-    lda_xc = functionals.exponential_lda_xc_functional(grids=grids)
+    lda_xc = functionals.ExponentialLDAFunctional(grids=grids)
     solver = ks_dft.KS_Solver(grids, v_ext=v_ext, xc=lda_xc,
                               num_electrons=N_e)
     solver.solve_self_consistent_density()

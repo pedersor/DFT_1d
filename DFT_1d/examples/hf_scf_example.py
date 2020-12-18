@@ -10,6 +10,7 @@ Summary:
 
 import sys
 import os
+
 currentpath = os.path.abspath('.')
 sys.path.insert(0, os.path.dirname(currentpath))
 
@@ -34,11 +35,10 @@ def hf_scf_atom(grids, N_e, Z):
     """
 
     v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=Z)
-    v_h = functools.partial(functionals.hartree_potential)
-    fock_op = functionals.fock_operator(grids=grids)
+    exponential_hf = functionals.ExponentialHF(grids=grids)
 
-    solver = hf_scf.HF_Solver(grids, v_ext=v_ext, v_h=v_h,
-                              fock_operator=fock_op, num_electrons=N_e)
+    solver = hf_scf.HF_Solver(grids, v_ext=v_ext, hf=exponential_hf,
+                              num_electrons=N_e)
     solver.solve_self_consistent_density(sym=1)
     return solver
 
@@ -119,7 +119,7 @@ if __name__ == '__main__':
     plt.grid(alpha=0.4)
     plt.show()
 
-    #sys.exit()
+    # sys.exit()
 
     """ Generate atom table for various (N_e, Z) """
     # use coarser grid for faster computation.

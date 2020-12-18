@@ -26,10 +26,7 @@ from utils import get_dx, quadratic
 
 
 class SolverBase(object):
-    """Base Solver for non-interacting 1d system.
-
-    Subclasses should define solve_ground_state method.
-    """
+    """Base Solver for non-interacting Kohn-Sham (KS) 1d systems."""
 
     def __init__(self, grids, v_ext, v_h, xc, num_electrons=1, k_point=None,
                  boundary_condition="open"):
@@ -71,16 +68,16 @@ class SolverBase(object):
         else:
             self.num_electrons = num_electrons
 
-        # Solver is unsolved by default.
-        self._solved = False
+        # Solver is not converged by default.
+        self._converged = False
 
-    def is_solved(self):
+    def is_converged(self):
         """Returns whether this solver has been solved."""
-        return self._solved
+        return self._converged
 
 
 class KS_Solver(SolverBase):
-    """Represents the Hamiltonian as a matrix and diagonalizes it directly."""
+    """KS-DFT solver for non-periodic systems."""
 
     def __init__(self, grids, v_ext, v_h, xc, num_electrons=1,
                  k_point=None, boundary_condition='open'):
@@ -93,15 +90,17 @@ class KS_Solver(SolverBase):
         """
         super(KS_Solver, self).__init__(grids, v_ext, v_h, xc, num_electrons,
                                         k_point, boundary_condition)
-        self._initialize_density()
+        self._init_default_spin_config()
         self.set_energy_tol_threshold()
 
     def set_energy_tol_threshold(self, energy_tol_threshold=1e-4):
         self.energy_tol_threshold = energy_tol_threshold
         return self
 
-    def _initialize_density(self):
-        # Get number of Up/Down Electrons. All unpaired electrons are defaulted to spin-up.
+    def _init_default_spin_config(self):
+        """Default spin configuration: all up/down spins are paired if
+        possible. All unpaired electrons are defaulted to spin-up.
+        """
 
         num_up_electrons = int(self.num_electrons / 2)
         num_down_electrons = int(self.num_electrons / 2)
@@ -114,24 +113,28 @@ class KS_Solver(SolverBase):
         return self
 
     def _update_v_tot_up(self):
-        # total potential to be solved self consistently in the Kohn Sham system
+        """Total up spin potential to be solved self consistently in the
+        KS system.
+        """
 
         self.v_tot_up = functools.partial(functionals.tot_KS_potential,
                                           n=self.density, n_up=self.n_up,
                                           n_down=self.n_down, v_ext=self.v_ext,
                                           v_h=self.v_h,
-                                          v_xc=self.xc.v_xc_exp_up)
+                                          v_xc=self.xc.v_xc_up)
         return self
 
     def _update_v_tot_down(self):
-        # total potential to be solved self consistently in the Kohn Sham system
+        """Total down spin potential to be solved self consistently in the
+        KS system.
+        """
 
         self.v_tot_down = functools.partial(functionals.tot_KS_potential,
                                             n=self.density, n_up=self.n_up,
                                             n_down=self.n_down,
                                             v_ext=self.v_ext,
                                             v_h=self.v_h,
-                                            v_xc=self.xc.v_xc_exp_down)
+                                            v_xc=self.xc.v_xc_down)
         return self
 
     def _update_ground_state(self, solver_up, solver_down=None):
@@ -173,7 +176,8 @@ class KS_Solver(SolverBase):
         return self
 
     def _solve_ground_state(self):
-        """Solve ground state by diagonalizing the Hamiltonian matrix directly and separately for up and down spins.
+        """Solve ground state by diagonalizing the Hamiltonian matrix directly
+        and separately for up and down spins.
         """
 
         solver_up = single_electron.EigenSolver(self.grids,
@@ -218,7 +222,7 @@ class KS_Solver(SolverBase):
 
             if (np.abs(self.eps - final_energy) < self.energy_tol_threshold):
                 converged = True
-                self._solved = True
+                self._converged = True
 
             final_energy = self.eps
             if prev_densities and mixing_param:

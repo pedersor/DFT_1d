@@ -11,6 +11,7 @@ Summary:
 
 import sys
 import os
+
 currentpath = os.path.abspath('.')
 sys.path.insert(0, os.path.dirname(currentpath))
 
@@ -36,7 +37,7 @@ def lda_ks_dft_atom(grids, N_e, Z):
 
     v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=Z)
     v_h = functools.partial(functionals.hartree_potential)
-    lda_xc = functionals.exchange_correlation_functional(grids=grids)
+    lda_xc = functionals.exponential_lda_xc_functional(grids=grids)
     solver = ks_dft.KS_Solver(grids, v_ext=v_ext, v_h=v_h, xc=lda_xc,
                               num_electrons=N_e)
     solver.solve_self_consistent_density(v_ext=v_ext(grids))

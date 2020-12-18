@@ -28,7 +28,11 @@ from utils import get_dx, quadratic
 class SolverBase(object):
     """Base Solver for non-interacting Kohn-Sham (KS) 1d systems."""
 
-    def __init__(self, grids, v_ext, v_h, xc, num_electrons=1, k_point=None,
+    def is_converged(self):
+        """Returns whether this solver has been solved."""
+        return self._converged
+
+    def __init__(self, grids, v_ext, xc, num_electrons=1,
                  boundary_condition="open"):
         """Initialize the solver with potential function and grid.
 
@@ -36,26 +40,19 @@ class SolverBase(object):
           grids: numpy array of grid points for evaluating 1d potential.
               (num_grids,)
           v_ext: Kohn Sham external potential function taking grids as argument.
-          v_h: Kohn Sham hartree potential function taking grids as argument.
           xc: exchange correlation functional class taking density as argument.
           num_electrons: integer, the number of electrons in the system. Must be
               greater or equal to 1.
-          k_point: the k-point in reciprocal space used to evaluate Schrodinger Equation
-              for the case of a periodic potential. It should be chosen to be within
-              the first Brillouin zone.
 
         Raises:
           ValueError: If num_electrons is less than 1; or num_electrons is not
               an integer.
         """
-        self.k = k_point
         self.boundary_condition = boundary_condition
         self.grids = grids
         self.dx = get_dx(grids)
-        self.num_grids = len(grids)
 
         self.v_ext = v_ext
-        self.v_h = v_h
         self.xc = xc
         self.v_tot_up = v_ext
         self.v_tot_down = v_ext
@@ -70,26 +67,6 @@ class SolverBase(object):
 
         # Solver is not converged by default.
         self._converged = False
-
-    def is_converged(self):
-        """Returns whether this solver has been solved."""
-        return self._converged
-
-
-class KS_Solver(SolverBase):
-    """KS-DFT solver for non-periodic systems."""
-
-    def __init__(self, grids, v_ext, v_h, xc, num_electrons=1,
-                 k_point=None, boundary_condition='open'):
-        """Initialize the solver with potential function and grid.
-
-        Args:
-          grids: numpy array of grid points for evaluating 1d potential.
-            (num_grids,)
-          num_electrons: Integer, the number of electrons in the system.
-        """
-        super(KS_Solver, self).__init__(grids, v_ext, v_h, xc, num_electrons,
-                                        k_point, boundary_condition)
         self._init_default_spin_config()
         self.set_energy_tol_threshold()
 
@@ -102,8 +79,8 @@ class KS_Solver(SolverBase):
         possible. All unpaired electrons are defaulted to spin-up.
         """
 
-        num_up_electrons = int(self.num_electrons / 2)
-        num_down_electrons = int(self.num_electrons / 2)
+        num_up_electrons = self.num_electrons // 2
+        num_down_electrons = self.num_electrons // 2
         if self.num_electrons % 2 == 1:
             num_up_electrons += 1
 
@@ -112,16 +89,31 @@ class KS_Solver(SolverBase):
 
         return self
 
+
+class KS_Solver(SolverBase):
+    """KS-DFT solver for non-periodic systems."""
+
+    def __init__(self, grids, v_ext, xc, num_electrons=1,
+                 boundary_condition='open'):
+        """Initialize the solver with potential function and grid.
+
+        Args:
+          grids: numpy array of grid points for evaluating 1d potential.
+            (num_grids,)
+          num_electrons: Integer, the number of electrons in the system.
+        """
+        super(KS_Solver, self).__init__(grids, v_ext, xc, num_electrons,
+                                        boundary_condition)
+
     def _update_v_tot_up(self):
         """Total up spin potential to be solved self consistently in the
         KS system.
         """
 
-        self.v_tot_up = functools.partial(functionals.tot_KS_potential,
+        self.v_tot_up = functools.partial(self.xc.v_s_up,
                                           n=self.density, n_up=self.n_up,
                                           n_down=self.n_down, v_ext=self.v_ext,
-                                          v_h=self.v_h,
-                                          v_xc=self.xc.v_xc_up)
+                                          v_xc_up=self.xc.v_xc_up)
         return self
 
     def _update_v_tot_down(self):
@@ -129,12 +121,11 @@ class KS_Solver(SolverBase):
         KS system.
         """
 
-        self.v_tot_down = functools.partial(functionals.tot_KS_potential,
+        self.v_tot_down = functools.partial(self.xc.v_s_down,
                                             n=self.density, n_up=self.n_up,
                                             n_down=self.n_down,
                                             v_ext=self.v_ext,
-                                            v_h=self.v_h,
-                                            v_xc=self.xc.v_xc_down)
+                                            v_xc_down=self.xc.v_xc_down)
         return self
 
     def _update_ground_state(self, solver_up, solver_down=None):
@@ -245,8 +236,9 @@ class KS_Solver(SolverBase):
         self.V = (self.v_ext(self.grids) * self.density).sum() * self.dx
 
         # Hartree Integral
-        self.U = .5 * (self.v_h(grids=self.grids,
-                                n=self.density) * self.density).sum() * self.dx
+        v_h = self.xc.v_h()
+        self.U = .5 * (v_h(grids=self.grids,
+                           n=self.density) * self.density).sum() * self.dx
 
         # Exchange Energy
         self.E_x = self.xc.get_E_x(self.density, self.zeta)

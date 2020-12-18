@@ -24,10 +24,6 @@ import functools
 from utils import get_dx
 
 
-def tot_KS_potential(grids, n, v_ext, v_h, v_xc, n_up, n_down):
-    return v_ext(grids) + v_h(grids=grids, n=n) + v_xc(n, n_up, n_down)
-
-
 def tot_HF_potential(grids, n, v_ext, v_h):
     return v_ext(grids) + v_h(grids=grids, n=n)
 
@@ -36,12 +32,12 @@ def hartree_potential(grids, n, v_ee=functools.partial(
     ext_potentials.exp_hydrogenic)):
     N = len(grids)
     dx = np.abs(grids[1] - grids[0])
-    v_H = np.zeros(N)
+    v_h = np.zeros(N)
     for i in range(N):
         for j in range(N):
-            v_H[i] += n[j] * (-1) * v_ee(grids[i] - grids[j])
-    v_H *= dx
-    return v_H
+            v_h[i] += n[j] * (-1) * v_ee(grids[i] - grids[j])
+    v_h *= dx
+    return v_h
 
 
 class fock_operator(object):
@@ -109,6 +105,21 @@ class base_exchange_correlation_functional:
         self.grids = grids
         self.dx = get_dx(grids)
 
+    def v_s_up(self, grids, n, v_ext, v_xc_up, n_up, n_down):
+        """Total up KS potential, v_{s, up}."""
+        v_h = self.v_h()
+        return v_ext(grids) + v_h(grids=grids, n=n) + v_xc_up(n, n_up,
+                                                              n_down)
+
+    def v_s_down(self, grids, n, v_ext, v_xc_down, n_up, n_down):
+        """Total KS potential, v_{s, down}."""
+        v_h = self.v_h()
+        return v_ext(grids) + v_h(grids=grids, n=n) + v_xc_down(n, n_up,
+                                                                n_down)
+
+    def v_h(self):
+        return NotImplementedError()
+
     def v_xc_up(self, n, n_up, n_down):
         raise NotImplementedError()
 
@@ -147,6 +158,9 @@ class exponential_lda_xc_functional(base_exchange_correlation_functional):
         self.A = A
         self.k = k
         self.dx = get_dx(grids)
+
+    def v_h(self):
+        return hartree_potential
 
     def _set_pade_approx_params(self, n):
         """

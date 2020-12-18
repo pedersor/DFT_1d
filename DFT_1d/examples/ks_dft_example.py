@@ -22,7 +22,7 @@ import functools
 
 
 def lda_ks_dft_atom(grids, N_e, Z):
-    """ local density approximation (LDA) KS-DFT calculation for a 1D atom with
+    """local density approximation (LDA) KS-DFT calculation for a 1D atom with
         exponential interactions, see ext_potentials.exp_hydrogenic.
 
     Args:
@@ -36,9 +36,8 @@ def lda_ks_dft_atom(grids, N_e, Z):
     """
 
     v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=Z)
-    v_h = functools.partial(functionals.hartree_potential)
     lda_xc = functionals.exponential_lda_xc_functional(grids=grids)
-    solver = ks_dft.KS_Solver(grids, v_ext=v_ext, v_h=v_h, xc=lda_xc,
+    solver = ks_dft.KS_Solver(grids, v_ext=v_ext, xc=lda_xc,
                               num_electrons=N_e)
     solver.solve_self_consistent_density(v_ext=v_ext(grids))
 
@@ -46,7 +45,7 @@ def lda_ks_dft_atom(grids, N_e, Z):
 
 
 def get_latex_table_atoms(grids):
-    """ Reproduce LDA results in table 2 of [Baker2015]_.
+    """Reproduce LDA results in table 2 of [Baker2015]_.
 
     Args:
         grids: grids: numpy array of grid points for evaluating 1d potential.
@@ -129,7 +128,7 @@ if __name__ == '__main__':
 
     sys.exit()
 
-    """ Generate atom table for various (N_e, Z) """
+    """Generate atom table for various (N_e, Z) """
     # use coarser grid for faster computation.
     grids = np.linspace(-10, 10, 201)
     get_latex_table_atoms(grids)

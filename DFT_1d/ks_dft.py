@@ -102,10 +102,10 @@ class KS_Solver(SolverBase):
         """
         super(KS_Solver, self).__init__(grids, v_ext, xc, num_electrons,
                                         boundary_condition)
-        self.init_v_s()
+        self.init_v_s(v_ext, v_ext)
 
-    def init_v_s(self, v_s_up=v_ext, v_s_down=v_ext):
-        """ Initialize starting v_s_up and v_s_down. The default
+    def init_v_s(self, v_s_up, v_s_down):
+        """Initialize starting v_s_up and v_s_down. The default
         corresponds to v_hxc_up = v_hxc_down = 0. """
 
         self.v_s_up = v_s_up

@@ -54,7 +54,7 @@ class SolverBase:
                  k_point=None,
                  boundary_condition='open',
                  n_point_stencil=3,
-                 fock_mat=None):
+                 perturbation=None):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -84,8 +84,8 @@ class SolverBase:
               rate of 4 for most systems. Suggested: use 3-point stencil for
               potentials with cusps as n_point_stencil > 3 will not improve
               convergence rates.
-          fock_mat: Provide a Fock operator (matrix) if using hartree-fock
-              Hamiltonian
+          perturbation: Provide a perturbation operator H' (a matrix) to append
+              to the non-interacting Hamiltonian, H + H'.
 
         Raises:
           ValueError: If num_electrons is less than 1; or num_electrons is not
@@ -100,7 +100,7 @@ class SolverBase:
         self.potential_fn = potential_fn
         if self.potential_fn != None:
             self.vp = potential_fn(grids)
-        self.fock_mat = fock_mat
+        self.perturbation = perturbation
 
         if not isinstance(num_electrons, int):
             raise ValueError('num_electrons is not an integer.')
@@ -143,7 +143,7 @@ class EigenSolver(SolverBase):
                  k_point=None,
                  boundary_condition='open',
                  n_point_stencil=3,
-                 fock_mat=None):
+                 perturbation=None):
         """Initialize the solver with potential function and grid.
 
         Args:
@@ -151,7 +151,7 @@ class EigenSolver(SolverBase):
         """
         super(EigenSolver, self).__init__(grids, potential_fn, num_electrons,
                                           k_point, boundary_condition,
-                                          n_point_stencil, fock_mat)
+                                          n_point_stencil, perturbation)
         self._set_matrices()
 
     def _diagonal_matrix(self, form):
@@ -184,9 +184,9 @@ class EigenSolver(SolverBase):
             # Hamiltonian matrix
             self._h = self._t_mat + self._v_mat
 
-        # Fock-Matrix (exact exchange)
-        if self.fock_mat is not None:
-            self._h += self.fock_mat
+        # Perturbation matrix
+        if self.perturbation is not None:
+            self._h += self.perturbation
 
     def update_potential(self, potential_fn):
         """Replace the current potential grids with a new potential grids.
@@ -203,9 +203,9 @@ class EigenSolver(SolverBase):
         self._v_mat = self.get_potential_matrix()
         # Hamiltonian matrix
         self._h = self._t_mat + self._v_mat
-        # Fock-Matrix (exact exchange)
-        if self.fock_mat is not None:
-            self._h += self.fock_mat
+        # Perturbation matrix
+        if self.perturbation is not None:
+            self._h += self.perturbation
 
         if self._solved:
             del self.total_energy

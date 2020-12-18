@@ -236,7 +236,7 @@ class HF_Solver(SolverBase):
                                                       potential_fn=self.v_tot_up,
                                                       num_electrons=self.num_UP_electrons,
                                                       boundary_condition=self.boundary_condition,
-                                                      fock_mat=self.fock_mat_up)
+                                                      perturbation=self.fock_mat_up)
         solverUP.solve_ground_state()
 
         if self.num_DOWN_electrons == 0:
@@ -246,7 +246,7 @@ class HF_Solver(SolverBase):
                                                             potential_fn=self.v_tot_down,
                                                             num_electrons=self.num_DOWN_electrons,
                                                             boundary_condition=self.boundary_condition,
-                                                            fock_mat=self.fock_mat_down)
+                                                            perturbation=self.fock_mat_down)
             solverDOWN.solve_ground_state()
             return self._update_ground_state(solverUP, first_iter, sym,
                                              solverDOWN)

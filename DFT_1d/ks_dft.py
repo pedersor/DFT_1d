@@ -54,8 +54,8 @@ class SolverBase(object):
 
         self.v_ext = v_ext
         self.xc = xc
-        self.v_tot_up = v_ext
-        self.v_tot_down = v_ext
+        self.v_s_up = v_ext
+        self.v_s_down = v_ext
 
         if not isinstance(num_electrons, int):
             raise ValueError('num_electrons is not an integer.')
@@ -105,27 +105,27 @@ class KS_Solver(SolverBase):
         super(KS_Solver, self).__init__(grids, v_ext, xc, num_electrons,
                                         boundary_condition)
 
-    def _update_v_tot_up(self):
+    def _update_v_s_up(self):
         """Total up spin potential to be solved self consistently in the
         KS system.
         """
 
-        self.v_tot_up = functools.partial(self.xc.v_s_up,
-                                          n=self.density, n_up=self.n_up,
-                                          n_down=self.n_down, v_ext=self.v_ext,
-                                          v_xc_up=self.xc.v_xc_up)
+        self.v_s_up = functools.partial(self.xc.v_s_up,
+                                        n=self.density, n_up=self.n_up,
+                                        n_down=self.n_down, v_ext=self.v_ext,
+                                        v_xc_up=self.xc.v_xc_up)
         return self
 
-    def _update_v_tot_down(self):
+    def _update_v_s_down(self):
         """Total down spin potential to be solved self consistently in the
         KS system.
         """
 
-        self.v_tot_down = functools.partial(self.xc.v_s_down,
-                                            n=self.density, n_up=self.n_up,
-                                            n_down=self.n_down,
-                                            v_ext=self.v_ext,
-                                            v_xc_down=self.xc.v_xc_down)
+        self.v_s_down = functools.partial(self.xc.v_s_down,
+                                          n=self.density, n_up=self.n_up,
+                                          n_down=self.n_down,
+                                          v_ext=self.v_ext,
+                                          v_xc_down=self.xc.v_xc_down)
         return self
 
     def _update_ground_state(self, solver_up, solver_down=None):
@@ -172,7 +172,7 @@ class KS_Solver(SolverBase):
         """
 
         solver_up = non_interacting_solver.EigenSolver(self.grids,
-                                                       potential_fn=self.v_tot_up,
+                                                       potential_fn=self.v_s_up,
                                                        num_electrons=self.num_up_electrons,
                                                        boundary_condition=self.boundary_condition)
         solver_up.solve_ground_state()
@@ -181,7 +181,7 @@ class KS_Solver(SolverBase):
             return self._update_ground_state(solver_up)
         else:
             solver_down = non_interacting_solver.EigenSolver(self.grids,
-                                                             potential_fn=self.v_tot_down,
+                                                             potential_fn=self.v_s_down,
                                                              num_electrons=self.num_down_electrons,
                                                              boundary_condition=self.boundary_condition)
             solver_down.solve_ground_state()
@@ -208,8 +208,8 @@ class KS_Solver(SolverBase):
             self._solve_ground_state()
 
             # update total potentials using new density
-            self._update_v_tot_up()
-            self._update_v_tot_down()
+            self._update_v_s_up()
+            self._update_v_s_down()
 
             if (np.abs(self.eps - final_energy) < self.energy_tol_threshold):
                 converged = True

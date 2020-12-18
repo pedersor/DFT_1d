@@ -11,11 +11,10 @@ Kohn-Sham DFT solver
 .. todo::
 
     * Authors?
-    * Is get_dx repeated across several modules? 
     * Comments in KS solver funciton should be in doc format
     * *solve_self_consistent_density* needs summary sentence
     * Clean out unused example rst content in here.
-    * Has this been linted?
+    * Linting?
 """
 
 import non_interacting_solver, functionals

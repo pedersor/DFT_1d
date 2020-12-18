@@ -12,9 +12,10 @@ Functionals
 
 .. todo::
 
+    * hf: replace with Chris' matrix muliplication code. Much cleaner.
     * Authors? -RJM
     * Check summary written by RJM. -RJM
-    * Docs might need love; judgement call. -RJM
+    * Docs need love.
 """
 
 import ext_potentials
@@ -22,10 +23,6 @@ import constants
 import numpy as np
 import functools
 from utils import get_dx
-
-
-def tot_HF_potential(grids, n, v_ext, v_h):
-    return v_ext(grids) + v_h(grids=grids, n=n)
 
 
 def hartree_potential(grids, n, v_ee=functools.partial(

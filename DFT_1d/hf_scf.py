@@ -10,12 +10,13 @@ Hartree-Fock DFT solver
 
 .. todo::
 
+    * redo in ks_dft format.
+    * BaseSCF good idea? use for both ks and hf..
     * Authors?
-    * Is get_dx repeated across several modules? 
-    * Comments in KS solver funciton should be in doc format
+    * Comments in HF solver funciton should be in doc format
     * *solve_self_consistent_density* needs summary sentence
     * Clean out unused example rst content in here.
-    * Has this been linted?
+    * linting?
 """
 
 import non_interacting_solver, functionals

@@ -24,72 +24,10 @@ import numpy as np
 import functools
 import math
 from utils import get_dx, quadratic
+from scf_base import SCF_SolverBase
 
 
-class HF_SolverBase:
-    """Base Solver for non-interacting 1d system.
-
-    Subclasses should define solve_ground_state method.
-    """
-
-    def __init__(self, grids, v_ext, hf, num_electrons=1,
-                 boundary_condition="open"):
-        """Initialize the solver with potential function and grid.
-
-        Args:
-          grids: numpy array of grid points for evaluating 1d potential.
-              (num_grids,)
-          v_ext: Kohn Sham external potential function taking grids as argument.
-          hf: hf class used to assemble fock matrix and compute exchange.
-          num_electrons: integer, the number of electrons in the system. Must be
-              greater or equal to 1.
-
-        Raises:
-          ValueError: If num_electrons is less than 1; or num_electrons is not
-              an integer.
-        """
-        self.boundary_condition = boundary_condition
-        self.grids = grids
-        self.dx = get_dx(grids)
-        self.num_grids = len(grids)
-
-        self.v_ext = v_ext
-        self.hf = hf
-        self.v_tot_up = v_ext
-        self.v_tot_down = v_ext
-
-        self.fock_mat_up = None
-        self.fock_mat_down = None
-
-        if not isinstance(num_electrons, int):
-            raise ValueError('num_electrons is not an integer.')
-        elif num_electrons < 1:
-            raise ValueError(
-                'num_electrons must be greater or equal to 1, but got %d' %
-                num_electrons)
-        else:
-            self.num_electrons = num_electrons
-
-        # Solver is unsolved by default.
-        self._solved = False
-
-    def is_solved(self):
-        """Returns whether this solver has been solved."""
-        return self._solved
-
-    def solve_ground_state(self):
-        """Solve ground state. Need to be implemented in subclasses.
-
-        Compute attributes:
-        total_energy, kinetic_energy, potential_energy, density, wave_function.
-
-        Returns:
-          self
-        """
-        raise NotImplementedError('Must be implemented by subclass.')
-
-
-class HF_Solver(HF_SolverBase):
+class HF_Solver(SCF_SolverBase):
     """Represents the Hamiltonian as a matrix and diagonalizes it directly."""
 
     def __init__(self, grids, v_ext, hf, num_electrons=1,
@@ -101,8 +39,19 @@ class HF_Solver(HF_SolverBase):
             (num_grids,)
           num_electrons: Integer, the number of electrons in the system.
         """
-        super(HF_Solver, self).__init__(grids, v_ext, hf,
-                                        num_electrons, boundary_condition)
+        super(HF_Solver, self).__init__(grids, v_ext, num_electrons,
+                                        boundary_condition)
+
+        self.hf = hf
+
+        self.num_grids = len(grids)
+
+        self.v_tot_up = v_ext
+        self.v_tot_down = v_ext
+
+        self.fock_mat_up = None
+        self.fock_mat_down = None
+
         self.initialize_density()
 
     def initialize_density(self):
@@ -186,16 +135,6 @@ class HF_Solver(HF_SolverBase):
         self.wave_functionUP = solverUP.wave_function
         if solverDOWN is not None:
             self.wave_functionDOWN = solverDOWN.wave_function
-
-        # perturb up/down wavefunctions to break symmetry
-        if first_iter == True:
-            midpoint = math.floor(self.num_grids / 2)
-            for i in range(midpoint):
-                self.wave_functionUP[0][i] *= sym
-                self.wave_functionUP[0][midpoint + i] *= 1 / sym
-                if solverDOWN is not None:
-                    self.wave_functionDOWN[0][i] *= 1 / sym
-                    self.wave_functionDOWN[0][midpoint + i] *= sym
 
         for i in range(self.num_UP_electrons):
             self.nUP += self.wave_functionUP[i] ** 2

@@ -52,21 +52,6 @@ class HF_Solver(SCF_SolverBase):
         self.fock_mat_up = None
         self.fock_mat_down = None
 
-        self.initialize_density()
-
-    def initialize_density(self):
-        # Get number of Up/Down Electrons. All unpaired electrons are defaulted to spin-up.
-
-        num_up_electrons = int(self.num_electrons / 2)
-        num_down_electrons = int(self.num_electrons / 2)
-        if self.num_electrons % 2 == 1:
-            num_up_electrons += 1
-
-        self.num_up_electrons = num_up_electrons
-        self.num_down_electrons = num_down_electrons
-
-        return self
-
     def update_v_tot_up(self):
         # total potential to be solved self consistently in the Kohn Sham system
 

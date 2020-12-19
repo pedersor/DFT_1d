@@ -98,11 +98,13 @@ class KS_Solver(SCF_SolverBase):
         self.kinetic_energy = 0
         self.eps = 0
 
+        self.phi_up = solver_up.wave_function
         self.n_up = solver_up.density
         self.kinetic_energy += solver_up.kinetic_energy
         self.eps += solver_up.total_energy
 
         if solver_down:
+            self.phi_down = solver_down.wave_function
             self.n_down = solver_down.density
             self.kinetic_energy += solver_down.kinetic_energy
             self.eps += solver_down.total_energy

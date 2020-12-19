@@ -5,7 +5,8 @@ Hartree-Fock Self-Consistent Field Example
 ##########################################
 
 Summary:
-    Generates Hartree-Fock (HF) a tabel from the [Baker2015]_ paper which includes Li atom and Li, Be, He, and H atoms.
+    Generates Hartree-Fock (HF) a tabel from the [Baker2015]_ paper which
+    includes Li atom and Li, Be, He, and H atoms.
 """
 
 import sys

@@ -26,7 +26,7 @@ import math
 from utils import get_dx, quadratic
 
 
-class SolverBase:
+class HF_SolverBase:
     """Base Solver for non-interacting 1d system.
 
     Subclasses should define solve_ground_state method.
@@ -89,7 +89,7 @@ class SolverBase:
         raise NotImplementedError('Must be implemented by subclass.')
 
 
-class HF_Solver(SolverBase):
+class HF_Solver(HF_SolverBase):
     """Represents the Hamiltonian as a matrix and diagonalizes it directly."""
 
     def __init__(self, grids, v_ext, hf, num_electrons=1,

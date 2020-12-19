@@ -106,46 +106,6 @@ class HF_Solver(SCF_SolverBase):
                 wave_function=self.phi_down[:self.num_down_electrons])
             return E_x_up + E_x_down
 
-    def _update_ground_state(self, solver_up, solver_down=None):
-        """Helper function to _solve_ground_state() method.
-
-        Updates the attributes total_energy, wave_function, density, kinetic_energy,
-        potential_enenrgy and _solved from the eigensolver's output (w, v).
-
-        Args:
-          eigenvalues: Numpy array with shape [num_eigenstates,], the eigenvalues in
-              ascending order.
-          eigenvectors: Numpy array with shape [num_grids, num_eigenstates], each
-              column eigenvectors[:, i] is the normalized eigenvector corresponding
-              to the eigenvalue eigenvalues[i].
-          quadratic_function: Callable, compute the quadratic form of matrix and
-              vector.
-
-        Returns:
-          self
-        """
-
-        self.kinetic_energy = 0
-        self.eps = 0
-
-        self.phi_up = solver_up.wave_function
-        self.n_up = solver_up.density
-        self.kinetic_energy += solver_up.kinetic_energy
-        self.eps += solver_up.total_energy
-
-        if solver_down:
-            self.phi_down = solver_down.wave_function
-            self.n_down = solver_down.density
-            self.kinetic_energy += solver_down.kinetic_energy
-            self.eps += solver_down.total_energy
-        else:
-            self.n_down = 0
-
-        self.density = self.n_up + self.n_down
-        self.zeta = (self.n_up - self.n_down) / (self.density)
-
-        return self
-
     def _solve_ground_state(self, first_iter, sym):
         """Solve ground state by diagonalizing the Hamiltonian matrix directly and separately for up and down spins.
         """

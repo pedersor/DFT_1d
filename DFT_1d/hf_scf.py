@@ -66,27 +66,27 @@ class HF_Solver(SCF_SolverBase):
 
         return self
 
-    def update_v_eff_up(self):
+    def _update_v_eff_up(self):
         # total potential to be solved self consistently in the Kohn Sham system
 
         self.v_eff_up = functools.partial(self.hf.v_hf, n=self.density,
                                           v_ext=self.v_ext)
         return self
 
-    def update_v_eff_down(self):
+    def _update_v_eff_down(self):
         # total potential to be solved self consistently in the Kohn Sham system
 
         self.v_eff_down = functools.partial(self.hf.v_hf, n=self.density,
                                             v_ext=self.v_ext)
         return self
 
-    def update_fock_matrix_up(self):
+    def _update_fock_matrix_up(self):
         self.fock_mat_up = self.hf.update_fock_matrix(
             wave_function=self.phi_up[:self.num_up_electrons])
 
         return self
 
-    def update_fock_matrix_down(self):
+    def _update_fock_matrix_down(self):
         if self.num_down_electrons == 0:
             return self
         else:
@@ -153,7 +153,7 @@ class HF_Solver(SCF_SolverBase):
 
         return self
 
-    def solve_ground_state(self, first_iter, sym):
+    def _solve_ground_state(self, first_iter, sym):
         """Solve ground state by diagonalizing the Hamiltonian matrix directly and separately for up and down spins.
         """
 
@@ -185,13 +185,13 @@ class HF_Solver(SCF_SolverBase):
                 old_E = self.E_tot
 
             # solve KS system -> obtain new new density
-            self.solve_ground_state(first_iter, sym)
+            self._solve_ground_state(first_iter, sym)
 
             # update total potentials using new density
-            self.update_v_eff_up()
-            self.update_v_eff_down()
-            self.update_fock_matrix_up()
-            self.update_fock_matrix_down()
+            self._update_v_eff_up()
+            self._update_v_eff_down()
+            self._update_fock_matrix_up()
+            self._update_fock_matrix_down()
 
             # Non-Interacting Kinetic Energy
             self.T_s = self.kinetic_energy

@@ -38,14 +38,19 @@ class KS_Solver(SCF_SolverBase):
         super(KS_Solver, self).__init__(grids, v_ext, num_electrons,
                                         boundary_condition)
         self.xc = xc
-        self.init_v_s(v_ext, v_ext)
+        self.init_v_s()
 
-    def init_v_s(self, v_s_up, v_s_down):
+    def init_v_s(self, v_s_up=None, v_s_down=None):
         """Initialize starting v_s_up and v_s_down. The default
         corresponds to v_hxc_up = v_hxc_down = 0. """
 
-        self.v_s_up = v_s_up
-        self.v_s_down = v_s_down
+        if v_s_up is None and v_s_up is None:
+            # default initalization, v_s = v_ext.
+            self.v_s_up = self.v_ext
+            self.v_s_down = self.v_ext
+        else:
+            self.v_s_up = v_s_up
+            self.v_s_down = v_s_down
         return self
 
     def _update_v_s_up(self):

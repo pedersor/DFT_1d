@@ -46,23 +46,37 @@ class HF_Solver(SCF_SolverBase):
 
         self.num_grids = len(grids)
 
-        self.v_tot_up = v_ext
-        self.v_tot_down = v_ext
+        self.init_v_eff()
 
-        self.fock_mat_up = None
-        self.fock_mat_down = None
+    def init_v_eff(self, v_eff_up=None, v_eff_down=None, fock_mat_up=None,
+                   fock_mat_down=None):
+        """Initialize starting v_eff_up and v_eff_down. """
 
-    def update_v_tot_up(self):
+        if v_eff_up is None and v_eff_down is None and fock_mat_up is None and fock_mat_down is None:
+            # default initialization, v_eff = v_ext
+            self.fock_mat_up = None
+            self.fock_mat_down = None
+            self.v_eff_up = self.v_ext
+            self.v_eff_down = self.v_ext
+        else:
+            self.fock_mat_up = fock_mat_up
+            self.fock_mat_down = fock_mat_down
+            self.v_eff_up = v_eff_up
+            self.v_eff_down = v_eff_down
+
+        return self
+
+    def update_v_eff_up(self):
         # total potential to be solved self consistently in the Kohn Sham system
 
-        self.v_tot_up = functools.partial(self.hf.v_hf, n=self.density,
+        self.v_eff_up = functools.partial(self.hf.v_hf, n=self.density,
                                           v_ext=self.v_ext)
         return self
 
-    def update_v_tot_down(self):
+    def update_v_eff_down(self):
         # total potential to be solved self consistently in the Kohn Sham system
 
-        self.v_tot_down = functools.partial(self.hf.v_hf, n=self.density,
+        self.v_eff_down = functools.partial(self.hf.v_hf, n=self.density,
                                             v_ext=self.v_ext)
         return self
 
@@ -144,7 +158,7 @@ class HF_Solver(SCF_SolverBase):
         """
 
         solver_up = non_interacting_solver.EigenSolver(self.grids,
-                                                       potential_fn=self.v_tot_up,
+                                                       potential_fn=self.v_eff_up,
                                                        num_electrons=self.num_up_electrons,
                                                        boundary_condition=self.boundary_condition,
                                                        perturbation=self.fock_mat_up)
@@ -154,7 +168,7 @@ class HF_Solver(SCF_SolverBase):
             return self._update_ground_state(solver_up, first_iter, sym)
         else:
             solver_down = non_interacting_solver.EigenSolver(self.grids,
-                                                             potential_fn=self.v_tot_down,
+                                                             potential_fn=self.v_eff_down,
                                                              num_electrons=self.num_down_electrons,
                                                              boundary_condition=self.boundary_condition,
                                                              perturbation=self.fock_mat_down)
@@ -174,8 +188,8 @@ class HF_Solver(SCF_SolverBase):
             self.solve_ground_state(first_iter, sym)
 
             # update total potentials using new density
-            self.update_v_tot_up()
-            self.update_v_tot_down()
+            self.update_v_eff_up()
+            self.update_v_eff_down()
             self.update_fock_matrix_up()
             self.update_fock_matrix_down()
 

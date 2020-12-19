@@ -57,13 +57,13 @@ class HF_Solver(SCF_SolverBase):
     def initialize_density(self):
         # Get number of Up/Down Electrons. All unpaired electrons are defaulted to spin-up.
 
-        num_UP_electrons = int(self.num_electrons / 2)
-        num_DOWN_electrons = int(self.num_electrons / 2)
+        num_up_electrons = int(self.num_electrons / 2)
+        num_down_electrons = int(self.num_electrons / 2)
         if self.num_electrons % 2 == 1:
-            num_UP_electrons += 1
+            num_up_electrons += 1
 
-        self.num_UP_electrons = num_UP_electrons
-        self.num_DOWN_electrons = num_DOWN_electrons
+        self.num_up_electrons = num_up_electrons
+        self.num_down_electrons = num_down_electrons
 
         return self
 
@@ -83,31 +83,32 @@ class HF_Solver(SCF_SolverBase):
 
     def update_fock_matrix_up(self):
         self.fock_mat_up = self.hf.update_fock_matrix(
-            wave_function=self.wave_functionUP[:self.num_UP_electrons])
+            wave_function=self.phi_up[:self.num_up_electrons])
 
         return self
 
     def update_fock_matrix_down(self):
-        if self.num_DOWN_electrons == 0:
+        if self.num_down_electrons == 0:
             return self
         else:
             self.fock_mat_down = self.hf.update_fock_matrix(
-                wave_function=self.wave_functionDOWN[:self.num_DOWN_electrons])
+                wave_function=self.phi_down[:self.num_down_electrons])
 
             return self
 
     def get_E_x_HF(self):
-        if self.num_DOWN_electrons == 0:
+        if self.num_down_electrons == 0:
             return self.hf.get_E_x(
-                wave_function=self.wave_functionUP[:self.num_UP_electrons])
+                wave_function=self.phi_up[:self.num_up_electrons])
         else:
             E_x_up = self.hf.get_E_x(
-                wave_function=self.wave_functionUP[:self.num_UP_electrons])
+                wave_function=self.phi_up[:self.num_up_electrons])
             E_x_down = self.hf.get_E_x(
-                wave_function=self.wave_functionDOWN[:self.num_DOWN_electrons])
+                wave_function=self.phi_down[:self.num_down_electrons])
             return E_x_up + E_x_down
 
-    def _update_ground_state(self, solverUP, first_iter, sym, solverDOWN=None):
+    def _update_ground_state(self, solver_up, first_iter, sym,
+                             solver_down=None):
         """Helper function to solve_ground_state() method.
 
         Updates the attributes total_energy, wave_function, density, kinetic_energy,
@@ -129,27 +130,27 @@ class HF_Solver(SCF_SolverBase):
         self.kinetic_energy = 0.
 
         self.density = np.zeros(self.num_grids)
-        self.nUP = np.zeros(self.num_grids)
-        self.nDOWN = np.zeros(self.num_grids)
+        self.n_up = np.zeros(self.num_grids)
+        self.n_down = np.zeros(self.num_grids)
 
-        self.wave_functionUP = solverUP.wave_function
-        if solverDOWN is not None:
-            self.wave_functionDOWN = solverDOWN.wave_function
+        self.phi_up = solver_up.wave_function
+        if solver_down is not None:
+            self.phi_down = solver_down.wave_function
 
-        for i in range(self.num_UP_electrons):
-            self.nUP += self.wave_functionUP[i] ** 2
-            self.kinetic_energy += quadratic(solverUP._t_mat,
-                                             solverUP.wave_function[
+        for i in range(self.num_up_electrons):
+            self.n_up += self.phi_up[i] ** 2
+            self.kinetic_energy += quadratic(solver_up._t_mat,
+                                             solver_up.wave_function[
                                                  i]) * self.dx
 
-        for i in range(self.num_DOWN_electrons):
-            self.nDOWN += self.wave_functionDOWN[i] ** 2
-            self.kinetic_energy += quadratic(solverDOWN._t_mat,
-                                             solverDOWN.wave_function[
+        for i in range(self.num_down_electrons):
+            self.n_down += self.phi_down[i] ** 2
+            self.kinetic_energy += quadratic(solver_down._t_mat,
+                                             solver_down.wave_function[
                                                  i]) * self.dx
 
-        self.density = self.nUP + self.nDOWN
-        self.zeta = (self.nUP - self.nDOWN) / (self.density)
+        self.density = self.n_up + self.n_down
+        self.zeta = (self.n_up - self.n_down) / (self.density)
 
         return self
 
@@ -157,24 +158,24 @@ class HF_Solver(SCF_SolverBase):
         """Solve ground state by diagonalizing the Hamiltonian matrix directly and separately for up and down spins.
         """
 
-        solverUP = non_interacting_solver.EigenSolver(self.grids,
-                                                      potential_fn=self.v_tot_up,
-                                                      num_electrons=self.num_UP_electrons,
-                                                      boundary_condition=self.boundary_condition,
-                                                      perturbation=self.fock_mat_up)
-        solverUP.solve_ground_state()
+        solver_up = non_interacting_solver.EigenSolver(self.grids,
+                                                       potential_fn=self.v_tot_up,
+                                                       num_electrons=self.num_up_electrons,
+                                                       boundary_condition=self.boundary_condition,
+                                                       perturbation=self.fock_mat_up)
+        solver_up.solve_ground_state()
 
-        if self.num_DOWN_electrons == 0:
-            return self._update_ground_state(solverUP, first_iter, sym)
+        if self.num_down_electrons == 0:
+            return self._update_ground_state(solver_up, first_iter, sym)
         else:
-            solverDOWN = non_interacting_solver.EigenSolver(self.grids,
-                                                            potential_fn=self.v_tot_down,
-                                                            num_electrons=self.num_DOWN_electrons,
-                                                            boundary_condition=self.boundary_condition,
-                                                            perturbation=self.fock_mat_down)
-            solverDOWN.solve_ground_state()
-            return self._update_ground_state(solverUP, first_iter, sym,
-                                             solverDOWN)
+            solver_down = non_interacting_solver.EigenSolver(self.grids,
+                                                             potential_fn=self.v_tot_down,
+                                                             num_electrons=self.num_down_electrons,
+                                                             boundary_condition=self.boundary_condition,
+                                                             perturbation=self.fock_mat_down)
+            solver_down.solve_ground_state()
+            return self._update_ground_state(solver_up, first_iter, sym,
+                                             solver_down)
 
     def solve_self_consistent_density(self, sym):
 

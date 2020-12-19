@@ -24,10 +24,10 @@ import matplotlib.pyplot as plt
 from utils import get_dx, quadratic
 
 
-class KS_SolverBase:
+class SCF_SolverBase:
     """Base Solver for non-interacting Kohn-Sham (KS) 1d systems."""
 
-    def __init__(self, grids, v_ext, xc, num_electrons=1,
+    def __init__(self, grids, v_ext, num_electrons=1,
                  boundary_condition="open"):
         """Initialize the solver with potential function and grid.
 
@@ -35,7 +35,6 @@ class KS_SolverBase:
           grids: numpy array of grid points for evaluating 1d potential.
               (num_grids,)
           v_ext: Kohn Sham external potential function taking grids as argument.
-          xc: exchange correlation functional class taking density as argument.
           num_electrons: integer, the number of electrons in the system. Must be
               greater or equal to 1.
 
@@ -46,9 +45,7 @@ class KS_SolverBase:
         self.boundary_condition = boundary_condition
         self.grids = grids
         self.dx = get_dx(grids)
-
         self.v_ext = v_ext
-        self.xc = xc
 
         if not isinstance(num_electrons, int):
             raise ValueError('num_electrons is not an integer.')
@@ -83,11 +80,14 @@ class KS_SolverBase:
         return self
 
     def is_converged(self):
-        """Returns whether this solver has been solved."""
+        """Returns whether the calculation has been converged."""
         return self._converged
 
+    def solve_self_consistent_density(self):
+        return NotImplementedError()
 
-class KS_Solver(KS_SolverBase):
+
+class KS_Solver(SCF_SolverBase):
     """KS-DFT solver for non-periodic systems."""
 
     def __init__(self, grids, v_ext, xc, num_electrons=1,
@@ -95,12 +95,11 @@ class KS_Solver(KS_SolverBase):
         """Initialize the solver with potential function and grid.
 
         Args:
-          grids: numpy array of grid points for evaluating 1d potential.
-            (num_grids,)
-          num_electrons: Integer, the number of electrons in the system.
+          xc: exchange correlation functional class, e.g. LDA.
         """
-        super(KS_Solver, self).__init__(grids, v_ext, xc, num_electrons,
+        super(KS_Solver, self).__init__(grids, v_ext, num_electrons,
                                         boundary_condition)
+        self.xc = xc
         self.init_v_s(v_ext, v_ext)
 
     def init_v_s(self, v_s_up, v_s_down):

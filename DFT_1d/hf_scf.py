@@ -28,7 +28,7 @@ from scf_base import SCF_SolverBase
 
 
 class HF_Solver(SCF_SolverBase):
-    """Represents the Hamiltonian as a matrix and diagonalizes it directly."""
+    """HF solver for non-periodic systems."""
 
     def __init__(self, grids, v_ext, hf, num_electrons=1,
                  boundary_condition='open'):
@@ -37,15 +37,13 @@ class HF_Solver(SCF_SolverBase):
         Args:
           grids: numpy array of grid points for evaluating 1d potential.
             (num_grids,)
+          hf: HF class functional object.
           num_electrons: Integer, the number of electrons in the system.
         """
         super(HF_Solver, self).__init__(grids, v_ext, num_electrons,
                                         boundary_condition)
 
         self.hf = hf
-
-        self.num_grids = len(grids)
-
         self.init_v_eff()
 
     def init_v_eff(self, v_eff_up=None, v_eff_down=None, fock_mat_up=None,
@@ -67,14 +65,16 @@ class HF_Solver(SCF_SolverBase):
         return self
 
     def _update_v_eff_up(self):
-        # total potential to be solved self consistently in the Kohn Sham system
+        """Total up potential to be solved self consistently in the Kohn Sham
+        system."""
 
         self.v_eff_up = functools.partial(self.hf.v_hf, n=self.density,
                                           v_ext=self.v_ext)
         return self
 
     def _update_v_eff_down(self):
-        # total potential to be solved self consistently in the Kohn Sham system
+        """Total up potential to be solved self consistently in the Kohn Sham
+        system."""
 
         self.v_eff_down = functools.partial(self.hf.v_hf, n=self.density,
                                             v_ext=self.v_ext)

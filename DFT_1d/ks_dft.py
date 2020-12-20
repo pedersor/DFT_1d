@@ -33,7 +33,7 @@ class KS_Solver(SCF_SolverBase):
         """Initialize the solver with potential function and grid.
 
         Args:
-          xc: exchange correlation functional class, e.g. LDA.
+          xc: exchange correlation functional class object.
         """
         super(KS_Solver, self).__init__(grids, v_ext, num_electrons,
                                         boundary_condition)

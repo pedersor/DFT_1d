@@ -15,7 +15,7 @@ Authors
 
 pedersor@uci.edu
 
-Ryan Pederson is a PhD Candidate at University of California Irvine working with `Kieron Burke's theoretical chemistry group <dft.uci.edu>`_.
+Ryan Pederson is a PhD Candidate at University of California Irvine working with `Kieron Burke's theoretical chemistry group <https://dft.uci.edu/>`_.
 
 
 Acknowledgments

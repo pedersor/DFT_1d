@@ -169,215 +169,93 @@
 <span class="sd">.. todo::</span>
 
 <span class="sd">    * Authors?</span>
-<span class="sd">    * Is get_dx repeated across several modules? </span>
 <span class="sd">    * Comments in KS solver funciton should be in doc format</span>
 <span class="sd">    * *solve_self_consistent_density* needs summary sentence</span>
 <span class="sd">    * Clean out unused example rst content in here.</span>
-<span class="sd">    * Has this been linted?</span>
+<span class="sd">    * Linting?</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">single_electron</span><span class="o">,</span> <span class="nn">functionals</span>
+<span class="kn">import</span> <span class="nn">non_interacting_solver</span><span class="o">,</span> <span class="nn">functionals</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">functools</span>
-<span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">quadratic</span>
+<span class="kn">from</span> <span class="nn">scf_base</span> <span class="kn">import</span> <span class="n">SCF_SolverBase</span>
 
 
-<div class="viewcode-block" id="get_dx"><a class="viewcode-back" href="../modules.html#ks_dft.get_dx">[docs]</a><span class="k">def</span> <span class="nf">get_dx</span><span class="p">(</span><span class="n">grids</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Gets the grid spacing from grids array.</span>
+<div class="viewcode-block" id="KS_Solver"><a class="viewcode-back" href="../modules.html#ks_dft.KS_Solver">[docs]</a><span class="k">class</span> <span class="nc">KS_Solver</span><span class="p">(</span><span class="n">SCF_SolverBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;KS-DFT solver for non-periodic systems.&quot;&quot;&quot;</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">      grids: Numpy array with shape (num_grids,).</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">      Grid spacing.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">grids</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">grids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">grids</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="quadratic"><a class="viewcode-back" href="../modules.html#ks_dft.quadratic">[docs]</a><span class="k">def</span> <span class="nf">quadratic</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Compute the quadratic form of matrix and vector.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">      mat: matrix.</span>
-<span class="sd">        (n, n)</span>
-<span class="sd">      x: vector.</span>
-<span class="sd">        (n,)</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">      output: scalar value as result of x A x.T.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span></div>
-
-
-<div class="viewcode-block" id="SolverBase"><a class="viewcode-back" href="../modules.html#ks_dft.SolverBase">[docs]</a><span class="k">class</span> <span class="nc">SolverBase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Base Solver for non-interacting 1d system.</span>
-
-<span class="sd">    Subclasses should define solve_ground_state method.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">v_ext</span><span class="p">,</span> <span class="n">v_h</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">num_electrons</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">k_point</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">boundary_condition</span><span class="o">=</span><span class="s2">&quot;open&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">v_ext</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">num_electrons</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">boundary_condition</span><span class="o">=</span><span class="s1">&#39;open&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize the solver with potential function and grid.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          grids: numpy array of grid points for evaluating 1d potential.</span>
-<span class="sd">              (num_grids,)</span>
-<span class="sd">          v_ext: Kohn Sham external potential function taking grids as argument.</span>
-<span class="sd">          v_h: Kohn Sham hartree potential function taking grids as argument.</span>
-<span class="sd">          xc: exchange correlation functional class taking density as argument.</span>
-<span class="sd">          num_electrons: integer, the number of electrons in the system. Must be</span>
-<span class="sd">              greater or equal to 1.</span>
-<span class="sd">          k_point: the k-point in reciprocal space used to evaluate Schrodinger Equation</span>
-<span class="sd">              for the case of a periodic potential. It should be chosen to be within</span>
-<span class="sd">              the first Brillouin zone.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">          ValueError: If num_electrons is less than 1; or num_electrons is not</span>
-<span class="sd">              an integer.</span>
+<span class="sd">          xc: exchange correlation functional class object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">k_point</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span> <span class="o">=</span> <span class="n">boundary_condition</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">grids</span> <span class="o">=</span> <span class="n">grids</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dx</span> <span class="o">=</span> <span class="n">get_dx</span><span class="p">(</span><span class="n">grids</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">num_grids</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">grids</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">v_ext</span> <span class="o">=</span> <span class="n">v_ext</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">v_h</span> <span class="o">=</span> <span class="n">v_h</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">KS_Solver</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">grids</span><span class="p">,</span> <span class="n">v_ext</span><span class="p">,</span> <span class="n">num_electrons</span><span class="p">,</span>
+                                        <span class="n">boundary_condition</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="n">xc</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">v_tot_up</span> <span class="o">=</span> <span class="n">v_ext</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">v_tot_down</span> <span class="o">=</span> <span class="n">v_ext</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_v_s</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num_electrons</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;num_electrons is not an integer.&#39;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">num_electrons</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s1">&#39;num_electrons must be greater or equal to 1, but got </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">num_electrons</span><span class="p">)</span>
+<div class="viewcode-block" id="KS_Solver.init_v_s"><a class="viewcode-back" href="../modules.html#ks_dft.KS_Solver.init_v_s">[docs]</a>    <span class="k">def</span> <span class="nf">init_v_s</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v_s_up</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">v_s_down</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize starting v_s_up and v_s_down. The default</span>
+<span class="sd">        corresponds to v_hxc_up = v_hxc_down = 0. &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">v_s_up</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">v_s_up</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># default initalization, v_s = v_ext.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">v_s_up</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_ext</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">v_s_down</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_ext</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">num_electrons</span> <span class="o">=</span> <span class="n">num_electrons</span>
-
-        <span class="c1"># Solver is unsolved by default.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_solved</span> <span class="o">=</span> <span class="kc">False</span>
-
-<div class="viewcode-block" id="SolverBase.is_solved"><a class="viewcode-back" href="../modules.html#ks_dft.SolverBase.is_solved">[docs]</a>    <span class="k">def</span> <span class="nf">is_solved</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns whether this solver has been solved.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solved</span></div></div>
-
-
-<div class="viewcode-block" id="KS_Solver"><a class="viewcode-back" href="../modules.html#ks_dft.KS_Solver">[docs]</a><span class="k">class</span> <span class="nc">KS_Solver</span><span class="p">(</span><span class="n">SolverBase</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Represents the Hamiltonian as a matrix and diagonalizes it directly.&quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">v_ext</span><span class="p">,</span> <span class="n">v_h</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">num_electrons</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                 <span class="n">k_point</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">boundary_condition</span><span class="o">=</span><span class="s1">&#39;open&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialize the solver with potential function and grid.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          grids: numpy array of grid points for evaluating 1d potential.</span>
-<span class="sd">            (num_grids,)</span>
-<span class="sd">          num_electrons: Integer, the number of electrons in the system.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">KS_Solver</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">grids</span><span class="p">,</span> <span class="n">v_ext</span><span class="p">,</span> <span class="n">v_h</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">num_electrons</span><span class="p">,</span>
-                                        <span class="n">k_point</span><span class="p">,</span> <span class="n">boundary_condition</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_density</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_energy_tol_threshold</span><span class="p">()</span>
-
-<div class="viewcode-block" id="KS_Solver.set_energy_tol_threshold"><a class="viewcode-back" href="../modules.html#ks_dft.KS_Solver.set_energy_tol_threshold">[docs]</a>    <span class="k">def</span> <span class="nf">set_energy_tol_threshold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_tol_threshold</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">energy_tol_threshold</span> <span class="o">=</span> <span class="n">energy_tol_threshold</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">v_s_up</span> <span class="o">=</span> <span class="n">v_s_up</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">v_s_down</span> <span class="o">=</span> <span class="n">v_s_down</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
-    <span class="k">def</span> <span class="nf">_initialize_density</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># Get number of Up/Down Electrons. All unpaired electrons are defaulted to spin-up.</span>
-
-        <span class="n">num_up_electrons</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_electrons</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="n">num_down_electrons</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_electrons</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_electrons</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">num_up_electrons</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">num_up_electrons</span> <span class="o">=</span> <span class="n">num_up_electrons</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">num_down_electrons</span> <span class="o">=</span> <span class="n">num_down_electrons</span>
-
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span> <span class="nf">_update_v_tot_up</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># total potential to be solved self consistently in the Kohn Sham system</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">v_tot_up</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">functionals</span><span class="o">.</span><span class="n">tot_KS_potential</span><span class="p">,</span>
-                                          <span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">,</span> <span class="n">n_up</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_up</span><span class="p">,</span>
-                                          <span class="n">n_down</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_down</span><span class="p">,</span> <span class="n">v_ext</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">v_ext</span><span class="p">,</span>
-                                          <span class="n">v_h</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">v_h</span><span class="p">,</span>
-                                          <span class="n">v_xc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="o">.</span><span class="n">v_xc_exp_up</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span> <span class="nf">_update_v_tot_down</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># total potential to be solved self consistently in the Kohn Sham system</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">v_tot_down</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">functionals</span><span class="o">.</span><span class="n">tot_KS_potential</span><span class="p">,</span>
-                                            <span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">,</span> <span class="n">n_up</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_up</span><span class="p">,</span>
-                                            <span class="n">n_down</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_down</span><span class="p">,</span>
-                                            <span class="n">v_ext</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">v_ext</span><span class="p">,</span>
-                                            <span class="n">v_h</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">v_h</span><span class="p">,</span>
-                                            <span class="n">v_xc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="o">.</span><span class="n">v_xc_exp_down</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span> <span class="nf">_update_ground_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver_up</span><span class="p">,</span> <span class="n">solver_down</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Helper function to _solve_ground_state() method.</span>
-
-<span class="sd">        Updates the attributes total_energy, wave_function, density, kinetic_energy,</span>
-<span class="sd">        potential_enenrgy and _solved from the eigensolver&#39;s output (w, v).</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">          eigenvalues: Numpy array with shape [num_eigenstates,], the eigenvalues in</span>
-<span class="sd">              ascending order.</span>
-<span class="sd">          eigenvectors: Numpy array with shape [num_grids, num_eigenstates], each</span>
-<span class="sd">              column eigenvectors[:, i] is the normalized eigenvector corresponding</span>
-<span class="sd">              to the eigenvalue eigenvalues[i].</span>
-<span class="sd">          quadratic_function: Callable, compute the quadratic form of matrix and</span>
-<span class="sd">              vector.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          self</span>
+    <span class="k">def</span> <span class="nf">_update_v_s_up</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Total up spin potential to be solved self consistently in the</span>
+<span class="sd">        KS system.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">kinetic_energy</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_s_up</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="o">.</span><span class="n">v_s_up</span><span class="p">,</span>
+                                        <span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">,</span> <span class="n">n_up</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_up</span><span class="p">,</span>
+                                        <span class="n">n_down</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_down</span><span class="p">,</span> <span class="n">v_ext</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">v_ext</span><span class="p">,</span>
+                                        <span class="n">v_xc_up</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="o">.</span><span class="n">v_xc_up</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_up</span> <span class="o">=</span> <span class="n">solver_up</span><span class="o">.</span><span class="n">density</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kinetic_energy</span> <span class="o">+=</span> <span class="n">solver_up</span><span class="o">.</span><span class="n">kinetic_energy</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">+=</span> <span class="n">solver_up</span><span class="o">.</span><span class="n">total_energy</span>
+    <span class="k">def</span> <span class="nf">_update_v_s_down</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Total down spin potential to be solved self consistently in the</span>
+<span class="sd">        KS system.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="n">solver_down</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">n_down</span> <span class="o">=</span> <span class="n">solver_down</span><span class="o">.</span><span class="n">density</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">kinetic_energy</span> <span class="o">+=</span> <span class="n">solver_down</span><span class="o">.</span><span class="n">kinetic_energy</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">+=</span> <span class="n">solver_down</span><span class="o">.</span><span class="n">total_energy</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">n_down</span> <span class="o">=</span> <span class="mi">0</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">density</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_up</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_down</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">zeta</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_up</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_down</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">)</span>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_s_down</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="o">.</span><span class="n">v_s_down</span><span class="p">,</span>
+                                          <span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">,</span> <span class="n">n_up</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_up</span><span class="p">,</span>
+                                          <span class="n">n_down</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_down</span><span class="p">,</span>
+                                          <span class="n">v_ext</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">v_ext</span><span class="p">,</span>
+                                          <span class="n">v_xc_down</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="o">.</span><span class="n">v_xc_down</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span> <span class="nf">_solve_ground_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Solve ground state by diagonalizing the Hamiltonian matrix directly and separately for up and down spins.</span>
+        <span class="sd">&quot;&quot;&quot;Solve ground state by diagonalizing the Hamiltonian matrix directly</span>
+<span class="sd">        and separately for up and down spins.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">solver_up</span> <span class="o">=</span> <span class="n">single_electron</span><span class="o">.</span><span class="n">EigenSolver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="p">,</span>
-                                                <span class="n">potential_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">v_tot_up</span><span class="p">,</span>
-                                                <span class="n">num_electrons</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_up_electrons</span><span class="p">,</span>
-                                                <span class="n">boundary_condition</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="p">)</span>
+        <span class="n">solver_up</span> <span class="o">=</span> <span class="n">non_interacting_solver</span><span class="o">.</span><span class="n">EigenSolver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="p">,</span>
+                                                       <span class="n">potential_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">v_s_up</span><span class="p">,</span>
+                                                       <span class="n">num_electrons</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_up_electrons</span><span class="p">,</span>
+                                                       <span class="n">boundary_condition</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="p">)</span>
         <span class="n">solver_up</span><span class="o">.</span><span class="n">solve_ground_state</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_down_electrons</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_ground_state</span><span class="p">(</span><span class="n">solver_up</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">solver_down</span> <span class="o">=</span> <span class="n">single_electron</span><span class="o">.</span><span class="n">EigenSolver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="p">,</span>
-                                                      <span class="n">potential_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">v_tot_down</span><span class="p">,</span>
-                                                      <span class="n">num_electrons</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_down_electrons</span><span class="p">,</span>
-                                                      <span class="n">boundary_condition</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="p">)</span>
+            <span class="n">solver_down</span> <span class="o">=</span> <span class="n">non_interacting_solver</span><span class="o">.</span><span class="n">EigenSolver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="p">,</span>
+                                                             <span class="n">potential_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">v_s_down</span><span class="p">,</span>
+                                                             <span class="n">num_electrons</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_down_electrons</span><span class="p">,</span>
+                                                             <span class="n">boundary_condition</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="p">)</span>
             <span class="n">solver_down</span><span class="o">.</span><span class="n">solve_ground_state</span><span class="p">()</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_ground_state</span><span class="p">(</span><span class="n">solver_up</span><span class="p">,</span> <span class="n">solver_down</span><span class="p">)</span>
 
-<div class="viewcode-block" id="KS_Solver.solve_self_consistent_density"><a class="viewcode-back" href="../modules.html#ks_dft.KS_Solver.solve_self_consistent_density">[docs]</a>    <span class="k">def</span> <span class="nf">solve_self_consistent_density</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v_ext</span><span class="p">,</span> <span class="n">mixing_param</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="KS_Solver.solve_self_consistent_density"><a class="viewcode-back" href="../modules.html#ks_dft.KS_Solver.solve_self_consistent_density">[docs]</a>    <span class="k">def</span> <span class="nf">solve_self_consistent_density</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mixing_param</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        Args:</span>
@@ -398,12 +276,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_solve_ground_state</span><span class="p">()</span>
 
             <span class="c1"># update total potentials using new density</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_update_v_tot_up</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_update_v_tot_down</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_v_s_up</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_v_s_down</span><span class="p">()</span>
 
             <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">-</span> <span class="n">final_energy</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy_tol_threshold</span><span class="p">):</span>
                 <span class="n">converged</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_solved</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_converged</span> <span class="o">=</span> <span class="kc">True</span>
 
             <span class="n">final_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span>
             <span class="k">if</span> <span class="n">prev_densities</span> <span class="ow">and</span> <span class="n">mixing_param</span><span class="p">:</span>
@@ -425,9 +303,10 @@
         <span class="c1"># External Potential Energy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v_ext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span>
 
-        <span class="c1"># Hartree Integral</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">U</span> <span class="o">=</span> <span class="o">.</span><span class="mi">5</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v_h</span><span class="p">(</span><span class="n">grids</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="p">,</span>
-                                <span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span>
+        <span class="c1"># Hartree Energy</span>
+        <span class="n">v_h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="o">.</span><span class="n">v_h</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">U</span> <span class="o">=</span> <span class="o">.</span><span class="mi">5</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_h</span><span class="p">(</span><span class="n">grids</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="p">,</span>
+                           <span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span>
 
         <span class="c1"># Exchange Energy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">E_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="o">.</span><span class="n">get_E_x</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zeta</span><span class="p">)</span>

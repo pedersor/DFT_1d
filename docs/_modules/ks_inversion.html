@@ -157,7 +157,7 @@
             
   <h1>Source code for ks_inversion</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">External Potentials</span>
+<span class="sd">Kohn-Sham Inversion</span>
 <span class="sd">###################</span>
 
 
@@ -172,8 +172,8 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">single_electron</span> <span class="kn">import</span> <span class="n">SparseEigenSolver</span>
-<span class="kn">from</span> <span class="nn">formula</span> <span class="kn">import</span> <span class="n">IntegralTool</span><span class="p">,</span> <span class="n">DerivativeTool</span>
+<span class="kn">from</span> <span class="nn">non_interacting_solver</span> <span class="kn">import</span> <span class="n">SparseEigenSolver</span>
+<span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">IntegralTool</span><span class="p">,</span> <span class="n">DerivativeTool</span>
 <span class="kn">from</span> <span class="nn">ext_potentials</span> <span class="kn">import</span> <span class="n">exp_hydrogenic</span>
 <span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">import</span> <span class="nn">scipy</span>

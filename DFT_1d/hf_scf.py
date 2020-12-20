@@ -1,6 +1,6 @@
 """
-Hartree-Fock DFT solver
-#######################
+Hartree-Fock solver
+###################
 
 **Summary** 
     This is the summary

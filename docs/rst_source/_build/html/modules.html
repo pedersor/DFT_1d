@@ -88,11 +88,11 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#hartree-fock-dft-solver">Hartree-Fock DFT solver</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#kohn-sham-dft-solver">Kohn-Sham DFT solver</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#non-interacting-solver">Non-interacting Solver</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#external-potentials">External Potentials</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#functionals">Functionals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#kohn-sham-dft-solver">Kohn-Sham DFT solver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hartree-fock-solver">Hartree-Fock solver</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="userguide.html">User guide</a></li>
@@ -175,108 +175,6 @@
 <li><p>Imports seem to have a random order. Set lint to give us a specific order and then stick to that. -RJM</p></li>
 </ul>
 </div>
-<span class="target" id="module-hf_scf"></span><div class="section" id="hartree-fock-dft-solver">
-<h2>Hartree-Fock DFT solver<a class="headerlink" href="#hartree-fock-dft-solver" title="Permalink to this headline">¶</a></h2>
-<dl class="simple">
-<dt><strong>Summary</strong></dt><dd><p>This is the summary</p>
-</dd>
-</dl>
-<p><em>Module author: EXAMPLE &lt;<a class="reference external" href="mailto:Example&#37;&#52;&#48;university&#46;edu">Example<span>&#64;</span>university<span>&#46;</span>edu</a>&gt; &lt;<a class="reference external" href="https://dft.uci.edu/">https://dft.uci.edu/</a>&gt; ORCID: <a class="reference external" href="https://orcid.org/0000-0000-0000-0000">000-0000-0000-0000</a></em></p>
-<div class="admonition-todo admonition" id="id3">
-<p class="admonition-title">Todo</p>
-<ul class="simple">
-<li><p>redo in ks_dft format.</p></li>
-<li><p>BaseSCF good idea? use for both ks and hf..</p></li>
-<li><p>Authors?</p></li>
-<li><p>Comments in HF solver funciton should be in doc format</p></li>
-<li><p><em>solve_self_consistent_density</em> needs summary sentence</p></li>
-<li><p>Clean out unused example rst content in here.</p></li>
-<li><p>linting?</p></li>
-</ul>
-</div>
-<dl class="py class">
-<dt id="hf_scf.HF_Solver">
-<em class="property">class </em><code class="sig-prename descclassname">hf_scf.</code><code class="sig-name descname">HF_Solver</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">v_ext</span></em>, <em class="sig-param"><span class="n">hf</span></em>, <em class="sig-param"><span class="n">num_electrons</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">boundary_condition</span><span class="o">=</span><span class="default_value">'open'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#HF_Solver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.HF_Solver" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">scf_base.SCF_SolverBase</span></code></p>
-<p>HF solver for non-periodic systems.</p>
-<dl class="py method">
-<dt id="hf_scf.HF_Solver.init_v_eff">
-<code class="sig-name descname">init_v_eff</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v_eff_up</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">v_eff_down</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fock_mat_up</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fock_mat_down</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#HF_Solver.init_v_eff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.HF_Solver.init_v_eff" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize starting v_eff_up and v_eff_down.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="hf_scf.HF_Solver.get_E_x_HF">
-<code class="sig-name descname">get_E_x_HF</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#HF_Solver.get_E_x_HF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.HF_Solver.get_E_x_HF" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="hf_scf.HF_Solver.solve_self_consistent_density">
-<code class="sig-name descname">solve_self_consistent_density</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mixing_param</span><span class="o">=</span><span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#HF_Solver.solve_self_consistent_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.HF_Solver.solve_self_consistent_density" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>mixing_param</strong> – linear mixing parameter, where 0.0 denotes no mixing.</p></li>
-<li><p><strong>verbose</strong> – convergence debug printing.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>self.</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</div>
-<span class="target" id="module-ks_dft"></span><div class="section" id="kohn-sham-dft-solver">
-<h2>Kohn-Sham DFT solver<a class="headerlink" href="#kohn-sham-dft-solver" title="Permalink to this headline">¶</a></h2>
-<dl class="simple">
-<dt><strong>Summary</strong></dt><dd><p>This is the summary</p>
-</dd>
-</dl>
-<p><em>Module author: EXAMPLE &lt;<a class="reference external" href="mailto:Example&#37;&#52;&#48;university&#46;edu">Example<span>&#64;</span>university<span>&#46;</span>edu</a>&gt; &lt;<a class="reference external" href="https://dft.uci.edu/">https://dft.uci.edu/</a>&gt; ORCID: <a class="reference external" href="https://orcid.org/0000-0000-0000-0000">000-0000-0000-0000</a></em></p>
-<div class="admonition-todo admonition" id="id5">
-<p class="admonition-title">Todo</p>
-<ul class="simple">
-<li><p>Authors?</p></li>
-<li><p>Comments in KS solver funciton should be in doc format</p></li>
-<li><p><em>solve_self_consistent_density</em> needs summary sentence</p></li>
-<li><p>Clean out unused example rst content in here.</p></li>
-<li><p>Linting?</p></li>
-</ul>
-</div>
-<dl class="py class">
-<dt id="ks_dft.KS_Solver">
-<em class="property">class </em><code class="sig-prename descclassname">ks_dft.</code><code class="sig-name descname">KS_Solver</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">v_ext</span></em>, <em class="sig-param"><span class="n">xc</span></em>, <em class="sig-param"><span class="n">num_electrons</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">boundary_condition</span><span class="o">=</span><span class="default_value">'open'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_dft.html#KS_Solver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_dft.KS_Solver" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">scf_base.SCF_SolverBase</span></code></p>
-<p>KS-DFT solver for non-periodic systems.</p>
-<dl class="py method">
-<dt id="ks_dft.KS_Solver.init_v_s">
-<code class="sig-name descname">init_v_s</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v_s_up</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">v_s_down</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_dft.html#KS_Solver.init_v_s"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_dft.KS_Solver.init_v_s" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize starting v_s_up and v_s_down. The default
-corresponds to v_hxc_up = v_hxc_down = 0.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="ks_dft.KS_Solver.solve_self_consistent_density">
-<code class="sig-name descname">solve_self_consistent_density</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mixing_param</span><span class="o">=</span><span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_dft.html#KS_Solver.solve_self_consistent_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_dft.KS_Solver.solve_self_consistent_density" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>mixing_param</strong> – linear mixing parameter, where 0.0 denotes no mixing.</p></li>
-<li><p><strong>verbose</strong> – convergence debug printing.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>self.</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</div>
 <span class="target" id="module-non_interacting_solver"></span><div class="section" id="non-interacting-solver">
 <h2>Non-interacting Solver<a class="headerlink" href="#non-interacting-solver" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
@@ -290,7 +188,7 @@ corresponds to v_hxc_up = v_hxc_down = 0.</p>
 <p>Both solvers (EigenSolver, SparseEigenSolver) here are based on directly
 diagonalizing the Hamiltonian matrix.</p>
 </div>
-<div class="admonition-todo admonition" id="id7">
+<div class="admonition-todo admonition" id="id3">
 <p class="admonition-title">Todo</p>
 <ul class="simple">
 <li><p>Figure out what to do about joint copyright holders (Google + other)</p></li>
@@ -421,13 +319,6 @@ total_energy, kinetic_energy, potential_energy, density, wave_function.</p>
 </dd></dl>
 
 </div>
-<span class="target" id="module-constants"></span><p>Default constants used in this library.</p>
-<p>Exponential Coulomb interaction.</p>
-<p>v(x) = amplitude * exp(-abs(x) * kappa)</p>
-<p>See also ext_potentials.exp_hydrogenic. Further details in:</p>
-<p>Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
-and  Steven  R  White. One-dimensional mimicking of electronic structure:
-The case for exponentials. Physical Review B,91(23):235141, 2015.</p>
 <span class="target" id="module-ext_potentials"></span><div class="section" id="external-potentials">
 <h2>External Potentials<a class="headerlink" href="#external-potentials" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
@@ -655,85 +546,6 @@ Raphael F. Ribeiro and Kieron Burke, Phys. Rev. B 95, 115115
 </dd></dl>
 
 </div>
-<span class="target" id="module-utils"></span><dl class="py function">
-<dt id="utils.get_dx">
-<code class="sig-prename descclassname">utils.</code><code class="sig-name descname">get_dx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#get_dx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.get_dx" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the grid spacing from a grids array.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>grids</strong> – Numpy array with shape (num_grids,).</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Grid spacing.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>h</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="utils.vw_grid">
-<code class="sig-prename descclassname">utils.</code><code class="sig-name descname">vw_grid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">density</span></em>, <em class="sig-param"><span class="n">dx</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#vw_grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.vw_grid" title="Permalink to this definition">¶</a></dt>
-<dd><p>von Weizsacker kinetic energy functional on grid.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>density</strong> – numpy array, density on grid.
-(num_grids,)</p></li>
-<li><p><strong>dx</strong> – grid spacing.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>von Weizsacker kinetic energy.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>kinetic_energy</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="utils.quadratic">
-<code class="sig-prename descclassname">utils.</code><code class="sig-name descname">quadratic</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mat</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#quadratic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.quadratic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the quadratic form of matrix and vector.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>mat</strong> – matrix.
-(n, n)</p></li>
-<li><p><strong>x</strong> – vector.
-(n,)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>scalar value as result of x A x.T.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>output</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt id="utils.IntegralTool">
-<em class="property">class </em><code class="sig-prename descclassname">utils.</code><code class="sig-name descname">IntegralTool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">A</span><span class="o">=</span><span class="default_value">1.071295</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">0.4192265689030308</span></em>, <em class="sig-param"><span class="n">init</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#IntegralTool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.IntegralTool" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Containing integral matrices.</p>
-<dl class="py method">
-<dt id="utils.IntegralTool.integral">
-<code class="sig-name descname">integral</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func_grids</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#IntegralTool.integral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.IntegralTool.integral" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt id="utils.DerivativeTool">
-<em class="property">class </em><code class="sig-prename descclassname">utils.</code><code class="sig-name descname">DerivativeTool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">n_point_stencil</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">init</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#DerivativeTool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.DerivativeTool" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Containing derivative matrices.</p>
-</dd></dl>
-
 <span class="target" id="module-functionals"></span><div class="section" id="functionals">
 <h2>Functionals<a class="headerlink" href="#functionals" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
@@ -742,7 +554,7 @@ and potentials for 1D systems.</p>
 </dd>
 </dl>
 <p><em>Module author: EXAMPLE &lt;<a class="reference external" href="mailto:Example&#37;&#52;&#48;university&#46;edu">Example<span>&#64;</span>university<span>&#46;</span>edu</a>&gt; &lt;<a class="reference external" href="https://dft.uci.edu/">https://dft.uci.edu/</a>&gt; ORCID: <a class="reference external" href="https://orcid.org/0000-0000-0000-0000">000-0000-0000-0000</a></em></p>
-<div class="admonition-todo admonition" id="id9">
+<div class="admonition-todo admonition" id="id5">
 <p class="admonition-title">Todo</p>
 <ul class="simple">
 <li><p>hf: replace with Chris’ matrix muliplication code. Much cleaner.</p></li>
@@ -855,7 +667,7 @@ and potentials for 1D systems.</p>
 <em class="property">class </em><code class="sig-prename descclassname">functionals.</code><code class="sig-name descname">ExponentialLDAFunctional</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">A</span><span class="o">=</span><span class="default_value">1.071295</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">0.4192265689030308</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#ExponentialLDAFunctional"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.ExponentialLDAFunctional" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#functionals.BaseExchangeCorrelationFunctional" title="functionals.BaseExchangeCorrelationFunctional"><code class="xref py py-class docutils literal notranslate"><span class="pre">functionals.BaseExchangeCorrelationFunctional</span></code></a></p>
 <p>local density approximation (LDA) for exponentially repelling electrons.</p>
-<p>For more details see <a class="reference internal" href="references.html#baker2015" id="id10"><span>[Baker2015]</span></a>:</p>
+<p>For more details see <a class="reference internal" href="references.html#baker2015" id="id6"><span>[Baker2015]</span></a>:</p>
 <p>Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
 and  Steven  R  White. One-dimensional mimicking of electronic structure:
 The case for exponentials. Physical Review B,91(23):235141, 2015.</p>
@@ -893,6 +705,194 @@ v_xc_down = d/dn_down (eps_x + eps_c)</p>
 </dd></dl>
 
 </div>
+<span class="target" id="module-ks_dft"></span><div class="section" id="kohn-sham-dft-solver">
+<h2>Kohn-Sham DFT solver<a class="headerlink" href="#kohn-sham-dft-solver" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt><strong>Summary</strong></dt><dd><p>This is the summary</p>
+</dd>
+</dl>
+<p><em>Module author: EXAMPLE &lt;<a class="reference external" href="mailto:Example&#37;&#52;&#48;university&#46;edu">Example<span>&#64;</span>university<span>&#46;</span>edu</a>&gt; &lt;<a class="reference external" href="https://dft.uci.edu/">https://dft.uci.edu/</a>&gt; ORCID: <a class="reference external" href="https://orcid.org/0000-0000-0000-0000">000-0000-0000-0000</a></em></p>
+<div class="admonition-todo admonition" id="id8">
+<p class="admonition-title">Todo</p>
+<ul class="simple">
+<li><p>Authors?</p></li>
+<li><p>Comments in KS solver funciton should be in doc format</p></li>
+<li><p><em>solve_self_consistent_density</em> needs summary sentence</p></li>
+<li><p>Clean out unused example rst content in here.</p></li>
+<li><p>Linting?</p></li>
+</ul>
+</div>
+<dl class="py class">
+<dt id="ks_dft.KS_Solver">
+<em class="property">class </em><code class="sig-prename descclassname">ks_dft.</code><code class="sig-name descname">KS_Solver</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">v_ext</span></em>, <em class="sig-param"><span class="n">xc</span></em>, <em class="sig-param"><span class="n">num_electrons</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">boundary_condition</span><span class="o">=</span><span class="default_value">'open'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_dft.html#KS_Solver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_dft.KS_Solver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">scf_base.SCF_SolverBase</span></code></p>
+<p>KS-DFT solver for non-periodic systems.</p>
+<dl class="py method">
+<dt id="ks_dft.KS_Solver.init_v_s">
+<code class="sig-name descname">init_v_s</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v_s_up</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">v_s_down</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_dft.html#KS_Solver.init_v_s"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_dft.KS_Solver.init_v_s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize starting v_s_up and v_s_down. The default
+corresponds to v_hxc_up = v_hxc_down = 0.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ks_dft.KS_Solver.solve_self_consistent_density">
+<code class="sig-name descname">solve_self_consistent_density</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mixing_param</span><span class="o">=</span><span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_dft.html#KS_Solver.solve_self_consistent_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_dft.KS_Solver.solve_self_consistent_density" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mixing_param</strong> – linear mixing parameter, where 0.0 denotes no mixing.</p></li>
+<li><p><strong>verbose</strong> – convergence debug printing.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-hf_scf"></span><div class="section" id="hartree-fock-solver">
+<h2>Hartree-Fock solver<a class="headerlink" href="#hartree-fock-solver" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt><strong>Summary</strong></dt><dd><p>This is the summary</p>
+</dd>
+</dl>
+<p><em>Module author: EXAMPLE &lt;<a class="reference external" href="mailto:Example&#37;&#52;&#48;university&#46;edu">Example<span>&#64;</span>university<span>&#46;</span>edu</a>&gt; &lt;<a class="reference external" href="https://dft.uci.edu/">https://dft.uci.edu/</a>&gt; ORCID: <a class="reference external" href="https://orcid.org/0000-0000-0000-0000">000-0000-0000-0000</a></em></p>
+<div class="admonition-todo admonition" id="id10">
+<p class="admonition-title">Todo</p>
+<ul class="simple">
+<li><p>redo in ks_dft format.</p></li>
+<li><p>BaseSCF good idea? use for both ks and hf..</p></li>
+<li><p>Authors?</p></li>
+<li><p>Comments in HF solver funciton should be in doc format</p></li>
+<li><p><em>solve_self_consistent_density</em> needs summary sentence</p></li>
+<li><p>Clean out unused example rst content in here.</p></li>
+<li><p>linting?</p></li>
+</ul>
+</div>
+<dl class="py class">
+<dt id="hf_scf.HF_Solver">
+<em class="property">class </em><code class="sig-prename descclassname">hf_scf.</code><code class="sig-name descname">HF_Solver</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">v_ext</span></em>, <em class="sig-param"><span class="n">hf</span></em>, <em class="sig-param"><span class="n">num_electrons</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">boundary_condition</span><span class="o">=</span><span class="default_value">'open'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#HF_Solver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.HF_Solver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">scf_base.SCF_SolverBase</span></code></p>
+<p>HF solver for non-periodic systems.</p>
+<dl class="py method">
+<dt id="hf_scf.HF_Solver.init_v_eff">
+<code class="sig-name descname">init_v_eff</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v_eff_up</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">v_eff_down</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fock_mat_up</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fock_mat_down</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#HF_Solver.init_v_eff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.HF_Solver.init_v_eff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize starting v_eff_up and v_eff_down.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="hf_scf.HF_Solver.get_E_x_HF">
+<code class="sig-name descname">get_E_x_HF</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#HF_Solver.get_E_x_HF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.HF_Solver.get_E_x_HF" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="hf_scf.HF_Solver.solve_self_consistent_density">
+<code class="sig-name descname">solve_self_consistent_density</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mixing_param</span><span class="o">=</span><span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hf_scf.html#HF_Solver.solve_self_consistent_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hf_scf.HF_Solver.solve_self_consistent_density" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mixing_param</strong> – linear mixing parameter, where 0.0 denotes no mixing.</p></li>
+<li><p><strong>verbose</strong> – convergence debug printing.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-constants"></span><p>Default constants used in this library.</p>
+<p>Exponential Coulomb interaction.</p>
+<p>v(x) = amplitude * exp(-abs(x) * kappa)</p>
+<p>See also ext_potentials.exp_hydrogenic. Further details in:</p>
+<p>Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
+and  Steven  R  White. One-dimensional mimicking of electronic structure:
+The case for exponentials. Physical Review B,91(23):235141, 2015.</p>
+<span class="target" id="module-utils"></span><dl class="py function">
+<dt id="utils.get_dx">
+<code class="sig-prename descclassname">utils.</code><code class="sig-name descname">get_dx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#get_dx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.get_dx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the grid spacing from a grids array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>grids</strong> – Numpy array with shape (num_grids,).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Grid spacing.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>h</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="utils.vw_grid">
+<code class="sig-prename descclassname">utils.</code><code class="sig-name descname">vw_grid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">density</span></em>, <em class="sig-param"><span class="n">dx</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#vw_grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.vw_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>von Weizsacker kinetic energy functional on grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>density</strong> – numpy array, density on grid.
+(num_grids,)</p></li>
+<li><p><strong>dx</strong> – grid spacing.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>von Weizsacker kinetic energy.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>kinetic_energy</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="utils.quadratic">
+<code class="sig-prename descclassname">utils.</code><code class="sig-name descname">quadratic</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mat</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#quadratic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.quadratic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the quadratic form of matrix and vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mat</strong> – matrix.
+(n, n)</p></li>
+<li><p><strong>x</strong> – vector.
+(n,)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>scalar value as result of x A x.T.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>output</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="utils.IntegralTool">
+<em class="property">class </em><code class="sig-prename descclassname">utils.</code><code class="sig-name descname">IntegralTool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">A</span><span class="o">=</span><span class="default_value">1.071295</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">0.4192265689030308</span></em>, <em class="sig-param"><span class="n">init</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#IntegralTool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.IntegralTool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Containing integral matrices.</p>
+<dl class="py method">
+<dt id="utils.IntegralTool.integral">
+<code class="sig-name descname">integral</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func_grids</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#IntegralTool.integral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.IntegralTool.integral" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="utils.DerivativeTool">
+<em class="property">class </em><code class="sig-prename descclassname">utils.</code><code class="sig-name descname">DerivativeTool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">n_point_stencil</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">init</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#DerivativeTool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.DerivativeTool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Containing derivative matrices.</p>
+</dd></dl>
+
 </div>
 
 

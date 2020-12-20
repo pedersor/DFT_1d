@@ -14,7 +14,7 @@
 # limitations under the License.
 
 """
-Solve non-interacting system
+Non-interacting Solver
 ######################
 
 **Summary** 

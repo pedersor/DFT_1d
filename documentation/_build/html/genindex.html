@@ -159,7 +159,7 @@
 <h1 id="index">Index</h1>
 
 <div class="genindex-jumpbox">
- <a href="#A"><strong>A</strong></a>
+ <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
@@ -170,6 +170,7 @@
  | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#Q"><strong>Q</strong></a>
  | <a href="#S"><strong>S</strong></a>
@@ -178,10 +179,14 @@
  | <a href="#V"><strong>V</strong></a>
  
 </div>
-<h2 id="A">A</h2>
+<h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#ks_inversion.KSInversion.append_exp">append_exp() (ks_inversion.KSInversion method)</a>
+      <li><a href="modules.html#functionals.BaseExchangeCorrelationFunctional">BaseExchangeCorrelationFunctional (class in functionals)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#functionals.BaseHartreeFock">BaseHartreeFock (class in functionals)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -197,16 +202,12 @@
 </li>
       </ul></li>
   </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#functionals.exchange_correlation_functional.corrExpression">corrExpression() (functionals.exchange_correlation_functional method)</a>
-</li>
-  </ul></td>
 </tr></table>
 
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#formula.DerivativeTool">DerivativeTool (class in formula)</a>
+      <li><a href="modules.html#utils.DerivativeTool">DerivativeTool (class in utils)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -214,11 +215,19 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#functionals.exchange_correlation_functional.e_c">e_c() (functionals.exchange_correlation_functional method)</a>
+      <li><a href="modules.html#functionals.BaseExchangeCorrelationFunctional.e_c">e_c() (functionals.BaseExchangeCorrelationFunctional method)</a>
+
+      <ul>
+        <li><a href="modules.html#functionals.ExponentialLDAFunctional.e_c">(functionals.ExponentialLDAFunctional method)</a>
 </li>
-      <li><a href="modules.html#functionals.exchange_correlation_functional.e_x">e_x() (functionals.exchange_correlation_functional method)</a>
+      </ul></li>
+      <li><a href="modules.html#functionals.BaseExchangeCorrelationFunctional.e_x">e_x() (functionals.BaseExchangeCorrelationFunctional method)</a>
+
+      <ul>
+        <li><a href="modules.html#functionals.ExponentialLDAFunctional.e_x">(functionals.ExponentialLDAFunctional method)</a>
 </li>
-      <li><a href="modules.html#single_electron.EigenSolver">EigenSolver (class in single_electron)</a>
+      </ul></li>
+      <li><a href="modules.html#non_interacting_solver.EigenSolver">EigenSolver (class in non_interacting_solver)</a>
 </li>
       <li>
     examples.hf_scf_example
@@ -243,9 +252,11 @@
         <li><a href="examples.html#module-examples.two_poschl_teller">module</a>
 </li>
       </ul></li>
-      <li><a href="modules.html#functionals.exchange_correlation_functional">exchange_correlation_functional (class in functionals)</a>
-</li>
       <li><a href="modules.html#ext_potentials.exp_hydrogenic">exp_hydrogenic() (in module ext_potentials)</a>
+</li>
+      <li><a href="modules.html#functionals.ExponentialHF">ExponentialHF (class in functionals)</a>
+</li>
+      <li><a href="modules.html#functionals.ExponentialLDAFunctional">ExponentialLDAFunctional (class in functionals)</a>
 </li>
       <li>
     ext_potentials
@@ -259,19 +270,6 @@
 
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#functionals.exchange_correlation_functional.first">first() (functionals.exchange_correlation_functional method)</a>
-</li>
-      <li><a href="modules.html#functionals.fock_operator">fock_operator (class in functionals)</a>
-</li>
-      <li>
-    formula
-
-      <ul>
-        <li><a href="modules.html#module-formula">module</a>
-</li>
-      </ul></li>
-  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     functionals
@@ -288,29 +286,21 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#ext_potentials.gaussian_dips">gaussian_dips() (in module ext_potentials)</a>
 </li>
-      <li><a href="modules.html#hf_scf.get_dx">get_dx() (in module hf_scf)</a>
+      <li><a href="modules.html#utils.get_dx">get_dx() (in module utils)</a>
+</li>
+      <li><a href="modules.html#functionals.BaseExchangeCorrelationFunctional.get_E_c">get_E_c() (functionals.BaseExchangeCorrelationFunctional method)</a>
+</li>
+      <li><a href="modules.html#functionals.BaseExchangeCorrelationFunctional.get_E_x">get_E_x() (functionals.BaseExchangeCorrelationFunctional method)</a>
 
       <ul>
-        <li><a href="modules.html#ks_dft.get_dx">(in module ks_dft)</a>
-</li>
-        <li><a href="modules.html#single_electron.get_dx">(in module single_electron)</a>
-</li>
-      </ul></li>
-      <li><a href="modules.html#functionals.exchange_correlation_functional.get_E_c">get_E_c() (functionals.exchange_correlation_functional method)</a>
-</li>
-      <li><a href="modules.html#functionals.exchange_correlation_functional.get_E_x">get_E_x() (functionals.exchange_correlation_functional method)</a>
-
-      <ul>
-        <li><a href="modules.html#functionals.fock_operator.get_E_x">(functionals.fock_operator method)</a>
+        <li><a href="modules.html#functionals.ExponentialHF.get_E_x">(functionals.ExponentialHF method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#hf_scf.HF_Solver.get_E_x_HF">get_E_x_HF() (hf_scf.HF_Solver method)</a>
 </li>
-      <li><a href="modules.html#ext_potentials.get_gridded_potential">get_gridded_potential() (in module ext_potentials)</a>
-</li>
-      <li><a href="modules.html#single_electron.EigenSolver.get_kinetic_matrix">get_kinetic_matrix() (single_electron.EigenSolver method)</a>
+      <li><a href="modules.html#non_interacting_solver.EigenSolver.get_kinetic_matrix">get_kinetic_matrix() (non_interacting_solver.EigenSolver method)</a>
 </li>
       <li><a href="examples.html#examples.hf_scf_example.get_latex_table_atoms">get_latex_table_atoms() (in module examples.hf_scf_example)</a>
 
@@ -320,7 +310,7 @@
       </ul></li>
       <li><a href="examples.html#examples.two_poschl_teller.get_plotting_params">get_plotting_params() (in module examples.two_poschl_teller)</a>
 </li>
-      <li><a href="modules.html#single_electron.EigenSolver.get_potential_matrix">get_potential_matrix() (single_electron.EigenSolver method)</a>
+      <li><a href="modules.html#non_interacting_solver.EigenSolver.get_potential_matrix">get_potential_matrix() (non_interacting_solver.EigenSolver method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -351,22 +341,18 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#hf_scf.HF_Solver.initialize_density">initialize_density() (hf_scf.HF_Solver method)</a>
+      <li><a href="modules.html#hf_scf.HF_Solver.init_v_eff">init_v_eff() (hf_scf.HF_Solver method)</a>
 </li>
-      <li><a href="modules.html#formula.IntegralTool.integral">integral() (formula.IntegralTool method)</a>
-</li>
-      <li><a href="modules.html#formula.IntegralTool">IntegralTool (class in formula)</a>
+      <li><a href="modules.html#ks_dft.KS_Solver.init_v_s">init_v_s() (ks_dft.KS_Solver method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#hf_scf.SolverBase.is_solved">is_solved() (hf_scf.SolverBase method)</a>
-
-      <ul>
-        <li><a href="modules.html#ks_dft.SolverBase.is_solved">(ks_dft.SolverBase method)</a>
+      <li><a href="modules.html#utils.IntegralTool.integral">integral() (utils.IntegralTool method)</a>
 </li>
-        <li><a href="modules.html#single_electron.SolverBase.is_solved">(single_electron.SolverBase method)</a>
+      <li><a href="modules.html#utils.IntegralTool">IntegralTool (class in utils)</a>
 </li>
-      </ul></li>
+      <li><a href="modules.html#non_interacting_solver.SolverBase.is_solved">is_solved() (non_interacting_solver.SolverBase method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -384,16 +370,7 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li>
-    ks_inversion
-
-      <ul>
-        <li><a href="modules.html#module-ks_inversion">module</a>
-</li>
-      </ul></li>
       <li><a href="modules.html#ks_dft.KS_Solver">KS_Solver (class in ks_dft)</a>
-</li>
-      <li><a href="modules.html#ks_inversion.KSInversion">KSInversion (class in ks_inversion)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -423,17 +400,28 @@
 </li>
         <li><a href="modules.html#module-ext_potentials">ext_potentials</a>
 </li>
-        <li><a href="modules.html#module-formula">formula</a>
-</li>
         <li><a href="modules.html#module-functionals">functionals</a>
 </li>
         <li><a href="modules.html#module-hf_scf">hf_scf</a>
 </li>
         <li><a href="modules.html#module-ks_dft">ks_dft</a>
 </li>
-        <li><a href="modules.html#module-ks_inversion">ks_inversion</a>
+        <li><a href="modules.html#module-non_interacting_solver">non_interacting_solver</a>
 </li>
-        <li><a href="modules.html#module-single_electron">single_electron</a>
+        <li><a href="modules.html#module-utils">utils</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    non_interacting_solver
+
+      <ul>
+        <li><a href="modules.html#module-non_interacting_solver">module</a>
 </li>
       </ul></li>
   </ul></td>
@@ -460,14 +448,8 @@
 <h2 id="Q">Q</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#hf_scf.quadratic">quadratic() (in module hf_scf)</a>
-
-      <ul>
-        <li><a href="modules.html#ks_dft.quadratic">(in module ks_dft)</a>
+      <li><a href="modules.html#utils.quadratic">quadratic() (in module utils)</a>
 </li>
-        <li><a href="modules.html#single_electron.quadratic">(in module single_electron)</a>
-</li>
-      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#ext_potentials.quartic_oscillator">quartic_oscillator() (in module ext_potentials)</a>
@@ -478,35 +460,18 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#functionals.exchange_correlation_functional.second">second() (functionals.exchange_correlation_functional method)</a>
-</li>
-      <li><a href="modules.html#ks_dft.KS_Solver.set_energy_tol_threshold">set_energy_tol_threshold() (ks_dft.KS_Solver method)</a>
-</li>
-      <li><a href="modules.html#functionals.exchange_correlation_functional.set_pade_approx_params">set_pade_approx_params() (functionals.exchange_correlation_functional method)</a>
-</li>
       <li><a href="examples.html#examples.hf_scf_example.single_atom">single_atom() (in module examples.hf_scf_example)</a>
 
       <ul>
         <li><a href="examples.html#examples.ks_dft_example.single_atom">(in module examples.ks_dft_example)</a>
 </li>
       </ul></li>
-      <li>
-    single_electron
+      <li><a href="modules.html#non_interacting_solver.EigenSolver.solve_ground_state">solve_ground_state() (non_interacting_solver.EigenSolver method)</a>
 
       <ul>
-        <li><a href="modules.html#module-single_electron">module</a>
+        <li><a href="modules.html#non_interacting_solver.SolverBase.solve_ground_state">(non_interacting_solver.SolverBase method)</a>
 </li>
-      </ul></li>
-      <li><a href="modules.html#hf_scf.HF_Solver.solve_ground_state">solve_ground_state() (hf_scf.HF_Solver method)</a>
-
-      <ul>
-        <li><a href="modules.html#hf_scf.SolverBase.solve_ground_state">(hf_scf.SolverBase method)</a>
-</li>
-        <li><a href="modules.html#single_electron.EigenSolver.solve_ground_state">(single_electron.EigenSolver method)</a>
-</li>
-        <li><a href="modules.html#single_electron.SolverBase.solve_ground_state">(single_electron.SolverBase method)</a>
-</li>
-        <li><a href="modules.html#single_electron.SparseEigenSolver.solve_ground_state">(single_electron.SparseEigenSolver method)</a>
+        <li><a href="modules.html#non_interacting_solver.SparseEigenSolver.solve_ground_state">(non_interacting_solver.SparseEigenSolver method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -517,19 +482,9 @@
         <li><a href="modules.html#ks_dft.KS_Solver.solve_self_consistent_density">(ks_dft.KS_Solver method)</a>
 </li>
       </ul></li>
-      <li><a href="modules.html#ks_inversion.KSInversion.solve_v_XC">solve_v_XC() (ks_inversion.KSInversion method)</a>
+      <li><a href="modules.html#non_interacting_solver.SolverBase">SolverBase (class in non_interacting_solver)</a>
 </li>
-      <li><a href="modules.html#single_electron.solved_1dsolver_to_example">solved_1dsolver_to_example() (in module single_electron)</a>
-</li>
-      <li><a href="modules.html#hf_scf.SolverBase">SolverBase (class in hf_scf)</a>
-
-      <ul>
-        <li><a href="modules.html#ks_dft.SolverBase">(class in ks_dft)</a>
-</li>
-        <li><a href="modules.html#single_electron.SolverBase">(class in single_electron)</a>
-</li>
-      </ul></li>
-      <li><a href="modules.html#single_electron.SparseEigenSolver">SparseEigenSolver (class in single_electron)</a>
+      <li><a href="modules.html#non_interacting_solver.SparseEigenSolver">SparseEigenSolver (class in non_interacting_solver)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -537,14 +492,6 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#functionals.tot_HF_potential">tot_HF_potential() (in module functionals)</a>
-</li>
-      <li><a href="modules.html#functionals.tot_KS_potential">tot_KS_potential() (in module functionals)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#ks_inversion.two_iter_KS_inversion">two_iter_KS_inversion() (in module ks_inversion)</a>
-</li>
       <li><a href="examples.html#examples.two_poschl_teller.two_poschl_teller">two_poschl_teller() (in module examples.two_poschl_teller)</a>
 </li>
   </ul></td>
@@ -553,33 +500,56 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#functionals.fock_operator.update_fock_matrix">update_fock_matrix() (functionals.fock_operator method)</a>
+      <li><a href="modules.html#functionals.ExponentialHF.update_fock_matrix">update_fock_matrix() (functionals.ExponentialHF method)</a>
 </li>
-      <li><a href="modules.html#hf_scf.HF_Solver.update_fock_matrix_down">update_fock_matrix_down() (hf_scf.HF_Solver method)</a>
-</li>
-      <li><a href="modules.html#hf_scf.HF_Solver.update_fock_matrix_up">update_fock_matrix_up() (hf_scf.HF_Solver method)</a>
+      <li><a href="modules.html#non_interacting_solver.EigenSolver.update_potential">update_potential() (non_interacting_solver.EigenSolver method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#single_electron.EigenSolver.update_potential">update_potential() (single_electron.EigenSolver method)</a>
+      <li>
+    utils
+
+      <ul>
+        <li><a href="modules.html#module-utils">module</a>
 </li>
-      <li><a href="modules.html#hf_scf.HF_Solver.update_v_tot_down">update_v_tot_down() (hf_scf.HF_Solver method)</a>
-</li>
-      <li><a href="modules.html#hf_scf.HF_Solver.update_v_tot_up">update_v_tot_up() (hf_scf.HF_Solver method)</a>
-</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#functionals.exchange_correlation_functional.v_xc_exp_down">v_xc_exp_down() (functionals.exchange_correlation_functional method)</a>
+      <li><a href="modules.html#functionals.BaseExchangeCorrelationFunctional.v_h">v_h() (functionals.BaseExchangeCorrelationFunctional method)</a>
+
+      <ul>
+        <li><a href="modules.html#functionals.BaseHartreeFock.v_h">(functionals.BaseHartreeFock method)</a>
+</li>
+        <li><a href="modules.html#functionals.ExponentialHF.v_h">(functionals.ExponentialHF method)</a>
+</li>
+        <li><a href="modules.html#functionals.ExponentialLDAFunctional.v_h">(functionals.ExponentialLDAFunctional method)</a>
+</li>
+      </ul></li>
+      <li><a href="modules.html#functionals.BaseHartreeFock.v_hf">v_hf() (functionals.BaseHartreeFock method)</a>
+</li>
+      <li><a href="modules.html#functionals.BaseExchangeCorrelationFunctional.v_s_down">v_s_down() (functionals.BaseExchangeCorrelationFunctional method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#functionals.exchange_correlation_functional.v_xc_exp_up">v_xc_exp_up() (functionals.exchange_correlation_functional method)</a>
+      <li><a href="modules.html#functionals.BaseExchangeCorrelationFunctional.v_s_up">v_s_up() (functionals.BaseExchangeCorrelationFunctional method)</a>
 </li>
-      <li><a href="modules.html#single_electron.vw_grid">vw_grid() (in module single_electron)</a>
+      <li><a href="modules.html#functionals.BaseExchangeCorrelationFunctional.v_xc_down">v_xc_down() (functionals.BaseExchangeCorrelationFunctional method)</a>
+
+      <ul>
+        <li><a href="modules.html#functionals.ExponentialLDAFunctional.v_xc_down">(functionals.ExponentialLDAFunctional method)</a>
+</li>
+      </ul></li>
+      <li><a href="modules.html#functionals.BaseExchangeCorrelationFunctional.v_xc_up">v_xc_up() (functionals.BaseExchangeCorrelationFunctional method)</a>
+
+      <ul>
+        <li><a href="modules.html#functionals.ExponentialLDAFunctional.v_xc_up">(functionals.ExponentialLDAFunctional method)</a>
+</li>
+      </ul></li>
+      <li><a href="modules.html#utils.vw_grid">vw_grid() (in module utils)</a>
 </li>
   </ul></td>
 </tr></table>

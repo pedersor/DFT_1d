@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>formula &mdash; 1D Solver 2020 documentation</title>
+  <title>utils &mdash; 1D Solver 2020 documentation</title>
   
 
   
@@ -140,7 +140,7 @@
         
           <li><a href="index.html">Module code</a> &raquo;</li>
         
-      <li>formula</li>
+      <li>utils</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -155,13 +155,59 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for formula</h1><div class="highlight"><pre>
+  <h1>Source code for utils</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">ext_potentials</span>
 <span class="kn">import</span> <span class="nn">constants</span>
 
 
-<div class="viewcode-block" id="IntegralTool"><a class="viewcode-back" href="../modules.html#formula.IntegralTool">[docs]</a><span class="k">class</span> <span class="nc">IntegralTool</span><span class="p">:</span>
+<div class="viewcode-block" id="get_dx"><a class="viewcode-back" href="../modules.html#utils.get_dx">[docs]</a><span class="k">def</span> <span class="nf">get_dx</span><span class="p">(</span><span class="n">grids</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gets the grid spacing from a grids array.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        grids: Numpy array with shape (num_grids,).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        h: Grid spacing.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="n">grids</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">grids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">grids</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">grids</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">grids</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="k">return</span> <span class="n">h</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;grids is not uniformly spaced.&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="vw_grid"><a class="viewcode-back" href="../modules.html#utils.vw_grid">[docs]</a><span class="k">def</span> <span class="nf">vw_grid</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">dx</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;von Weizsacker kinetic energy functional on grid.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      density: numpy array, density on grid.</span>
+<span class="sd">        (num_grids,)</span>
+<span class="sd">      dx: grid spacing.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      kinetic_energy: von Weizsacker kinetic energy.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">gradient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">density</span><span class="p">)</span> <span class="o">/</span> <span class="n">dx</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mf">0.125</span> <span class="o">*</span> <span class="n">gradient</span> <span class="o">*</span> <span class="n">gradient</span> <span class="o">/</span> <span class="n">density</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span></div>
+
+
+<div class="viewcode-block" id="quadratic"><a class="viewcode-back" href="../modules.html#utils.quadratic">[docs]</a><span class="k">def</span> <span class="nf">quadratic</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the quadratic form of matrix and vector.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      mat: matrix.</span>
+<span class="sd">        (n, n)</span>
+<span class="sd">      x: vector.</span>
+<span class="sd">        (n,)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      output: scalar value as result of x A x.T.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="IntegralTool"><a class="viewcode-back" href="../modules.html#utils.IntegralTool">[docs]</a><span class="k">class</span> <span class="nc">IntegralTool</span><span class="p">:</span>
     <span class="sd">&#39;&#39;&#39;Containing integral matrices.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 
@@ -176,7 +222,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">simpson_vector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_simpson_vector</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">hartree_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_hartree_matrix</span><span class="p">()</span>
 
-<div class="viewcode-block" id="IntegralTool.integral"><a class="viewcode-back" href="../modules.html#formula.IntegralTool.integral">[docs]</a>    <span class="k">def</span> <span class="nf">integral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func_grids</span><span class="p">):</span>
+<div class="viewcode-block" id="IntegralTool.integral"><a class="viewcode-back" href="../modules.html#utils.IntegralTool.integral">[docs]</a>    <span class="k">def</span> <span class="nf">integral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func_grids</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">func_grids</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_grids</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input grids has dimension </span><span class="si">{</span><span class="n">func_grids</span><span class="si">}</span><span class="s2">, &quot;</span>
                              <span class="sa">f</span><span class="s2">&quot;it should have dimension </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_grids</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
@@ -208,7 +254,7 @@
         <span class="k">return</span> <span class="n">mat</span></div>
 
 
-<div class="viewcode-block" id="DerivativeTool"><a class="viewcode-back" href="../modules.html#formula.DerivativeTool">[docs]</a><span class="k">class</span> <span class="nc">DerivativeTool</span><span class="p">:</span>
+<div class="viewcode-block" id="DerivativeTool"><a class="viewcode-back" href="../modules.html#utils.DerivativeTool">[docs]</a><span class="k">class</span> <span class="nc">DerivativeTool</span><span class="p">:</span>
     <span class="sd">&#39;&#39;&#39;Containing derivative matrices.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 

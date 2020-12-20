@@ -1,5 +1,5 @@
 """
-External Potentials
+Kohn-Sham Inversion
 ###################
 
 

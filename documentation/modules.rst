@@ -18,12 +18,7 @@ Modules
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: ks_inversion
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-.. automodule:: single_electron
+.. automodule:: non_interacting_solver
     :members:
     :undoc-members:
     :show-inheritance:
@@ -38,7 +33,7 @@ Modules
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: formula
+.. automodule:: utils
     :members:
     :undoc-members:
     :show-inheritance:

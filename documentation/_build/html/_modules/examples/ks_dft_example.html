@@ -169,6 +169,7 @@
 
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">os</span>
+
 <span class="n">currentpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">currentpath</span><span class="p">))</span>
 
@@ -179,7 +180,7 @@
 
 
 <div class="viewcode-block" id="lda_ks_dft_atom"><a class="viewcode-back" href="../../examples.html#examples.ks_dft_example.lda_ks_dft_atom">[docs]</a><span class="k">def</span> <span class="nf">lda_ks_dft_atom</span><span class="p">(</span><span class="n">grids</span><span class="p">,</span> <span class="n">N_e</span><span class="p">,</span> <span class="n">Z</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; local density approximation (LDA) KS-DFT calculation for a 1D atom with</span>
+    <span class="sd">&quot;&quot;&quot;local density approximation (LDA) KS-DFT calculation for a 1D atom with</span>
 <span class="sd">        exponential interactions, see ext_potentials.exp_hydrogenic.</span>
 
 <span class="sd">    Args:</span>
@@ -193,17 +194,16 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">v_ext</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">ext_potentials</span><span class="o">.</span><span class="n">exp_hydrogenic</span><span class="p">,</span> <span class="n">Z</span><span class="o">=</span><span class="n">Z</span><span class="p">)</span>
-    <span class="n">v_h</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">functionals</span><span class="o">.</span><span class="n">hartree_potential</span><span class="p">)</span>
-    <span class="n">lda_xc</span> <span class="o">=</span> <span class="n">functionals</span><span class="o">.</span><span class="n">exchange_correlation_functional</span><span class="p">(</span><span class="n">grids</span><span class="o">=</span><span class="n">grids</span><span class="p">)</span>
-    <span class="n">solver</span> <span class="o">=</span> <span class="n">ks_dft</span><span class="o">.</span><span class="n">KS_Solver</span><span class="p">(</span><span class="n">grids</span><span class="p">,</span> <span class="n">v_ext</span><span class="o">=</span><span class="n">v_ext</span><span class="p">,</span> <span class="n">v_h</span><span class="o">=</span><span class="n">v_h</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="n">lda_xc</span><span class="p">,</span>
+    <span class="n">lda_xc</span> <span class="o">=</span> <span class="n">functionals</span><span class="o">.</span><span class="n">ExponentialLDAFunctional</span><span class="p">(</span><span class="n">grids</span><span class="o">=</span><span class="n">grids</span><span class="p">)</span>
+    <span class="n">solver</span> <span class="o">=</span> <span class="n">ks_dft</span><span class="o">.</span><span class="n">KS_Solver</span><span class="p">(</span><span class="n">grids</span><span class="p">,</span> <span class="n">v_ext</span><span class="o">=</span><span class="n">v_ext</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="n">lda_xc</span><span class="p">,</span>
                               <span class="n">num_electrons</span><span class="o">=</span><span class="n">N_e</span><span class="p">)</span>
-    <span class="n">solver</span><span class="o">.</span><span class="n">solve_self_consistent_density</span><span class="p">(</span><span class="n">v_ext</span><span class="o">=</span><span class="n">v_ext</span><span class="p">(</span><span class="n">grids</span><span class="p">))</span>
+    <span class="n">solver</span><span class="o">.</span><span class="n">solve_self_consistent_density</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">solver</span></div>
 
 
 <div class="viewcode-block" id="get_latex_table_atoms"><a class="viewcode-back" href="../../examples.html#examples.ks_dft_example.get_latex_table_atoms">[docs]</a><span class="k">def</span> <span class="nf">get_latex_table_atoms</span><span class="p">(</span><span class="n">grids</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Reproduce LDA results in table 2 of [Baker2015]_.</span>
+    <span class="sd">&quot;&quot;&quot;Reproduce LDA results in table 2 of [Baker2015]_.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        grids: grids: numpy array of grid points for evaluating 1d potential.</span>
@@ -286,7 +286,7 @@
 
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
 
-    <span class="sd">&quot;&quot;&quot; Generate atom table for various (N_e, Z) &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Generate atom table for various (N_e, Z) &quot;&quot;&quot;</span>
     <span class="c1"># use coarser grid for faster computation.</span>
     <span class="n">grids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
     <span class="n">get_latex_table_atoms</span><span class="p">(</span><span class="n">grids</span><span class="p">)</span>

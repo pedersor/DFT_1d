@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>single_electron &mdash; 1D Solver 2020 documentation</title>
+  <title>non_interacting_solver &mdash; 1D Solver 2020 documentation</title>
   
 
   
@@ -140,7 +140,7 @@
         
           <li><a href="index.html">Module code</a> &raquo;</li>
         
-      <li>single_electron</li>
+      <li>non_interacting_solver</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -155,7 +155,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for single_electron</h1><div class="highlight"><pre>
+  <h1>Source code for non_interacting_solver</h1><div class="highlight"><pre>
 <span></span><span class="c1"># coding=utf-8</span>
 <span class="c1"># Copyright 2019 The Google Research Authors.</span>
 <span class="c1">#</span>
@@ -172,21 +172,19 @@
 <span class="c1"># limitations under the License.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Non-interacting system</span>
+<span class="sd">Non-interacting Solver</span>
 <span class="sd">######################</span>
 
 <span class="sd">**Summary** </span>
-<span class="sd">    Solve non-interacting 1d system numerically on grids. Each eigenstate will be</span>
-<span class="sd">        occupied by one electron.</span>
+<span class="sd">    Solve non-interacting 1d system numerically on a grid</span>
+<span class="sd">    (position-space basis). Each eigenstate will be occupied by one electron.</span>
 
 <span class="sd">.. moduleauthor::</span>
 <span class="sd">    EXAMPLE &lt;Example@university.edu&gt; &lt;https://dft.uci.edu/&gt; ORCID: `000-0000-0000-0000 &lt;https://orcid.org/0000-0000-0000-0000&gt;`_</span>
 
 <span class="sd">.. note::</span>
-<span class="sd">    Both solver (EigenSolver, SparseEigenSolver) here are based on directly</span>
-<span class="sd">    diagonalizing the Hamiltonian matrix, which are straightforward to understand,</span>
-<span class="sd">    but not as accurate as other delicate numerical methods, like density matrix</span>
-<span class="sd">    renormalization group (DMRG).</span>
+<span class="sd">    Both solvers (EigenSolver, SparseEigenSolver) here are based on directly</span>
+<span class="sd">    diagonalizing the Hamiltonian matrix.</span>
 
 <span class="sd">.. todo::</span>
 
@@ -195,74 +193,26 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
-
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">sparse</span>
 <span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">linalg</span>
+<span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">get_dx</span><span class="p">,</span> <span class="n">quadratic</span>
 
 
-<span class="c1"># import tensorflow as tf</span>
-
-
-<div class="viewcode-block" id="get_dx"><a class="viewcode-back" href="../modules.html#single_electron.get_dx">[docs]</a><span class="k">def</span> <span class="nf">get_dx</span><span class="p">(</span><span class="n">grids</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Gets the grid spacing from grids array.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">      grids: Numpy array with shape (num_grids,).</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">      Grid spacing.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">grids</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">grids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">grids</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="vw_grid"><a class="viewcode-back" href="../modules.html#single_electron.vw_grid">[docs]</a><span class="k">def</span> <span class="nf">vw_grid</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">dx</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;von Weizsacker kinetic energy functional on grid.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">      density: numpy array, density on grid.</span>
-<span class="sd">        (num_grids,)</span>
-<span class="sd">      dx: grid spacing.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">      kinetic_energy: von Weizsacker kinetic energy.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">gradient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">density</span><span class="p">)</span> <span class="o">/</span> <span class="n">dx</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mf">0.125</span> <span class="o">*</span> <span class="n">gradient</span> <span class="o">*</span> <span class="n">gradient</span> <span class="o">/</span> <span class="n">density</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span></div>
-
-
-<div class="viewcode-block" id="quadratic"><a class="viewcode-back" href="../modules.html#single_electron.quadratic">[docs]</a><span class="k">def</span> <span class="nf">quadratic</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Compute the quadratic form of matrix and vector.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">      mat: matrix.</span>
-<span class="sd">        (n, n)</span>
-<span class="sd">      x: vector.</span>
-<span class="sd">        (n,)</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">      output: scalar value as result of x A x.T.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span></div>
-
-
-<div class="viewcode-block" id="SolverBase"><a class="viewcode-back" href="../modules.html#single_electron.SolverBase">[docs]</a><span class="k">class</span> <span class="nc">SolverBase</span><span class="p">:</span>
+<div class="viewcode-block" id="SolverBase"><a class="viewcode-back" href="../modules.html#non_interacting_solver.SolverBase">[docs]</a><span class="k">class</span> <span class="nc">SolverBase</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Base Solver for non-interacting 1d system.</span>
 
 <span class="sd">    Subclasses should define solve_ground_state method.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
-                 <span class="n">grids</span><span class="p">,</span> 
-                 <span class="n">potential_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                 <span class="n">num_electrons</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> 
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">grids</span><span class="p">,</span>
+                 <span class="n">potential_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">num_electrons</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                  <span class="n">k_point</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">boundary_condition</span><span class="o">=</span><span class="s1">&#39;open&#39;</span><span class="p">,</span>
-                 <span class="n">n_point_stencil</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> 
-                 <span class="n">fock_mat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                 <span class="n">n_point_stencil</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                 <span class="n">perturbation</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize the solver with potential function and grid.</span>
 
 <span class="sd">        Args:</span>
@@ -292,8 +242,8 @@
 <span class="sd">              rate of 4 for most systems. Suggested: use 3-point stencil for</span>
 <span class="sd">              potentials with cusps as n_point_stencil &gt; 3 will not improve</span>
 <span class="sd">              convergence rates.</span>
-<span class="sd">          fock_mat: Provide a Fock operator (matrix) if using hartree-fock</span>
-<span class="sd">              Hamiltonian</span>
+<span class="sd">          perturbation: Provide a perturbation operator H&#39; (a matrix) to append</span>
+<span class="sd">              to the non-interacting Hamiltonian, H + H&#39;.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">          ValueError: If num_electrons is less than 1; or num_electrons is not</span>
@@ -308,7 +258,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">potential_fn</span> <span class="o">=</span> <span class="n">potential_fn</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential_fn</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">vp</span> <span class="o">=</span> <span class="n">potential_fn</span><span class="p">(</span><span class="n">grids</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fock_mat</span> <span class="o">=</span> <span class="n">fock_mat</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">perturbation</span> <span class="o">=</span> <span class="n">perturbation</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num_electrons</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;num_electrons is not an integer.&#39;</span><span class="p">)</span>
@@ -321,11 +271,11 @@
         <span class="c1"># Solver is unsolved by default.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_solved</span> <span class="o">=</span> <span class="kc">False</span>
 
-<div class="viewcode-block" id="SolverBase.is_solved"><a class="viewcode-back" href="../modules.html#single_electron.SolverBase.is_solved">[docs]</a>    <span class="k">def</span> <span class="nf">is_solved</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SolverBase.is_solved"><a class="viewcode-back" href="../modules.html#non_interacting_solver.SolverBase.is_solved">[docs]</a>    <span class="k">def</span> <span class="nf">is_solved</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Returns whether this solver has been solved.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solved</span></div>
 
-<div class="viewcode-block" id="SolverBase.solve_ground_state"><a class="viewcode-back" href="../modules.html#single_electron.SolverBase.solve_ground_state">[docs]</a>    <span class="k">def</span> <span class="nf">solve_ground_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SolverBase.solve_ground_state"><a class="viewcode-back" href="../modules.html#non_interacting_solver.SolverBase.solve_ground_state">[docs]</a>    <span class="k">def</span> <span class="nf">solve_ground_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Solve ground state. Need to be implemented in subclasses.</span>
 
 <span class="sd">        Compute attributes:</span>
@@ -337,21 +287,21 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Must be implemented by subclass.&#39;</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="EigenSolver"><a class="viewcode-back" href="../modules.html#single_electron.EigenSolver">[docs]</a><span class="k">class</span> <span class="nc">EigenSolver</span><span class="p">(</span><span class="n">SolverBase</span><span class="p">):</span>
+<div class="viewcode-block" id="EigenSolver"><a class="viewcode-back" href="../modules.html#non_interacting_solver.EigenSolver">[docs]</a><span class="k">class</span> <span class="nc">EigenSolver</span><span class="p">(</span><span class="n">SolverBase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Represents the Hamiltonian as a matrix and diagonalizes it directly.</span>
 
 <span class="sd">    This is the most stable and accurate eigensolver. Use SparseEigenSolver</span>
 <span class="sd">    for a faster iterative eigensolver.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
-                 <span class="n">grids</span><span class="p">,</span> 
-                 <span class="n">potential_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                 <span class="n">num_electrons</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> 
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">grids</span><span class="p">,</span>
+                 <span class="n">potential_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">num_electrons</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                  <span class="n">k_point</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">boundary_condition</span><span class="o">=</span><span class="s1">&#39;open&#39;</span><span class="p">,</span>
-                 <span class="n">n_point_stencil</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> 
-                 <span class="n">fock_mat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                 <span class="n">n_point_stencil</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                 <span class="n">perturbation</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize the solver with potential function and grid.</span>
 
 <span class="sd">        Args:</span>
@@ -359,7 +309,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">EigenSolver</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">grids</span><span class="p">,</span> <span class="n">potential_fn</span><span class="p">,</span> <span class="n">num_electrons</span><span class="p">,</span>
                                           <span class="n">k_point</span><span class="p">,</span> <span class="n">boundary_condition</span><span class="p">,</span>
-                                          <span class="n">n_point_stencil</span><span class="p">,</span> <span class="n">fock_mat</span><span class="p">)</span>
+                                          <span class="n">n_point_stencil</span><span class="p">,</span> <span class="n">perturbation</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_matrices</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_diagonal_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
@@ -382,21 +332,21 @@
 <span class="sd">          _v_mat: numpy matrix, potential matrix in Hamiltonian.</span>
 <span class="sd">          _h: numpy matrix, Hamiltonian matrix.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        
+
         <span class="c1"># Kinetic matrix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_t_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_kinetic_matrix</span><span class="p">()</span>
-        
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential_fn</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Potential matrix</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_v_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_potential_matrix</span><span class="p">()</span>
             <span class="c1"># Hamiltonian matrix</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t_mat</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_v_mat</span>
-            
-        <span class="c1"># Fock-Matrix (exact exchange)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fock_mat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_h</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fock_mat</span>
-            
-<div class="viewcode-block" id="EigenSolver.update_potential"><a class="viewcode-back" href="../modules.html#single_electron.EigenSolver.update_potential">[docs]</a>    <span class="k">def</span> <span class="nf">update_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">potential_fn</span><span class="p">):</span>
+
+        <span class="c1"># Perturbation matrix</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">perturbation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_h</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">perturbation</span>
+
+<div class="viewcode-block" id="EigenSolver.update_potential"><a class="viewcode-back" href="../modules.html#non_interacting_solver.EigenSolver.update_potential">[docs]</a>    <span class="k">def</span> <span class="nf">update_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">potential_fn</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Replace the current potential grids with a new potential grids.</span>
 <span class="sd">        Delete all attributes created by solving eigenvalues, set _solved to</span>
 <span class="sd">        False.</span>
@@ -404,18 +354,18 @@
 <span class="sd">        Args:</span>
 <span class="sd">          potential_fn: potential function taking grids as argument.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">potential_fn</span> <span class="o">=</span> <span class="n">potential_fn</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vp</span> <span class="o">=</span> <span class="n">potential_fn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="p">)</span>
         <span class="c1"># Potential matrix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_v_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_potential_matrix</span><span class="p">()</span>
         <span class="c1"># Hamiltonian matrix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t_mat</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_v_mat</span>
-        <span class="c1"># Fock-Matrix (exact exchange)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fock_mat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_h</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fock_mat</span>
+        <span class="c1"># Perturbation matrix</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">perturbation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_h</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">perturbation</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solved</span><span class="p">:</span>    
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solved</span><span class="p">:</span>
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_energy</span>
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">wave_function</span>
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span>
@@ -424,7 +374,7 @@
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenvalues</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_solved</span> <span class="o">=</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="EigenSolver.get_kinetic_matrix"><a class="viewcode-back" href="../modules.html#single_electron.EigenSolver.get_kinetic_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">get_kinetic_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="EigenSolver.get_kinetic_matrix"><a class="viewcode-back" href="../modules.html#non_interacting_solver.EigenSolver.get_kinetic_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">get_kinetic_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Kinetic matrix. Here the finite difference method is used to</span>
 <span class="sd">        generate a kinetic energy operator in discrete space while satisfying</span>
 <span class="sd">        desired boundary conditions.</span>
@@ -532,7 +482,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;boundary_condition = </span><span class="si">%s</span><span class="s1"> is not supported&#39;</span> <span class="o">%</span>
                              <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="EigenSolver.get_potential_matrix"><a class="viewcode-back" href="../modules.html#single_electron.EigenSolver.get_potential_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">get_potential_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="EigenSolver.get_potential_matrix"><a class="viewcode-back" href="../modules.html#non_interacting_solver.EigenSolver.get_potential_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">get_potential_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Potential matrix. A diagonal matrix corresponding to the one-body</span>
 <span class="sd">        potential input.</span>
 
@@ -540,9 +490,10 @@
 <span class="sd">          mat: Potential matrix.</span>
 <span class="sd">            (num_grids, num_grids)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential_fn</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;potential_fn is None, unable to get potential matrix.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">&#39;potential_fn is None, unable to get potential matrix.&#39;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diagonal_matrix</span><span class="p">(</span><span class="s1">&#39;potential&#39;</span><span class="p">)</span></div>
 
@@ -585,7 +536,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_solved</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="bp">self</span>
 
-<div class="viewcode-block" id="EigenSolver.solve_ground_state"><a class="viewcode-back" href="../modules.html#single_electron.EigenSolver.solve_ground_state">[docs]</a>    <span class="k">def</span> <span class="nf">solve_ground_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="EigenSolver.solve_ground_state"><a class="viewcode-back" href="../modules.html#non_interacting_solver.EigenSolver.solve_ground_state">[docs]</a>    <span class="k">def</span> <span class="nf">solve_ground_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Solve ground state by diagonalize the Hamiltonian matrix directly.</span>
 
 <span class="sd">        Compute attributes:</span>
@@ -594,10 +545,11 @@
 <span class="sd">        Returns:</span>
 <span class="sd">          self</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential_fn</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;potential_fn is None, unable to solve for ground state.&#39;</span><span class="p">)</span>   
-        
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">&#39;potential_fn is None, unable to solve for ground state.&#39;</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span> <span class="o">==</span> <span class="s1">&#39;open&#39;</span>
                 <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span> <span class="o">==</span> <span class="s1">&#39;periodic&#39;</span><span class="p">):</span>
             <span class="n">eigenvalues</span><span class="p">,</span> <span class="n">eigenvectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h</span><span class="p">)</span>
@@ -610,7 +562,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_ground_state</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">,</span> <span class="n">eigenvectors</span><span class="p">,</span> <span class="n">quadratic</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="SparseEigenSolver"><a class="viewcode-back" href="../modules.html#single_electron.SparseEigenSolver">[docs]</a><span class="k">class</span> <span class="nc">SparseEigenSolver</span><span class="p">(</span><span class="n">EigenSolver</span><span class="p">):</span>
+<div class="viewcode-block" id="SparseEigenSolver"><a class="viewcode-back" href="../modules.html#non_interacting_solver.SparseEigenSolver">[docs]</a><span class="k">class</span> <span class="nc">SparseEigenSolver</span><span class="p">(</span><span class="n">EigenSolver</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Represents the Hamiltonian as a matrix and solve with sparse eigensolver.</span>
 
 <span class="sd">    This eigensolver is iterative and approximate. It is in general much</span>
@@ -621,7 +573,7 @@
                  <span class="n">grids</span><span class="p">,</span>
                  <span class="n">potential_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">num_electrons</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                 <span class="n">k_point</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">k_point</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">boundary_condition</span><span class="o">=</span><span class="s1">&#39;open&#39;</span><span class="p">,</span>
                  <span class="n">n_point_stencil</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
                  <span class="n">tol</span><span class="o">=</span><span class="mi">10</span> <span class="o">**</span> <span class="o">-</span><span class="mi">6</span><span class="p">):</span>
@@ -666,7 +618,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">sparse_matrix</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vector</span><span class="p">))</span>
 
-<div class="viewcode-block" id="SparseEigenSolver.solve_ground_state"><a class="viewcode-back" href="../modules.html#single_electron.SparseEigenSolver.solve_ground_state">[docs]</a>    <span class="k">def</span> <span class="nf">solve_ground_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SparseEigenSolver.solve_ground_state"><a class="viewcode-back" href="../modules.html#non_interacting_solver.SparseEigenSolver.solve_ground_state">[docs]</a>    <span class="k">def</span> <span class="nf">solve_ground_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Solve ground state by sparse eigensolver.</span>
 
 <span class="sd">        Compute attributes:</span>
@@ -690,44 +642,6 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_ground_state</span><span class="p">(</span>
             <span class="n">eigenvalues</span><span class="p">,</span> <span class="n">eigenvectors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sparse_quadratic</span><span class="p">)</span></div></div>
-
-
-<div class="viewcode-block" id="solved_1dsolver_to_example"><a class="viewcode-back" href="../modules.html#single_electron.solved_1dsolver_to_example">[docs]</a><span class="k">def</span> <span class="nf">solved_1dsolver_to_example</span><span class="p">(</span><span class="n">solver</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Converts an solved solver with a name to a tf.Example proto.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">      solver: A Solver instance with attribute solved=True.</span>
-<span class="sd">      params: dict, other parameters to store in the tf.Example proto.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">      example: A tf.Example proto with the following populated fields:</span>
-<span class="sd">        density, kinetic_energy, total_energy, potential, and other keys in</span>
-<span class="sd">        params dict.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">      ValueError: If the solver is not solved.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">solver</span><span class="o">.</span><span class="n">is_solved</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Input solver is not solved.&#39;</span><span class="p">)</span>
-
-    <span class="n">example</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Example</span><span class="p">()</span>
-    <span class="n">example</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">feature</span><span class="p">[</span><span class="s1">&#39;density&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">float_list</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
-        <span class="nb">list</span><span class="p">(</span><span class="n">solver</span><span class="o">.</span><span class="n">density</span><span class="p">))</span>
-    <span class="n">example</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">feature</span><span class="p">[</span><span class="s1">&#39;kinetic_energy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">float_list</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-        <span class="n">solver</span><span class="o">.</span><span class="n">kinetic_energy</span><span class="p">)</span>
-    <span class="n">example</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">feature</span><span class="p">[</span><span class="s1">&#39;total_energy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">float_list</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-        <span class="n">solver</span><span class="o">.</span><span class="n">total_energy</span><span class="p">)</span>
-    <span class="n">example</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">feature</span><span class="p">[</span><span class="s1">&#39;dx&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">float_list</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-        <span class="n">solver</span><span class="o">.</span><span class="n">dx</span><span class="p">)</span>
-    <span class="n">example</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">feature</span><span class="p">[</span><span class="s1">&#39;potential&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">float_list</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
-        <span class="nb">list</span><span class="p">(</span><span class="n">solver</span><span class="o">.</span><span class="n">vp</span><span class="p">))</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
-            <span class="n">example</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">feature</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">float_list</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">example</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">feature</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">float_list</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">example</span></div>
 </pre></div>
 
            </div>

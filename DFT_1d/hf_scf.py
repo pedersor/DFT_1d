@@ -106,7 +106,7 @@ class HF_Solver(SCF_SolverBase):
                 wave_function=self.phi_down[:self.num_down_electrons])
             return E_x_up + E_x_down
 
-    def _solve_ground_state(self, first_iter, sym):
+    def _solve_ground_state(self):
         """Solve ground state by diagonalizing the Hamiltonian matrix directly and separately for up and down spins.
         """
 
@@ -128,45 +128,67 @@ class HF_Solver(SCF_SolverBase):
             solver_down.solve_ground_state()
             return self._update_ground_state(solver_up, solver_down)
 
-    def solve_self_consistent_density(self, sym):
+    def solve_self_consistent_density(self, mixing_param=0.3, verbose=0):
+        """
 
-        delta_E = 1.0
-        first_iter = True
-        while delta_E > 1e-4:
-            if not first_iter:
-                old_E = self.E_tot
+        Args:
+            mixing_param: linear mixing parameter, where 0.0 denotes no mixing.
+            verbose: convergence debug printing.
 
-            # solve KS system -> obtain new new density
-            self._solve_ground_state(first_iter, sym)
+        Returns:
+            self.
+        """
+        # TODO: use prev_densities for DIIS mixing
+        prev_densities = []
 
-            # update total potentials using new density
+        final_energy = 1E100
+        converged = False
+
+        while not converged:
+            # solve HF eqs. -> obtain new new density
+            self._solve_ground_state()
+
+            # update eff potentials using new density
             self._update_v_eff_up()
             self._update_v_eff_down()
+
+            # update fock matrix using new orbitals {phi}
             self._update_fock_matrix_up()
             self._update_fock_matrix_down()
 
-            # Non-Interacting Kinetic Energy
-            self.T_s = self.kinetic_energy
+            if (np.abs(self.eps - final_energy) < self.energy_tol_threshold):
+                converged = True
+                self._converged = True
 
-            # External Potential Energy
-            self.V = (self.v_ext(self.grids) * self.density).sum() * self.dx
+            final_energy = self.eps
+            if prev_densities and mixing_param:
+                self.density = (1 - mixing_param) * self.density + \
+                               mixing_param * prev_densities[-1]
 
-            v_h = self.hf.v_h()
-            # Hartree Integral
-            self.U = .5 * (v_h(grids=self.grids,
-                               n=self.density) * self.density).sum() * self.dx
+            prev_densities.append(self.density)
 
-            # Exchange Energy
-            self.E_x = self.get_E_x_HF()
+            if verbose == 1 or verbose == 2:
+                print("i = " + str(len(prev_densities)) + ": eps = " + str(
+                    final_energy))
+            if verbose == 2:
+                plt.plot(self.grids, prev_densities[-1])
+                plt.show()
 
-            # Total Energy
-            self.E_tot = self.T_s + self.V + self.U + self.E_x
+        # Non-Interacting Kinetic Energy
+        self.T_s = self.kinetic_energy
 
-            if not first_iter:
-                delta_E = np.abs(old_E - self.E_tot).sum() * self.dx
-            else:
-                first_iter = False
+        # External Potential Energy
+        self.V = (self.v_ext(self.grids) * self.density).sum() * self.dx
 
-        self._solved = True
+        # Hartree Energy
+        v_h = self.hf.v_h()
+        self.U = .5 * (v_h(grids=self.grids,
+                           n=self.density) * self.density).sum() * self.dx
+
+        # Exchange Energy
+        self.E_x = self.get_E_x_HF()
+
+        # Total Energy
+        self.E_tot = self.T_s + self.V + self.U + self.E_x
 
         return self

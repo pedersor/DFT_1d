@@ -49,7 +49,7 @@ class SCF_SolverBase:
         else:
             self.num_electrons = num_electrons
 
-        # Solver is not converged by default.
+        # Solver is not co nverged by default.
         self._converged = False
         self._init_default_spin_config()
         self.set_energy_tol_threshold()

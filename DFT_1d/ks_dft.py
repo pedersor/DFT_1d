@@ -145,7 +145,7 @@ class KS_Solver(SCF_SolverBase):
         # External Potential Energy
         self.V = (self.v_ext(self.grids) * self.density).sum() * self.dx
 
-        # Hartree Integral
+        # Hartree Energy
         v_h = self.xc.v_h()
         self.U = .5 * (v_h(grids=self.grids,
                            n=self.density) * self.density).sum() * self.dx

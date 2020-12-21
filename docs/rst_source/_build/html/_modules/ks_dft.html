@@ -169,7 +169,6 @@
 
 <span class="sd">.. todo::</span>
 
-<span class="sd">    * Authors?</span>
 <span class="sd">    * Comments in KS solver funciton should be in doc format</span>
 <span class="sd">    * *solve_self_consistent_density* needs summary sentence</span>
 <span class="sd">    * Clean out unused example rst content in here.</span>
@@ -189,11 +188,12 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">v_ext</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">num_electrons</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                  <span class="n">boundary_condition</span><span class="o">=</span><span class="s1">&#39;open&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialize the solver with potential function and grid.</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the solver with an exchange-correlation (XC) functional.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          xc: exchange correlation functional class object.</span>
+<span class="sd">            xc: exchange correlation `functional` class object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="nb">super</span><span class="p">(</span><span class="n">KS_Solver</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">grids</span><span class="p">,</span> <span class="n">v_ext</span><span class="p">,</span> <span class="n">num_electrons</span><span class="p">,</span>
                                         <span class="n">boundary_condition</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="n">xc</span>
@@ -201,7 +201,14 @@
 
 <div class="viewcode-block" id="KS_Solver.init_v_s"><a class="viewcode-back" href="../modules.html#ks_dft.KS_Solver.init_v_s">[docs]</a>    <span class="k">def</span> <span class="nf">init_v_s</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v_s_up</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">v_s_down</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize starting v_s_up and v_s_down. The default</span>
-<span class="sd">        corresponds to v_hxc_up = v_hxc_down = 0. &quot;&quot;&quot;</span>
+<span class="sd">        corresponds to v_hxc_up = v_hxc_down = 0.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            v_s_up: initial v_s_up on a grid.</span>
+<span class="sd">            v_s_down: initial v_s_down on a grid.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            `KS_Solver`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">v_s_up</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">v_s_up</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># default initalization, v_s = v_ext.</span>

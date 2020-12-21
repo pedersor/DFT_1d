@@ -29,11 +29,12 @@ class KS_Solver(SCF_SolverBase):
 
     def __init__(self, grids, v_ext, xc, num_electrons=1,
                  boundary_condition='open'):
-        """Initialize the solver with potential function and grid.
+        """Initialize the solver with an exchange-correlation (XC) functional.
 
         Args:
-          xc: exchange correlation functional class object.
+            xc: exchange correlation `functional` class object.
         """
+
         super(KS_Solver, self).__init__(grids, v_ext, num_electrons,
                                         boundary_condition)
         self.xc = xc
@@ -41,7 +42,14 @@ class KS_Solver(SCF_SolverBase):
 
     def init_v_s(self, v_s_up=None, v_s_down=None):
         """Initialize starting v_s_up and v_s_down. The default
-        corresponds to v_hxc_up = v_hxc_down = 0. """
+        corresponds to v_hxc_up = v_hxc_down = 0.
+
+        Args:
+            v_s_up: initial v_s_up on a grid.
+            v_s_down: initial v_s_down on a grid.
+        Returns:
+            `KS_Solver`
+        """
 
         if v_s_up is None and v_s_up is None:
             # default initalization, v_s = v_ext.
@@ -104,7 +112,7 @@ class KS_Solver(SCF_SolverBase):
             verbose: convergence debug printing.
 
         Returns:
-            self.
+            `KS_Solver`
         """
 
         # TODO: use prev_densities for DIIS mixing

@@ -32,6 +32,7 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -666,11 +667,8 @@ and potentials for 1D systems.</p>
 <dt id="functionals.ExponentialLDAFunctional">
 <em class="property">class </em><code class="sig-prename descclassname">functionals.</code><code class="sig-name descname">ExponentialLDAFunctional</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">A</span><span class="o">=</span><span class="default_value">1.071295</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">0.4192265689030308</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#ExponentialLDAFunctional"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.ExponentialLDAFunctional" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#functionals.BaseExchangeCorrelationFunctional" title="functionals.BaseExchangeCorrelationFunctional"><code class="xref py py-class docutils literal notranslate"><span class="pre">functionals.BaseExchangeCorrelationFunctional</span></code></a></p>
-<p>local density approximation (LDA) for exponentially repelling electrons.</p>
-<p>For more details see <a class="reference internal" href="references.html#baker2015" id="id6"><span>[Baker2015]</span></a>:</p>
-<p>Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
-and  Steven  R  White. One-dimensional mimicking of electronic structure:
-The case for exponentials. Physical Review B,91(23):235141, 2015.</p>
+<p>local density approximation (LDA) for exponentially repelling electrons.
+For more details see <a class="reference internal" href="references.html#baker2015" id="id6"><span>[Baker2015]</span></a>.</p>
 <dl class="py method">
 <dt id="functionals.ExponentialLDAFunctional.v_h">
 <code class="sig-name descname">v_h</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#ExponentialLDAFunctional.v_h"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.ExponentialLDAFunctional.v_h" title="Permalink to this definition">¶</a></dt>
@@ -679,15 +677,45 @@ The case for exponentials. Physical Review B,91(23):235141, 2015.</p>
 <dl class="py method">
 <dt id="functionals.ExponentialLDAFunctional.v_xc_up">
 <code class="sig-name descname">v_xc_up</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">n_up</span></em>, <em class="sig-param"><span class="n">n_down</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#ExponentialLDAFunctional.v_xc_up"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.ExponentialLDAFunctional.v_xc_up" title="Permalink to this definition">¶</a></dt>
-<dd><p>Exchange-Correlation Potential for up electrons.
-v_xc_up = d/dn_up (eps_x + eps_c)</p>
+<dd><p>Exchange-Correlation Potential for up electrons,
+<span class="math notranslate nohighlight">\(v_{xc, \uparrow} = d/dn_{\uparrow} e_{xc}\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> – system density on a grid.</p></li>
+<li><p><strong>n_up</strong> – up spin density on a grid.</p></li>
+<li><p><strong>n_down</strong> – down spin density on a grid.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the up XC potential on a grid.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><cite>ndarray</cite></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="functionals.ExponentialLDAFunctional.v_xc_down">
 <code class="sig-name descname">v_xc_down</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">n_up</span></em>, <em class="sig-param"><span class="n">n_down</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#ExponentialLDAFunctional.v_xc_down"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.ExponentialLDAFunctional.v_xc_down" title="Permalink to this definition">¶</a></dt>
-<dd><p>Exchange-Correlation Potential for down electrons.
-v_xc_down = d/dn_down (eps_x + eps_c)</p>
+<dd><p>Exchange-Correlation Potential for up electrons,
+<span class="math notranslate nohighlight">\(v_{xc, \downarrow} = d/dn_{\downarrow} e_{xc}\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> – system density on a grid.</p></li>
+<li><p><strong>n_up</strong> – up spin density on a grid.</p></li>
+<li><p><strong>n_down</strong> – down spin density on a grid.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the down XC potential on a grid.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><cite>ndarray</cite></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -708,10 +736,10 @@ v_xc_down = d/dn_down (eps_x + eps_c)</p>
 <span class="target" id="module-ks_dft"></span><div class="section" id="kohn-sham-dft-solver">
 <h2>Kohn-Sham DFT solver<a class="headerlink" href="#kohn-sham-dft-solver" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
-<dt><strong>Summary</strong></dt><dd><p>This is the summary</p>
+<dt><strong>Summary</strong></dt><dd><p>Kohn-Sham DFT solver for 1-dimensional systems on a grid.</p>
 </dd>
 </dl>
-<p><em>Module author: EXAMPLE &lt;<a class="reference external" href="mailto:Example&#37;&#52;&#48;university&#46;edu">Example<span>&#64;</span>university<span>&#46;</span>edu</a>&gt; &lt;<a class="reference external" href="https://dft.uci.edu/">https://dft.uci.edu/</a>&gt; ORCID: <a class="reference external" href="https://orcid.org/0000-0000-0000-0000">000-0000-0000-0000</a></em></p>
+<p><em>Module author: <a class="reference external" href="mailto:pedersor&#37;&#52;&#48;uci&#46;edu">Ryan Pederson</a> ORCID: <a class="reference external" href="https://orcid.org/0000-0002-7228-9478">0000-0002-7228-9478</a></em></p>
 <div class="admonition-todo admonition" id="id8">
 <p class="admonition-title">Todo</p>
 <ul class="simple">

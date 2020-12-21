@@ -157,13 +157,7 @@ class BaseExchangeCorrelationFunctional:
 
 class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
     """local density approximation (LDA) for exponentially repelling electrons.
-
-
-    For more details see [Baker2015]_:
-
-    Thomas E Baker, E Miles Stoudenmire, Lucas O Wagner, Kieron Burke,
-    and  Steven  R  White. One-dimensional mimicking of electronic structure:
-    The case for exponentials. Physical Review B,91(23):235141, 2015.
+    For more details see [Baker2015]_.
     """
 
     def __init__(self, grids, A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
@@ -177,8 +171,12 @@ class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
         return hartree_potential
 
     def _set_pade_approx_params(self, n):
-        """
-            Parameters are derived in [Baker2015]_.
+        """Set Pade approximation parameters. They are derived in [Baker2015]_.
+
+        Args:
+            n: system density on a grid.
+        Returns:
+            u1, p1, u2, p2: parameters to be used.
         """
 
         def expression_1(n, alpha, beta, gamma, delta, eta, sigma, nu):
@@ -212,8 +210,15 @@ class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
         return u1, p1, u2, p2
 
     def v_xc_up(self, n, n_up, n_down):
-        """Exchange-Correlation Potential for up electrons.
-            v_xc_up = d/dn_up (eps_x + eps_c)
+        """Exchange-Correlation Potential for up electrons,
+        :math:`v_{xc, \\uparrow} = d/dn_{\\uparrow} e_{xc}`.
+
+        Args:
+            n: system density on a grid.
+            n_up: up spin density on a grid.
+            n_down: down spin density on a grid.
+        Returns:
+            `ndarray`: the up XC potential on a grid.
         """
 
         pi = np.pi
@@ -226,12 +231,18 @@ class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
                                  p1 ** 2) * n_down * (
                                  u1 - n_up * u2))) / (
                       (p1 ** 2) * (u1 ** 2) * self.k)
-
         return v_x + v_c
 
     def v_xc_down(self, n, n_up, n_down):
-        """Exchange-Correlation Potential for down electrons.
-            v_xc_down = d/dn_down (eps_x + eps_c)
+        """Exchange-Correlation Potential for up electrons,
+        :math:`v_{xc, \\downarrow} = d/dn_{\\downarrow} e_{xc}`.
+
+        Args:
+            n: system density on a grid.
+            n_up: up spin density on a grid.
+            n_down: down spin density on a grid.
+        Returns:
+            `ndarray`: the down XC potential on a grid.
         """
 
         pi = np.pi
@@ -243,7 +254,6 @@ class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
                                  p1 ** 2) * n_up * (
                                  u1 - n_down * u2))) / (
                       (p1 ** 2) * (u1 ** 2) * self.k)
-
         return v_x + v_c
 
     def e_x(self, n, zeta):

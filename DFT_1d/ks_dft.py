@@ -3,14 +3,13 @@ Kohn-Sham DFT solver
 ####################
 
 **Summary** 
-    This is the summary
+    Kohn-Sham DFT solver for 1-dimensional systems on a grid.
 
 .. moduleauthor::
-    EXAMPLE <Example@university.edu> <https://dft.uci.edu/> ORCID: `000-0000-0000-0000 <https://orcid.org/0000-0000-0000-0000>`_
+    `Ryan Pederson <pedersor@uci.edu>`_ ORCID: `0000-0002-7228-9478 <https://orcid.org/0000-0002-7228-9478>`_
 
 .. todo::
 
-    * Authors?
     * Comments in KS solver funciton should be in doc format
     * *solve_self_consistent_density* needs summary sentence
     * Clean out unused example rst content in here.

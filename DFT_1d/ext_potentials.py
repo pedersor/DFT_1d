@@ -101,7 +101,7 @@ def kronig_penney(grids, a, b, v0):
 
 
 def exp_hydrogenic(grids, A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
-                   k=constants.EXPONENTIAL_COULOMB_KAPPA, a=0, Z=1):
+                   k=constants.EXPONENTIAL_COULOMB_KAPPA, center=0, Z=1):
     """Exponential potential for 1D Hydrogenic atom.
 
     A 1D potential which can be used to mimic corresponding 3D
@@ -119,16 +119,16 @@ def exp_hydrogenic(grids, A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
     Args:
       grids: numpy array of grid points for evaluating 1d potential.
         (num_grids,)
-      Z: the “charge” felt by an electron from the nucleus.
       A: fitting parameter.
       k: fitting parameter.
-      a: fitting parameter used to soften the cusp at the origin.
+      Z: the “charge” felt by an electron from the nucleus.
+      center: the center of the potential.
 
     Returns:
       vp: Potential on grid.
         (num_grid,)
     """
-    vp = -Z * A * np.exp(-k * (grids ** 2 + a ** 2) ** .5)
+    vp = -Z * A * np.exp(-k * np.abs(grids - center))
     return vp
 
 

@@ -6,6 +6,9 @@ import sys
 
 
 class LDA_atom_dataset():
+    """Obtain dataset for LDA-calculated systems. Current support is for atoms.
+    """
+
     def __init__(self, grids=None, selected_ions=None, locations=None):
         self.grids = grids
         self.selected_ions = selected_ions
@@ -45,6 +48,7 @@ class LDA_atom_dataset():
         np.save(os.path.join(out_dir, 'locations.npy'), self.locations)
 
         # TODO: support num_electrons array...
+        # just two electrons for now (need to update KSR code)
         self.num_electrons = 2
         np.save(os.path.join(out_dir, 'num_electrons.npy'), self.num_electrons)
 
@@ -74,7 +78,9 @@ if __name__ == '__main__':
     h = 0.08
     grids = np.arange(-256, 257) * h
 
+    # ions are identified by: (atomic number Z, total number of electrons).
     selected_ions = [(2, 2), (3, 2), (4, 2)]
+
     dataset = LDA_atom_dataset(grids, selected_ions)
     dataset.run_selected_ions()
     dataset.save_dataset(out_dir='atoms/')

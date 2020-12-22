@@ -13,7 +13,7 @@ class LDA_atom_dataset():
         if grids is None and selected_ions is None and locations is None:
             pass
         elif locations is None:
-            self.locations = [0] * len(self.selected_ions)
+            self.locations = [[0]] * len(self.selected_ions)
         else:
             self.locations = locations
 
@@ -34,8 +34,8 @@ class LDA_atom_dataset():
             solver.solve_self_consistent_density()
             print(
                 'finished: (z, num_el) = (' + str(z) + ',' + str(num_el) + ')')
-            self.num_electrons.append(num_el)
-            self.nuclear_charges.append(z)
+
+            self.nuclear_charges.append([z])
             self.total_energies.append(solver.E_tot)
             self.densities.append(solver.density)
             self.external_potentials.append(v_ext(self.grids))
@@ -43,7 +43,11 @@ class LDA_atom_dataset():
     def save_dataset(self, out_dir):
         np.save(os.path.join(out_dir, 'grids.npy'), self.grids)
         np.save(os.path.join(out_dir, 'locations.npy'), self.locations)
+
+        # TODO: support num_electrons array...
+        self.num_electrons = 2
         np.save(os.path.join(out_dir, 'num_electrons.npy'), self.num_electrons)
+
         np.save(os.path.join(out_dir, 'nuclear_charges.npy'),
                 self.nuclear_charges)
         np.save(os.path.join(out_dir, 'total_energies.npy'),

@@ -260,7 +260,7 @@
 
 
 <div class="viewcode-block" id="exp_hydrogenic"><a class="viewcode-back" href="../modules.html#ext_potentials.exp_hydrogenic">[docs]</a><span class="k">def</span> <span class="nf">exp_hydrogenic</span><span class="p">(</span><span class="n">grids</span><span class="p">,</span> <span class="n">A</span><span class="o">=</span><span class="n">constants</span><span class="o">.</span><span class="n">EXPONENTIAL_COULOMB_AMPLITUDE</span><span class="p">,</span>
-                   <span class="n">k</span><span class="o">=</span><span class="n">constants</span><span class="o">.</span><span class="n">EXPONENTIAL_COULOMB_KAPPA</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">Z</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+                   <span class="n">k</span><span class="o">=</span><span class="n">constants</span><span class="o">.</span><span class="n">EXPONENTIAL_COULOMB_KAPPA</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">Z</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Exponential potential for 1D Hydrogenic atom.</span>
 
 <span class="sd">    A 1D potential which can be used to mimic corresponding 3D</span>
@@ -278,16 +278,16 @@
 <span class="sd">    Args:</span>
 <span class="sd">      grids: numpy array of grid points for evaluating 1d potential.</span>
 <span class="sd">        (num_grids,)</span>
-<span class="sd">      Z: the “charge” felt by an electron from the nucleus.</span>
 <span class="sd">      A: fitting parameter.</span>
 <span class="sd">      k: fitting parameter.</span>
-<span class="sd">      a: fitting parameter used to soften the cusp at the origin.</span>
+<span class="sd">      Z: the “charge” felt by an electron from the nucleus.</span>
+<span class="sd">      center: the center of the potential.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">      vp: Potential on grid.</span>
 <span class="sd">        (num_grid,)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">vp</span> <span class="o">=</span> <span class="o">-</span><span class="n">Z</span> <span class="o">*</span> <span class="n">A</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="n">grids</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">a</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="o">.</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">vp</span> <span class="o">=</span> <span class="o">-</span><span class="n">Z</span> <span class="o">*</span> <span class="n">A</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">grids</span> <span class="o">-</span> <span class="n">center</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">vp</span></div>
 
 

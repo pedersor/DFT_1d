@@ -12,7 +12,6 @@ Kohn-Sham DFT solver
 
     * Comments in KS solver funciton should be in doc format
     * *solve_self_consistent_density* needs summary sentence
-    * Clean out unused example rst content in here.
     * Linting?
 """
 
@@ -47,8 +46,6 @@ class KS_Solver(SCF_SolverBase):
         Args:
             v_s_up: initial v_s_up on a grid.
             v_s_down: initial v_s_down on a grid.
-        Returns:
-            `KS_Solver`
         """
 
         if v_s_up is None and v_s_up is None:
@@ -105,14 +102,14 @@ class KS_Solver(SCF_SolverBase):
             return self._update_ground_state(solver_up, solver_down)
 
     def solve_self_consistent_density(self, mixing_param=0.3, verbose=0):
-        """
+        """Solve KS equations self-consistently.
 
         Args:
             mixing_param: linear mixing parameter, where 0.0 denotes no mixing.
             verbose: convergence debug printing.
 
         Returns:
-            `KS_Solver`
+            `KS_Solver`: converged `KS_Solver` with results.
         """
 
         # TODO: use prev_densities for DIIS mixing

@@ -7,14 +7,13 @@ Functionals
     and potentials for 1D systems.
 
 .. moduleauthor::
-    EXAMPLE <Example@university.edu> <https://dft.uci.edu/> ORCID: `000-0000-0000-0000 <https://orcid.org/0000-0000-0000-0000>`_
-
+    `Ryan Pederson <pedersor@uci.edu>`_ ORCID: `0000-0002-7228-9478 <https://orcid.org/0000-0002-7228-9478>`_,
+    `Chris (Jielun) Chen`,
+    `Johnny Kozlowski`
 
 .. todo::
 
     * hf: replace with Chris' matrix muliplication code. Much cleaner.
-    * Authors? -RJM
-    * Check summary written by RJM. -RJM
     * Docs need love.
 """
 

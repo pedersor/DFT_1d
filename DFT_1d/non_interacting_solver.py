@@ -22,7 +22,9 @@ Non-interacting Solver
     (position-space basis). Each eigenstate will be occupied by one electron.
 
 .. moduleauthor::
-    EXAMPLE <Example@university.edu> <https://dft.uci.edu/> ORCID: `000-0000-0000-0000 <https://orcid.org/0000-0000-0000-0000>`_
+    `Ryan Pederson <pedersor@uci.edu>`_ ORCID: `0000-0002-7228-9478 <https://orcid.org/0000-0002-7228-9478>`_,
+    `Chris (Jielun) Chen`,
+    `Li Li`
 
 .. note::
     Both solvers (EigenSolver, SparseEigenSolver) here are based on directly
@@ -42,9 +44,8 @@ from utils import get_dx, quadratic
 
 
 class SolverBase:
-    """Base Solver for non-interacting 1d system.
-
-    Subclasses should define solve_ground_state method.
+    """Base Solver for non-interacting 1d system. Subclasses should define
+    `solve_ground_state` method.
     """
 
     def __init__(self,
@@ -58,38 +59,38 @@ class SolverBase:
         """Initialize the solver with potential function and grid.
 
         Args:
-          grids: numpy array of grid points for evaluating 1d potential.
-              (num_grids,)
-          potential_fn: potential function taking grids as argument.
-          num_electrons: integer, the number of electrons in the system. Must be
-              greater or equal to 1.
-          k_point: the k-point in reciprocal space used to evaluate Hamiltonian
-              for the case of a periodic potential. K should be chosen to be
-              within the first Brillouin zone.
-          boundary_condition:
-              'closed': forward/backward finite difference methods will be used
-              near the boundaries to ensure the wavefunction is zero at
-              boundaries. This should only be used when the grid interval is
-              purposefully small.
+            grids: numpy array of grid points for evaluating 1d potential.
+                Shape: (num_grids,)
+            potential_fn: potential function taking grids as argument.
+            num_electrons: integer, the number of electrons in the system. Must be
+                greater or equal to 1.
+            k_point: the k-point in reciprocal space used to evaluate Hamiltonian
+                for the case of a periodic potential. K should be chosen to be
+                within the first Brillouin zone.
+            boundary_condition:
+                'closed': forward/backward finite difference methods will be used
+                near the boundaries to ensure the wavefunction is zero at
+                boundaries. This should only be used when the grid interval is
+                purposefully small.
 
-              'open': all ghost points outside of the grid are set to zero. This
-              should be used whenever the grid interval is sufficiently large.
-              Setting to false also results in a faster computational time due
-              to matrix symmetry.
+                'open': all ghost points outside of the grid are set to zero. This
+                should be used whenever the grid interval is sufficiently large.
+                Setting to false also results in a faster computational time due
+                to matrix symmetry.
 
-              'periodic': periodic (wrap-around) boundary conditions. Requires
-              a k_point to be specified.
-          n_point_stencil: total number of points used in the central finite
-              difference method. The default 5-points results in a convergence
-              rate of 4 for most systems. Suggested: use 3-point stencil for
-              potentials with cusps as n_point_stencil > 3 will not improve
-              convergence rates.
-          perturbation: Provide a perturbation operator H' (a matrix) to append
-              to the non-interacting Hamiltonian, H + H'.
+                'periodic': periodic (wrap-around) boundary conditions. Requires
+                a k_point to be specified.
+            n_point_stencil: total number of points used in the central finite
+                difference method. The default 5-points results in a convergence
+                rate of 4 for most systems. Suggested: use 3-point stencil for
+                potentials with cusps as n_point_stencil > 3 will not improve
+                convergence rates.
+            perturbation: Provide a perturbation operator H' (a matrix) to append
+                to the non-interacting Hamiltonian, H + H'.
 
         Raises:
-          ValueError: If num_electrons is less than 1; or num_electrons is not
-              an integer.
+            ValueError: If num_electrons is less than 1; or num_electrons is not
+                an integer.
         """
         self.k = k_point
         self.boundary_condition = boundary_condition
@@ -122,9 +123,6 @@ class SolverBase:
 
         Compute attributes:
         total_energy, kinetic_energy, potential_energy, density, wave_function.
-
-        Returns:
-          self
         """
         raise NotImplementedError('Must be implemented by subclass.')
 
@@ -222,8 +220,7 @@ class EigenSolver(SolverBase):
         desired boundary conditions.
 
         Returns:
-          mat: Kinetic matrix.
-            (num_grids, num_grids)
+            `ndarray`: Kinetic matrix with shape (num_grids, num_grids)
         """
 
         # n-point centered difference formula coefficients
@@ -329,8 +326,7 @@ class EigenSolver(SolverBase):
         potential input.
 
         Returns:
-          mat: Potential matrix.
-            (num_grids, num_grids)
+            `ndarray`: Potential matrix with shape (num_grids, num_grids)
         """
 
         if self.potential_fn == None:

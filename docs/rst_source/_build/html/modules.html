@@ -183,7 +183,9 @@
 (position-space basis). Each eigenstate will be occupied by one electron.</p>
 </dd>
 </dl>
-<p><em>Module author: EXAMPLE &lt;<a class="reference external" href="mailto:Example&#37;&#52;&#48;university&#46;edu">Example<span>&#64;</span>university<span>&#46;</span>edu</a>&gt; &lt;<a class="reference external" href="https://dft.uci.edu/">https://dft.uci.edu/</a>&gt; ORCID: <a class="reference external" href="https://orcid.org/0000-0000-0000-0000">000-0000-0000-0000</a></em></p>
+<p><em>Module author: <a class="reference external" href="mailto:pedersor&#37;&#52;&#48;uci&#46;edu">Ryan Pederson</a> ORCID: <a class="reference external" href="https://orcid.org/0000-0002-7228-9478">0000-0002-7228-9478</a>,
+<cite>Chris (Jielun) Chen</cite>,
+<cite>Li Li</cite></em></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Both solvers (EigenSolver, SparseEigenSolver) here are based on directly
@@ -200,8 +202,8 @@ diagonalizing the Hamiltonian matrix.</p>
 <dt id="non_interacting_solver.SolverBase">
 <em class="property">class </em><code class="sig-prename descclassname">non_interacting_solver.</code><code class="sig-name descname">SolverBase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">potential_fn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_electrons</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">k_point</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">boundary_condition</span><span class="o">=</span><span class="default_value">'open'</span></em>, <em class="sig-param"><span class="n">n_point_stencil</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">perturbation</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/non_interacting_solver.html#SolverBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#non_interacting_solver.SolverBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Base Solver for non-interacting 1d system.</p>
-<p>Subclasses should define solve_ground_state method.</p>
+<p>Base Solver for non-interacting 1d system. Subclasses should define
+<cite>solve_ground_state</cite> method.</p>
 <dl class="py method">
 <dt id="non_interacting_solver.SolverBase.is_solved">
 <code class="sig-name descname">is_solved</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/non_interacting_solver.html#SolverBase.is_solved"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#non_interacting_solver.SolverBase.is_solved" title="Permalink to this definition">¶</a></dt>
@@ -214,11 +216,6 @@ diagonalizing the Hamiltonian matrix.</p>
 <dd><p>Solve ground state. Need to be implemented in subclasses.</p>
 <p>Compute attributes:
 total_energy, kinetic_energy, potential_energy, density, wave_function.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>self</p>
-</dd>
-</dl>
 </dd></dl>
 
 </dd></dl>
@@ -251,14 +248,10 @@ generate a kinetic energy operator in discrete space while satisfying
 desired boundary conditions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><dl class="simple">
-<dt>Kinetic matrix.</dt><dd><p>(num_grids, num_grids)</p>
-</dd>
-</dl>
-</p>
+<dd class="field-odd"><p>Kinetic matrix with shape (num_grids, num_grids)</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>mat</p>
+<dd class="field-even"><p><cite>ndarray</cite></p>
 </dd>
 </dl>
 </dd></dl>
@@ -270,14 +263,10 @@ desired boundary conditions.</p>
 potential input.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><dl class="simple">
-<dt>Potential matrix.</dt><dd><p>(num_grids, num_grids)</p>
-</dd>
-</dl>
-</p>
+<dd class="field-odd"><p>Potential matrix with shape (num_grids, num_grids)</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>mat</p>
+<dd class="field-even"><p><cite>ndarray</cite></p>
 </dd>
 </dl>
 </dd></dl>
@@ -436,7 +425,7 @@ total_energy, kinetic_energy, potential_energy, density, wave_function.</p>
 
 <dl class="py function">
 <dt id="ext_potentials.exp_hydrogenic">
-<code class="sig-prename descclassname">ext_potentials.</code><code class="sig-name descname">exp_hydrogenic</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">A</span><span class="o">=</span><span class="default_value">1.071295</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">0.4192265689030308</span></em>, <em class="sig-param"><span class="n">a</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">Z</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ext_potentials.html#exp_hydrogenic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ext_potentials.exp_hydrogenic" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">ext_potentials.</code><code class="sig-name descname">exp_hydrogenic</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">A</span><span class="o">=</span><span class="default_value">1.071295</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">0.4192265689030308</span></em>, <em class="sig-param"><span class="n">center</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">Z</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ext_potentials.html#exp_hydrogenic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ext_potentials.exp_hydrogenic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exponential potential for 1D Hydrogenic atom.</p>
 <p>A 1D potential which can be used to mimic corresponding 3D
 electronic structure. Similar in form to the soft-Coulomb
@@ -452,10 +441,10 @@ kinetic energy.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>grids</strong> – numpy array of grid points for evaluating 1d potential.
 (num_grids,)</p></li>
-<li><p><strong>Z</strong> – the “charge” felt by an electron from the nucleus.</p></li>
 <li><p><strong>A</strong> – fitting parameter.</p></li>
 <li><p><strong>k</strong> – fitting parameter.</p></li>
-<li><p><strong>a</strong> – fitting parameter used to soften the cusp at the origin.</p></li>
+<li><p><strong>Z</strong> – the “charge” felt by an electron from the nucleus.</p></li>
+<li><p><strong>center</strong> – the center of the potential.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -554,13 +543,13 @@ Raphael F. Ribeiro and Kieron Burke, Phys. Rev. B 95, 115115
 and potentials for 1D systems.</p>
 </dd>
 </dl>
-<p><em>Module author: EXAMPLE &lt;<a class="reference external" href="mailto:Example&#37;&#52;&#48;university&#46;edu">Example<span>&#64;</span>university<span>&#46;</span>edu</a>&gt; &lt;<a class="reference external" href="https://dft.uci.edu/">https://dft.uci.edu/</a>&gt; ORCID: <a class="reference external" href="https://orcid.org/0000-0000-0000-0000">000-0000-0000-0000</a></em></p>
-<div class="admonition-todo admonition" id="id5">
+<p><em>Module author: <a class="reference external" href="mailto:pedersor&#37;&#52;&#48;uci&#46;edu">Ryan Pederson</a> ORCID: <a class="reference external" href="https://orcid.org/0000-0002-7228-9478">0000-0002-7228-9478</a>,
+<cite>Chris (Jielun) Chen</cite>,
+<cite>Johnny Kozlowski</cite></em></p>
+<div class="admonition-todo admonition" id="id6">
 <p class="admonition-title">Todo</p>
 <ul class="simple">
 <li><p>hf: replace with Chris’ matrix muliplication code. Much cleaner.</p></li>
-<li><p>Authors? -RJM</p></li>
-<li><p>Check summary written by RJM. -RJM</p></li>
 <li><p>Docs need love.</p></li>
 </ul>
 </div>
@@ -668,7 +657,7 @@ and potentials for 1D systems.</p>
 <em class="property">class </em><code class="sig-prename descclassname">functionals.</code><code class="sig-name descname">ExponentialLDAFunctional</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grids</span></em>, <em class="sig-param"><span class="n">A</span><span class="o">=</span><span class="default_value">1.071295</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">0.4192265689030308</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#ExponentialLDAFunctional"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.ExponentialLDAFunctional" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#functionals.BaseExchangeCorrelationFunctional" title="functionals.BaseExchangeCorrelationFunctional"><code class="xref py py-class docutils literal notranslate"><span class="pre">functionals.BaseExchangeCorrelationFunctional</span></code></a></p>
 <p>local density approximation (LDA) for exponentially repelling electrons.
-For more details see <a class="reference internal" href="references.html#baker2015" id="id6"><span>[Baker2015]</span></a>.</p>
+For more details see <a class="reference internal" href="references.html#baker2015" id="id7"><span>[Baker2015]</span></a>.</p>
 <dl class="py method">
 <dt id="functionals.ExponentialLDAFunctional.v_h">
 <code class="sig-name descname">v_h</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/functionals.html#ExponentialLDAFunctional.v_h"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functionals.ExponentialLDAFunctional.v_h" title="Permalink to this definition">¶</a></dt>
@@ -740,12 +729,11 @@ For more details see <a class="reference internal" href="references.html#baker20
 </dd>
 </dl>
 <p><em>Module author: <a class="reference external" href="mailto:pedersor&#37;&#52;&#48;uci&#46;edu">Ryan Pederson</a> ORCID: <a class="reference external" href="https://orcid.org/0000-0002-7228-9478">0000-0002-7228-9478</a></em></p>
-<div class="admonition-todo admonition" id="id8">
+<div class="admonition-todo admonition" id="id10">
 <p class="admonition-title">Todo</p>
 <ul class="simple">
 <li><p>Comments in KS solver funciton should be in doc format</p></li>
 <li><p><em>solve_self_consistent_density</em> needs summary sentence</p></li>
-<li><p>Clean out unused example rst content in here.</p></li>
 <li><p>Linting?</p></li>
 </ul>
 </div>
@@ -766,16 +754,14 @@ corresponds to v_hxc_up = v_hxc_down = 0.</p>
 <li><p><strong>v_s_down</strong> – initial v_s_down on a grid.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><cite>KS_Solver</cite></p>
-</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ks_dft.KS_Solver.solve_self_consistent_density">
 <code class="sig-name descname">solve_self_consistent_density</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mixing_param</span><span class="o">=</span><span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ks_dft.html#KS_Solver.solve_self_consistent_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ks_dft.KS_Solver.solve_self_consistent_density" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Solve KS equations self-consistently.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mixing_param</strong> – linear mixing parameter, where 0.0 denotes no mixing.</p></li>
@@ -783,7 +769,10 @@ corresponds to v_hxc_up = v_hxc_down = 0.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>self.</p>
+<dd class="field-even"><p>converged <cite>KS_Solver</cite> with results.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><cite>KS_Solver</cite></p>
 </dd>
 </dl>
 </dd></dl>
@@ -797,13 +786,10 @@ corresponds to v_hxc_up = v_hxc_down = 0.</p>
 <dt><strong>Summary</strong></dt><dd><p>This is the summary</p>
 </dd>
 </dl>
-<p><em>Module author: EXAMPLE &lt;<a class="reference external" href="mailto:Example&#37;&#52;&#48;university&#46;edu">Example<span>&#64;</span>university<span>&#46;</span>edu</a>&gt; &lt;<a class="reference external" href="https://dft.uci.edu/">https://dft.uci.edu/</a>&gt; ORCID: <a class="reference external" href="https://orcid.org/0000-0000-0000-0000">000-0000-0000-0000</a></em></p>
-<div class="admonition-todo admonition" id="id10">
+<p><em>Module author: <a class="reference external" href="mailto:pedersor&#37;&#52;&#48;uci&#46;edu">Ryan Pederson</a> ORCID: <a class="reference external" href="https://orcid.org/0000-0002-7228-9478">0000-0002-7228-9478</a></em></p>
+<div class="admonition-todo admonition" id="id13">
 <p class="admonition-title">Todo</p>
 <ul class="simple">
-<li><p>redo in ks_dft format.</p></li>
-<li><p>BaseSCF good idea? use for both ks and hf..</p></li>
-<li><p>Authors?</p></li>
 <li><p>Comments in HF solver funciton should be in doc format</p></li>
 <li><p><em>solve_self_consistent_density</em> needs summary sentence</p></li>
 <li><p>Clean out unused example rst content in here.</p></li>

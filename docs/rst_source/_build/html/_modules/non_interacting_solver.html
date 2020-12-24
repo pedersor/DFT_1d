@@ -181,7 +181,9 @@
 <span class="sd">    (position-space basis). Each eigenstate will be occupied by one electron.</span>
 
 <span class="sd">.. moduleauthor::</span>
-<span class="sd">    EXAMPLE &lt;Example@university.edu&gt; &lt;https://dft.uci.edu/&gt; ORCID: `000-0000-0000-0000 &lt;https://orcid.org/0000-0000-0000-0000&gt;`_</span>
+<span class="sd">    `Ryan Pederson &lt;pedersor@uci.edu&gt;`_ ORCID: `0000-0002-7228-9478 &lt;https://orcid.org/0000-0002-7228-9478&gt;`_,</span>
+<span class="sd">    `Chris (Jielun) Chen`,</span>
+<span class="sd">    `Li Li`</span>
 
 <span class="sd">.. note::</span>
 <span class="sd">    Both solvers (EigenSolver, SparseEigenSolver) here are based on directly</span>
@@ -201,9 +203,8 @@
 
 
 <div class="viewcode-block" id="SolverBase"><a class="viewcode-back" href="../modules.html#non_interacting_solver.SolverBase">[docs]</a><span class="k">class</span> <span class="nc">SolverBase</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Base Solver for non-interacting 1d system.</span>
-
-<span class="sd">    Subclasses should define solve_ground_state method.</span>
+    <span class="sd">&quot;&quot;&quot;Base Solver for non-interacting 1d system. Subclasses should define</span>
+<span class="sd">    `solve_ground_state` method.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -217,38 +218,38 @@
         <span class="sd">&quot;&quot;&quot;Initialize the solver with potential function and grid.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          grids: numpy array of grid points for evaluating 1d potential.</span>
-<span class="sd">              (num_grids,)</span>
-<span class="sd">          potential_fn: potential function taking grids as argument.</span>
-<span class="sd">          num_electrons: integer, the number of electrons in the system. Must be</span>
-<span class="sd">              greater or equal to 1.</span>
-<span class="sd">          k_point: the k-point in reciprocal space used to evaluate Hamiltonian</span>
-<span class="sd">              for the case of a periodic potential. K should be chosen to be</span>
-<span class="sd">              within the first Brillouin zone.</span>
-<span class="sd">          boundary_condition:</span>
-<span class="sd">              &#39;closed&#39;: forward/backward finite difference methods will be used</span>
-<span class="sd">              near the boundaries to ensure the wavefunction is zero at</span>
-<span class="sd">              boundaries. This should only be used when the grid interval is</span>
-<span class="sd">              purposefully small.</span>
+<span class="sd">            grids: numpy array of grid points for evaluating 1d potential.</span>
+<span class="sd">                Shape: (num_grids,)</span>
+<span class="sd">            potential_fn: potential function taking grids as argument.</span>
+<span class="sd">            num_electrons: integer, the number of electrons in the system. Must be</span>
+<span class="sd">                greater or equal to 1.</span>
+<span class="sd">            k_point: the k-point in reciprocal space used to evaluate Hamiltonian</span>
+<span class="sd">                for the case of a periodic potential. K should be chosen to be</span>
+<span class="sd">                within the first Brillouin zone.</span>
+<span class="sd">            boundary_condition:</span>
+<span class="sd">                &#39;closed&#39;: forward/backward finite difference methods will be used</span>
+<span class="sd">                near the boundaries to ensure the wavefunction is zero at</span>
+<span class="sd">                boundaries. This should only be used when the grid interval is</span>
+<span class="sd">                purposefully small.</span>
 
-<span class="sd">              &#39;open&#39;: all ghost points outside of the grid are set to zero. This</span>
-<span class="sd">              should be used whenever the grid interval is sufficiently large.</span>
-<span class="sd">              Setting to false also results in a faster computational time due</span>
-<span class="sd">              to matrix symmetry.</span>
+<span class="sd">                &#39;open&#39;: all ghost points outside of the grid are set to zero. This</span>
+<span class="sd">                should be used whenever the grid interval is sufficiently large.</span>
+<span class="sd">                Setting to false also results in a faster computational time due</span>
+<span class="sd">                to matrix symmetry.</span>
 
-<span class="sd">              &#39;periodic&#39;: periodic (wrap-around) boundary conditions. Requires</span>
-<span class="sd">              a k_point to be specified.</span>
-<span class="sd">          n_point_stencil: total number of points used in the central finite</span>
-<span class="sd">              difference method. The default 5-points results in a convergence</span>
-<span class="sd">              rate of 4 for most systems. Suggested: use 3-point stencil for</span>
-<span class="sd">              potentials with cusps as n_point_stencil &gt; 3 will not improve</span>
-<span class="sd">              convergence rates.</span>
-<span class="sd">          perturbation: Provide a perturbation operator H&#39; (a matrix) to append</span>
-<span class="sd">              to the non-interacting Hamiltonian, H + H&#39;.</span>
+<span class="sd">                &#39;periodic&#39;: periodic (wrap-around) boundary conditions. Requires</span>
+<span class="sd">                a k_point to be specified.</span>
+<span class="sd">            n_point_stencil: total number of points used in the central finite</span>
+<span class="sd">                difference method. The default 5-points results in a convergence</span>
+<span class="sd">                rate of 4 for most systems. Suggested: use 3-point stencil for</span>
+<span class="sd">                potentials with cusps as n_point_stencil &gt; 3 will not improve</span>
+<span class="sd">                convergence rates.</span>
+<span class="sd">            perturbation: Provide a perturbation operator H&#39; (a matrix) to append</span>
+<span class="sd">                to the non-interacting Hamiltonian, H + H&#39;.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">          ValueError: If num_electrons is less than 1; or num_electrons is not</span>
-<span class="sd">              an integer.</span>
+<span class="sd">            ValueError: If num_electrons is less than 1; or num_electrons is not</span>
+<span class="sd">                an integer.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">k_point</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span> <span class="o">=</span> <span class="n">boundary_condition</span>
@@ -281,9 +282,6 @@
 
 <span class="sd">        Compute attributes:</span>
 <span class="sd">        total_energy, kinetic_energy, potential_energy, density, wave_function.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">          self</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Must be implemented by subclass.&#39;</span><span class="p">)</span></div></div>
 
@@ -381,8 +379,7 @@
 <span class="sd">        desired boundary conditions.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          mat: Kinetic matrix.</span>
-<span class="sd">            (num_grids, num_grids)</span>
+<span class="sd">            `ndarray`: Kinetic matrix with shape (num_grids, num_grids)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># n-point centered difference formula coefficients</span>
@@ -488,8 +485,7 @@
 <span class="sd">        potential input.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          mat: Potential matrix.</span>
-<span class="sd">            (num_grids, num_grids)</span>
+<span class="sd">            `ndarray`: Potential matrix with shape (num_grids, num_grids)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential_fn</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>

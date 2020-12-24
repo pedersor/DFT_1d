@@ -9,19 +9,20 @@ class LDA_atom_dataset():
     """Obtain dataset for LDA-calculated systems. Current support is for atoms.
     """
 
-    def __init__(self, grids=None, selected_ions=None, locations=None):
+    def __init__(self, grids=None, selected_z=None, locations=None,
+                 num_electrons=None):
         self.grids = grids
-        self.selected_ions = selected_ions
+        self.selected_z = selected_z
 
-        if grids is None and selected_ions is None and locations is None:
+        if grids is None and selected_z is None and locations is None:
             pass
         elif locations is None:
-            self.locations = [[0]] * len(self.selected_ions)
+            self.locations = [[0]] * len(self.selected_z)
         else:
             self.locations = locations
 
         # output quantities
-        self.num_electrons = []
+        self.num_electrons = num_electrons
         self.nuclear_charges = []
         self.total_energies = []
         self.densities = []
@@ -29,14 +30,15 @@ class LDA_atom_dataset():
 
     def run_selected_ions(self):
         lda_xc = functionals.ExponentialLDAFunctional(grids=self.grids)
-        for ((z, num_el), center) in zip(self.selected_ions, self.locations):
+        for (z, center) in zip(self.selected_z, self.locations):
             v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=z,
                                       center=center)
             solver = ks_dft.KS_Solver(self.grids, v_ext=v_ext, xc=lda_xc,
-                                      num_electrons=num_el)
+                                      num_electrons=self.num_electrons)
             solver.solve_self_consistent_density()
             print(
-                'finished: (z, num_el) = (' + str(z) + ',' + str(num_el) + ')')
+                'finished: (z, num_el) = (' + str(z) + ',' +
+                str(self.num_electrons) + ')')
 
             self.nuclear_charges.append([z])
             self.total_energies.append(solver.E_tot)
@@ -44,14 +46,12 @@ class LDA_atom_dataset():
             self.external_potentials.append(v_ext(self.grids))
 
     def save_dataset(self, out_dir):
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+
         np.save(os.path.join(out_dir, 'grids.npy'), self.grids)
         np.save(os.path.join(out_dir, 'locations.npy'), self.locations)
-
-        # TODO: support num_electrons array...
-        # just two electrons for now (need to update KSR code)
-        self.num_electrons = 2
         np.save(os.path.join(out_dir, 'num_electrons.npy'), self.num_electrons)
-
         np.save(os.path.join(out_dir, 'nuclear_charges.npy'),
                 self.nuclear_charges)
         np.save(os.path.join(out_dir, 'total_energies.npy'),
@@ -78,10 +78,13 @@ if __name__ == '__main__':
     h = 0.08
     grids = np.arange(-256, 257) * h
 
-    # ions are identified by: (atomic number Z, total number of electrons).
-    selected_ions = [(2, 2), (3, 2), (4, 2)]
+    # ions are identified by: atomic number Z, number of electrons
+    selected_z = [3, 4]
+    num_electrons = 3
+    out_dir = 'num_electrons_'+str(num_electrons)
+    out_dir = os.path.join('atoms',out_dir)
 
-    dataset = LDA_atom_dataset(grids, selected_ions)
+    dataset = LDA_atom_dataset(grids, selected_z, num_electrons=num_electrons)
     dataset.run_selected_ions()
-    dataset.save_dataset(out_dir='atoms/')
+    dataset.save_dataset(out_dir=out_dir)
     sys.exit()

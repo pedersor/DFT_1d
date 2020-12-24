@@ -22,7 +22,9 @@ Non-interacting Solver
     (position-space basis). Each eigenstate will be occupied by one electron.
 
 .. moduleauthor::
-    EXAMPLE <Example@university.edu> <https://dft.uci.edu/> ORCID: `000-0000-0000-0000 <https://orcid.org/0000-0000-0000-0000>`_
+    `Ryan Pederson <pedersor@uci.edu>`_ ORCID: `0000-0002-7228-9478 <https://orcid.org/0000-0002-7228-9478>`_,
+    `Chris (Jielun) Chen`,
+    `Li Li`
 
 .. note::
     Both solvers (EigenSolver, SparseEigenSolver) here are based on directly

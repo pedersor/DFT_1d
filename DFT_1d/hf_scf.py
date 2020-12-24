@@ -6,13 +6,10 @@ Hartree-Fock solver
     This is the summary
 
 .. moduleauthor::
-    EXAMPLE <Example@university.edu> <https://dft.uci.edu/> ORCID: `000-0000-0000-0000 <https://orcid.org/0000-0000-0000-0000>`_
+    `Ryan Pederson <pedersor@uci.edu>`_ ORCID: `0000-0002-7228-9478 <https://orcid.org/0000-0002-7228-9478>`_
 
 .. todo::
 
-    * redo in ks_dft format.
-    * BaseSCF good idea? use for both ks and hf..
-    * Authors?
     * Comments in HF solver funciton should be in doc format
     * *solve_self_consistent_density* needs summary sentence
     * Clean out unused example rst content in here.

@@ -21,24 +21,24 @@ import numpy as np
 import functools
 
 
-def lda_ks_dft_atom(grids, N_e, Z):
+def lda_ks_dft_atom(grids, num_electrons, nuclear_charge):
     """local density approximation (LDA) KS-DFT calculation for a 1D atom with
         exponential interactions, see ext_potentials.exp_hydrogenic.
 
     Args:
         grids: grids: numpy array of grid points for evaluating 1d potential.
         (num_grids,)
-        N_e: the number of electrons in the atom.
-        Z: the nuclear charge Z of the atom.
+        num_electrons: the number of electrons in the atom.
+        nuclear_charge: the nuclear charge Z of the atom.
 
     Returns:
         KS-DFT solver class.
     """
 
-    v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=Z)
+    v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=nuclear_charge)
     lda_xc = functionals.ExponentialLDAFunctional(grids=grids)
     solver = ks_dft.KS_Solver(grids, v_ext=v_ext, xc=lda_xc,
-                              num_electrons=N_e)
+                              num_electrons=num_electrons)
     solver.solve_self_consistent_density()
 
     return solver
@@ -88,8 +88,8 @@ def get_latex_table_atoms(grids):
         print('\hline')
 
 
-def single_atom(grids, N_e, Z):
-    solver = lda_ks_dft_atom(grids, N_e, Z)
+def single_atom(grids, num_electrons, nuclear_charge):
+    solver = lda_ks_dft_atom(grids, num_electrons, nuclear_charge)
 
     # Non-Interacting (Kohn-Sham) Kinetic Energy
     print("T_s =", solver.T_s)
@@ -117,7 +117,7 @@ if __name__ == '__main__':
     h = 0.08
     grids = np.arange(-256, 257) * h
 
-    example = single_atom(grids, 3, 3)
+    example = single_atom(grids, num_electrons=2, nuclear_charge=4)
 
     # plot example self-consistent LDA density
     plt.plot(grids, example.density)

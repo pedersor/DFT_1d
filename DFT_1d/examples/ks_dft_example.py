@@ -21,7 +21,7 @@ import numpy as np
 import functools
 
 
-def lda_ks_dft_atom(grids, num_electrons, nuclear_charge):
+def lsd_ks_dft_atom(grids, num_electrons, nuclear_charge):
     """local density approximation (LDA) KS-DFT calculation for a 1D atom with
         exponential interactions, see ext_potentials.exp_hydrogenic.
 
@@ -36,7 +36,7 @@ def lda_ks_dft_atom(grids, num_electrons, nuclear_charge):
     """
 
     v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=nuclear_charge)
-    lda_xc = functionals.ExponentialLDAFunctional(grids=grids)
+    lda_xc = functionals.ExponentialLSDFunctional(grids=grids)
     solver = ks_dft.KS_Solver(grids, v_ext=v_ext, xc=lda_xc,
                               num_electrons=num_electrons)
     solver.solve_self_consistent_density()
@@ -76,7 +76,7 @@ def get_latex_table_atoms(grids):
         print(atom_dict[key][0], end=" & ")
         print(key, end=" & ")
 
-        solver = lda_ks_dft_atom(grids, atom_dict[key][0], atom_dict[key][1])
+        solver = lsd_ks_dft_atom(grids, atom_dict[key][0], atom_dict[key][1])
         print(str(round(solver.T_s, 3)), end=" & ")
         print(str(round(solver.V, 3)), end=" & ")
         print(str(round(solver.U, 3)), end=" & ")
@@ -89,7 +89,7 @@ def get_latex_table_atoms(grids):
 
 
 def single_atom(grids, num_electrons, nuclear_charge):
-    solver = lda_ks_dft_atom(grids, num_electrons, nuclear_charge)
+    solver = lsd_ks_dft_atom(grids, num_electrons, nuclear_charge)
 
     # Non-Interacting (Kohn-Sham) Kinetic Energy
     print("T_s =", solver.T_s)
@@ -113,13 +113,13 @@ def single_atom(grids, num_electrons, nuclear_charge):
 
 
 if __name__ == '__main__':
-    """Li atom LDA calculation example."""
+    """Li atom LSD calculation example."""
     h = 0.08
     grids = np.arange(-256, 257) * h
 
-    example = single_atom(grids, num_electrons=2, nuclear_charge=4)
+    example = single_atom(grids, num_electrons=3, nuclear_charge=3)
 
-    # plot example self-consistent LDA density
+    # plot example self-consistent LSD density
     plt.plot(grids, example.density)
     plt.ylabel('$n(x)$', fontsize=16)
     plt.xlabel('$x$', fontsize=16)

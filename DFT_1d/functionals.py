@@ -154,14 +154,14 @@ class BaseExchangeCorrelationFunctional:
         return self.e_c(n, zeta).sum() * self.dx
 
 
-class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
+class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
     """local density approximation (LDA) for exponentially repelling electrons.
     For more details see [Baker2015]_.
     """
 
     def __init__(self, grids, A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
                  k=constants.EXPONENTIAL_COULOMB_KAPPA):
-        super(ExponentialLDAFunctional, self).__init__(grids=grids)
+        super(ExponentialLSDFunctional, self).__init__(grids=grids)
         self.A = A
         self.k = k
         self.dx = get_dx(grids)

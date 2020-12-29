@@ -241,9 +241,6 @@ class Spinless_KS_Solver(KS_Solver):
     self.eps = solver.kinetic_energy
     self.density = solver.density
 
-    # TODO: remove
-    self.zeta = 0*self.density
-
     return self
 
   def solve_self_consistent_density(self, mixing_param=0.3, verbose=0):
@@ -299,10 +296,10 @@ class Spinless_KS_Solver(KS_Solver):
                        n=self.density) * self.density).sum() * self.dx
 
     # Exchange Energy
-    self.E_x = self.xc.get_E_x(self.density, self.zeta)
+    self.E_x = self.xc.get_E_x(self.density)
 
     # Correlation Energy
-    self.E_c = self.xc.get_E_c(self.density, self.zeta)
+    self.E_c = self.xc.get_E_c(self.density)
 
     # Total Energy
     self.E_tot = self.T_s + self.V + self.U + self.E_x + self.E_c

@@ -13,7 +13,7 @@ Functionals
 
 .. todo::
 
-    * hf: replace with Chris' matrix muliplication code. Much cleaner.
+    * hf: replace with Chris' matrix muliplication code. Cleaner & Jittable.
     * Docs need love.
 """
 
@@ -23,6 +23,12 @@ import numpy as np
 import functools
 from utils import get_dx
 
+# Jax is used for automatic differentiation
+# to compute functional derivatives of arbitrary functions.
+# Comment out if not needed.
+import jax
+from jax import tree_util
+import jax.numpy as jnp
 
 def hartree_potential(grids, n, v_ee=functools.partial(
     ext_potentials.exp_hydrogenic)):
@@ -146,19 +152,19 @@ class BaseExchangeCorrelationFunctional:
     def v_xc_down(self, n, n_up, n_down):
         raise NotImplementedError()
 
-    def e_x(self, n, zeta):
+    def e_x(self, n, *args):
         raise NotImplementedError()
 
-    def e_c(self, n, zeta):
+    def e_c(self, n, *args):
         raise NotImplementedError()
 
-    def get_E_x(self, n, zeta):
+    def get_E_x(self, n, *args):
         """Total exchange energy functional."""
-        return self.e_x(n, zeta).sum() * self.dx
+        return self.e_x(n, *args).sum() * self.dx
 
-    def get_E_c(self, n, zeta):
+    def get_E_c(self, n, *args):
         """Total correlation energy functional."""
-        return self.e_c(n, zeta).sum() * self.dx
+        return self.e_c(n, *args).sum() * self.dx
 
 
 class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
@@ -171,7 +177,6 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
         super(ExponentialLSDFunctional, self).__init__(grids=grids)
         self.A = A
         self.k = k
-        self.dx = get_dx(grids)
 
     def v_h(self):
         return hartree_potential
@@ -300,3 +305,216 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
         pol = correlation_expression(n, 180.891, -541.124, 651.615, -356.504,
                                      88.0733, -4.32708, 8)
         return unpol + (zeta ** 2) * (pol - unpol)
+
+class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
+
+  def __init__(self, grids, A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
+               k=constants.EXPONENTIAL_COULOMB_KAPPA):
+    super(ExponentialLDAFunctional, self).__init__(grids=grids)
+
+  def v_h(self):
+    return hartree_potential
+
+  def v_xc(self, n):
+    return self.get_xc_potential(n, self.xc_energy_density)
+
+  def e_x(self, n):
+    return self.exchange_energy_density(n)*n
+
+  def e_c(self, n):
+    return self.correlation_energy_density(n)*n
+
+  def exchange_energy_density(
+      self,
+      density,
+      amplitude=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
+      kappa=constants.EXPONENTIAL_COULOMB_KAPPA,
+      epsilon=1e-15):
+    """Exchange energy density for uniform gas with exponential coulomb.
+
+    Equation 17 in the following paper provides the exchange energy per length
+    for 1d uniform gas with exponential coulomb interaction.
+
+    One-dimensional mimicking of electronic structure: The case for exponentials.
+    Physical Review B 91.23 (2015): 235141.
+    https://arxiv.org/pdf/1504.05620.pdf
+
+    y = pi * density / kappa
+    exchange energy per length
+        = amplitude * kappa * (ln(1 + y ** 2) - 2 * y * arctan(y)) / (2 * pi ** 2)
+
+    exchange energy density
+        = exchange energy per length * pi / (kappa * y)
+        = amplitude / (2 * pi) * (ln(1 + y ** 2) / y - 2 * arctan(y))
+
+    Dividing by y may cause numerical instability when y is close to zero. Small
+    value epsilon is introduced to prevent it.
+
+    When density is smaller than epsilon, the exchange energy density is computed
+    by its series expansion at y=0:
+
+    exchange energy density = amplitude / (2 * pi) * (-y + y ** 3 / 6)
+
+    Note the exchange energy density converge to constant -amplitude / 2 at high
+    density limit.
+
+    Args:
+      density: Float numpy array with shape (num_grids,).
+      amplitude: Float, parameter of exponential Coulomb interaction.
+      kappa: Float, parameter of exponential Coulomb interaction.
+      epsilon: Float, a constant for numerical stability.
+
+    Returns:
+      Float numpy array with shape (num_grids,).
+    """
+    y = jnp.pi * density / kappa
+    return jnp.where(
+      y > epsilon,
+      amplitude / (2 * jnp.pi) * (jnp.log(1 + y ** 2) / y - 2 * jnp.arctan(y)),
+      amplitude / (2 * jnp.pi) * (-y + y ** 3 / 6))
+
+  def correlation_energy_density(
+      self,
+      density,
+      amplitude=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
+      kappa=constants.EXPONENTIAL_COULOMB_KAPPA):
+    """Exchange energy density for uniform gas with exponential coulomb.
+
+    Equation 24 in the following paper provides the correlation energy per length
+    for 1d uniform gas with exponential coulomb interaction.
+
+    One-dimensional mimicking of electronic structure: The case for exponentials.
+    Physical Review B 91.23 (2015): 235141.
+    https://arxiv.org/pdf/1504.05620.pdf
+
+    y = pi * density / kappa
+    correlation energy per length
+        = -amplitude * kappa * y ** 2 / (pi ** 2) / (
+          alpha + beta * sqrt(y) + gamma * y + delta * sqrt(y ** 3)
+          + eta * y ** 2 + sigma * sqrt(y ** 5)
+          + nu * pi * kappa ** 2 / amplitude * y ** 3)
+
+    correlation energy density
+        = correlation energy per length * pi / (kappa * y)
+        = -amplitude * y / pi / (
+          alpha + beta * sqrt(y) + gamma * y + delta * sqrt(y ** 3)
+          + eta * y ** 2 + sigma * sqrt(y ** 5)
+          + nu * pi * kappa ** 2 / amplitude * y ** 3)
+
+    Note the correlation energy density converge to zero at high density limit.
+
+    Args:
+      density: Float numpy array with shape (num_grids,).
+      amplitude: Float, parameter of exponential Coulomb interaction.
+      kappa: Float, parameter of exponential Coulomb interaction.
+
+    Returns:
+      Float numpy array with shape (num_grids,).
+    """
+    y = jnp.pi * density / kappa
+    alpha = 2.
+    beta = -1.00077
+    gamma = 6.26099
+    delta = -11.9041
+    eta = 9.62614
+    sigma = -1.48334
+    nu = 1.
+    # The derivative of sqrt is not defined at y=0, we use two jnp.where to avoid
+    # nan at 0.
+    finite_y = jnp.where(y == 0., 1., y)
+    out = -amplitude * finite_y / jnp.pi / (
+        alpha + beta * jnp.sqrt(finite_y)
+        + gamma * finite_y + delta * finite_y ** 1.5
+        + eta * finite_y ** 2 + sigma * finite_y ** 2.5
+        + nu * jnp.pi * kappa ** 2 / amplitude * finite_y ** 3
+    )
+    return jnp.where(y == 0., -amplitude * y / jnp.pi / alpha, out)
+
+
+  def xc_energy_density(self, density):
+    """XC energy density of Local Density Approximation with exponential coulomb.
+
+    One-dimensional mimicking of electronic structure: The case for exponentials.
+    Physical Review B 91.23 (2015): 235141.
+    https://arxiv.org/pdf/1504.05620.pdf
+
+    Args:
+      density: Float numpy array with shape (num_grids,).
+
+    Returns:
+      Float numpy array with shape (num_grids,).
+    """
+    return (
+        self.exchange_energy_density(density)
+        + self.correlation_energy_density(density))
+
+  def get_xc_energy(self, density, xc_energy_density_fn):
+    r"""Gets xc energy.
+
+    E_xc = \int density * xc_energy_density_fn(density) dx.
+
+    Args:
+      density: Float numpy array with shape (num_grids,).
+      xc_energy_density_fn: function takes density and returns float numpy array
+          with shape (num_grids,).
+
+    Returns:
+      Float.
+    """
+    return jnp.dot(xc_energy_density_fn(density), density) * self.dx
+
+  def get_xc_potential(self, density, xc_energy_density_fn):
+    """Gets xc potential.
+
+    The xc potential is derived from xc_energy_density through automatic
+    differentiation.
+
+    Args:
+      density: Float numpy array with shape (num_grids,).
+      xc_energy_density_fn: function takes density and returns float numpy array
+          with shape (num_grids,).
+    Returns:
+      Float numpy array with shape (num_grids,).
+    """
+    return jax.grad(self.get_xc_energy)(
+      density, xc_energy_density_fn) / self.dx
+
+if __name__ == '__main__':
+  import ks_dft, functionals, ext_potentials
+  import matplotlib.pyplot as plt
+  import numpy as np
+  import functools
+
+  import ks_dft, functionals, ext_potentials
+  import numpy as np
+  import functools
+
+  h = 0.08
+  grids = np.arange(-156, 157) * h
+  num_electrons = 4
+  nuclear_charge = 4
+
+  v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=nuclear_charge)
+  lda_xc = functionals.ExponentialLDAFunctional(grids=grids)
+  solver = ks_dft.Spinless_KS_Solver(grids, v_ext=v_ext, xc=lda_xc,
+                              num_electrons=num_electrons)
+  solver.solve_self_consistent_density()
+
+  # Non-Interacting (Kohn-Sham) Kinetic Energy
+  print("T_s =", solver.T_s)
+
+  # External Potential Energy
+  print("V =", solver.V)
+
+  # Hartree Energy
+  print("U =", solver.U)
+
+  # Exchange Energy
+  print("E_x =", solver.E_x)
+
+  # Correlation Energy
+  print("E_c =", solver.E_c)
+
+  # Total Energy
+  print("E =", solver.E_tot)
+

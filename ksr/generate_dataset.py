@@ -79,10 +79,10 @@ if __name__ == '__main__':
     grids = np.arange(-256, 257) * h
 
     # ions are identified by: atomic number Z, number of electrons
-    selected_z = [3, 4]
-    num_electrons = 3
+    selected_z = [5]
+    num_electrons = 5
     out_dir = 'num_electrons_'+str(num_electrons)
-    out_dir = os.path.join('atoms',out_dir)
+    out_dir = os.path.join('atoms', out_dir)
 
     dataset = LDA_atom_dataset(grids, selected_z, num_electrons=num_electrons)
     dataset.run_selected_ions()

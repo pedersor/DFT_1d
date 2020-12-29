@@ -151,6 +151,7 @@ class EigenSolver(SolverBase):
                                           k_point, boundary_condition,
                                           n_point_stencil, perturbation)
         self._set_matrices()
+        self.quadratic_function = quadratic
 
     def _diagonal_matrix(self, form):
         """Creates diagonal matrix.
@@ -335,8 +336,15 @@ class EigenSolver(SolverBase):
 
         return self._diagonal_matrix('potential')
 
-    def _update_ground_state(self, eigenvalues, eigenvectors,
-                             quadratic_function):
+    def get_kinetic_energy(self, wave_function):
+      return self.quadratic_function(
+        self._t_mat, wave_function) * self.dx
+
+    def get_potential_energy(self, wave_function):
+      return self.quadratic_function(
+        self._v_mat, wave_function) * self.dx
+
+    def _update_ground_state(self, eigenvalues, eigenvectors):
         """Helper function to solve_ground_state() method.
 
         Updates the attributes total_energy, wave_function, density,
@@ -349,8 +357,6 @@ class EigenSolver(SolverBase):
           eigenvectors: Numpy array with shape [num_grids, num_eigenstates],
               each column eigenvectors[:, i] is the normalized eigenvector
               corresponding to the eigenvalue eigenvalues[i].
-          quadratic_function: Callable, compute the quadratic form of matrix and
-              vector.
 
         Returns:
           self
@@ -366,10 +372,8 @@ class EigenSolver(SolverBase):
             self.total_energy += eigenvalues[i]
             self.wave_function[i] = eigenvectors.T[i] / np.sqrt(self.dx)
             self.density += self.wave_function[i] ** 2
-            self.kinetic_energy += quadratic_function(
-                self._t_mat, self.wave_function[i]) * self.dx
-            self.potential_energy += quadratic_function(
-                self._v_mat, self.wave_function[i]) * self.dx
+            self.kinetic_energy += self.get_kinetic_energy(self.wave_function[i])
+            self.potential_energy += self.get_potential_energy(self.wave_function[i])
 
         self._solved = True
         return self
@@ -397,7 +401,7 @@ class EigenSolver(SolverBase):
             eigenvalues = eigenvalues[idx]
             eigenvectors = eigenvectors[:, idx]
 
-        return self._update_ground_state(eigenvalues, eigenvectors, quadratic)
+        return self._update_ground_state(eigenvalues, eigenvectors)
 
 
 class SparseEigenSolver(EigenSolver):
@@ -427,6 +431,7 @@ class SparseEigenSolver(EigenSolver):
                                                 boundary_condition,
                                                 n_point_stencil)
         self._tol = tol
+        self.quadratic_function = self._sparse_quadratic
 
     def _diagonal_matrix(self, form):
         """Creates diagonal matrix.
@@ -479,4 +484,4 @@ class SparseEigenSolver(EigenSolver):
             eigenvectors = eigenvectors[:, idx]
 
         return self._update_ground_state(
-            eigenvalues, eigenvectors, self._sparse_quadratic)
+            eigenvalues, eigenvectors)

@@ -151,7 +151,6 @@ class EigenSolver(SolverBase):
                                           k_point, boundary_condition,
                                           n_point_stencil, perturbation)
         self._set_matrices()
-        self.quadratic_function = quadratic
 
     def _diagonal_matrix(self, form):
         """Creates diagonal matrix.
@@ -336,15 +335,7 @@ class EigenSolver(SolverBase):
 
         return self._diagonal_matrix('potential')
 
-    def get_kinetic_energy(self, wave_function):
-      return self.quadratic_function(
-        self._t_mat, wave_function) * self.dx
-
-    def get_potential_energy(self, wave_function):
-      return self.quadratic_function(
-        self._v_mat, wave_function) * self.dx
-
-    def _update_ground_state(self, eigenvalues, eigenvectors):
+    def _update_ground_state(self, eigenvalues, eigenvectors, occupation_per_state):
         """Helper function to solve_ground_state() method.
 
         Updates the attributes total_energy, wave_function, density,
@@ -361,24 +352,22 @@ class EigenSolver(SolverBase):
         Returns:
           self
         """
-        self.total_energy = 0.
-        self.wave_function = np.zeros((self.num_electrons, self.num_grids))
-        self.density = np.zeros(self.num_grids)
-        self.kinetic_energy = 0.
-        self.potential_energy = 0.
-        self.eigenvalues = eigenvalues
 
-        for i in range(self.num_electrons):
-            self.total_energy += eigenvalues[i]
-            self.wave_function[i] = eigenvectors.T[i] / np.sqrt(self.dx)
-            self.density += self.wave_function[i] ** 2
-            self.kinetic_energy += self.get_kinetic_energy(self.wave_function[i])
-            self.potential_energy += self.get_potential_energy(self.wave_function[i])
+        self.wave_function = np.asarray([eigvector / np.sqrt(self.dx)
+                                        for eigvector in eigenvectors.T])
+        intensities = np.repeat(self.wave_function ** 2,
+                                repeats=occupation_per_state, axis=0)
+        self.density = np.sum(intensities[:self.num_electrons], axis=0)
+        self.total_energy = np.sum(np.repeat(
+            eigenvalues, repeats=occupation_per_state)[:self.num_electrons])
+        self.potential_energy = np.dot(self.density, self.vp)*self.dx
+        self.kinetic_energy = self.total_energy - self.potential_energy
+        self.eigenvalues = eigenvalues
 
         self._solved = True
         return self
 
-    def solve_ground_state(self):
+    def solve_ground_state(self, occupation_per_state=1):
         """Solve ground state by diagonalize the Hamiltonian matrix directly.
 
         Compute attributes:
@@ -401,7 +390,7 @@ class EigenSolver(SolverBase):
             eigenvalues = eigenvalues[idx]
             eigenvectors = eigenvectors[:, idx]
 
-        return self._update_ground_state(eigenvalues, eigenvectors)
+        return self._update_ground_state(eigenvalues, eigenvectors, occupation_per_state)
 
 
 class SparseEigenSolver(EigenSolver):
@@ -431,7 +420,6 @@ class SparseEigenSolver(EigenSolver):
                                                 boundary_condition,
                                                 n_point_stencil)
         self._tol = tol
-        self.quadratic_function = self._sparse_quadratic
 
     def _diagonal_matrix(self, form):
         """Creates diagonal matrix.

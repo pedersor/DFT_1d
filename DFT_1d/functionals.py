@@ -130,8 +130,15 @@ class BaseExchangeCorrelationFunctional:
         return v_ext(grids) + v_h(grids=grids, n=n) + v_xc_down(n, n_up,
                                                                 n_down)
 
+    def v_s(self, grids, n, v_ext, v_xc):
+        v_h = self.v_h()
+        return v_ext(grids) + v_h(grids=grids, n=n) + v_xc(n)
+
     def v_h(self):
         return NotImplementedError()
+
+    def v_xc(self, n):
+        raise NotImplementedError()
 
     def v_xc_up(self, n, n_up, n_down):
         raise NotImplementedError()
@@ -231,6 +238,11 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
                                  u1 - n_up * u2))) / (
                       (p1 ** 2) * (u1 ** 2) * self.k)
         return v_x + v_c
+
+    def v_xc(self, n):
+        """TODO: wip.."""
+        return self.v_xc_up(n, n/2, n/2)
+
 
     def v_xc_down(self, n, n_up, n_down):
         """Exchange-Correlation Potential for up electrons,

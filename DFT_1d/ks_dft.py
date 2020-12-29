@@ -80,24 +80,33 @@ class KS_Solver(SCF_SolverBase):
                                           v_xc_down=self.xc.v_xc_down)
         return self
 
+    def _update_v_s(self):
+      """Update KS potential(s)."""
+
+      self._update_v_s_up()
+      self._update_v_s_down()
+      return self
+
     def _solve_ground_state(self):
         """Solve ground state by diagonalizing the Hamiltonian matrix directly
         and separately for up and down spins.
         """
 
-        solver_up = non_interacting_solver.EigenSolver(self.grids,
-                                                       potential_fn=self.v_s_up,
-                                                       num_electrons=self.num_up_electrons,
-                                                       boundary_condition=self.boundary_condition)
+        solver_up = non_interacting_solver.EigenSolver(
+            self.grids,
+            potential_fn=self.v_s_up,
+            num_electrons=self.num_up_electrons,
+            boundary_condition=self.boundary_condition)
         solver_up.solve_ground_state()
 
         if self.num_down_electrons == 0:
             return self._update_ground_state(solver_up)
         else:
-            solver_down = non_interacting_solver.EigenSolver(self.grids,
-                                                             potential_fn=self.v_s_down,
-                                                             num_electrons=self.num_down_electrons,
-                                                             boundary_condition=self.boundary_condition)
+            solver_down = non_interacting_solver.EigenSolver(
+                self.grids,
+                potential_fn=self.v_s_down,
+                num_electrons=self.num_down_electrons,
+                boundary_condition=self.boundary_condition)
             solver_down.solve_ground_state()
             return self._update_ground_state(solver_up, solver_down)
 
@@ -121,9 +130,8 @@ class KS_Solver(SCF_SolverBase):
             # solve KS system -> obtain new density
             self._solve_ground_state()
 
-            # update total potentials using new density
-            self._update_v_s_up()
-            self._update_v_s_down()
+            # update KS potential(s) using new density
+            self._update_v_s()
 
             if (np.abs(self.eps - final_energy) < self.energy_tol_threshold):
                 converged = True
@@ -166,8 +174,8 @@ class KS_Solver(SCF_SolverBase):
         return self
 
 
-class Spinless_KS_Solver(SCF_SolverBase):
-  """KS-DFT solver for non-periodic systems."""
+class Spinless_KS_Solver(KS_Solver):
+  """spinless KS-DFT solver for non-periodic systems."""
 
   def __init__(self, grids, v_ext, xc, num_electrons=1,
                boundary_condition='open'):
@@ -202,32 +210,41 @@ class Spinless_KS_Solver(SCF_SolverBase):
     KS system.
     """
 
-    self.v_s_up = functools.partial(self.xc.v_s_up,
-                                    n=self.density, n_up=self.n_up,
-                                    n_down=self.n_down, v_ext=self.v_ext,
-                                    v_xc_up=self.xc.v_xc_up)
+    self.v_s = functools.partial(self.xc.v_s,
+                                 n=self.density, v_ext=self.v_ext,
+                                 v_xc=self.xc.v_xc)
     return self
 
   def _solve_ground_state(self):
-    """Solve ground state by diagonalizing the Hamiltonian matrix directly
-    and separately for up and down spins.
+    """Solve ground state by diagonalizing the Hamiltonian matrix directly.
     """
 
-    solver_up = non_interacting_solver.EigenSolver(self.grids,
-                                                   potential_fn=self.v_s_up,
-                                                   num_electrons=self.num_up_electrons,
-                                                   boundary_condition=self.boundary_condition)
-    solver_up.solve_ground_state()
+    solver = non_interacting_solver.EigenSolver(
+        self.grids,
+        potential_fn=self.v_s,
+        num_electrons=self.num_electrons,
+        boundary_condition=self.boundary_condition)
+    solver.solve_ground_state(occupation_per_state=2)
 
-    if self.num_down_electrons == 0:
-      return self._update_ground_state(solver_up)
-    else:
-      solver_down = non_interacting_solver.EigenSolver(self.grids,
-                                                       potential_fn=self.v_s_down,
-                                                       num_electrons=self.num_down_electrons,
-                                                       boundary_condition=self.boundary_condition)
-      solver_down.solve_ground_state()
-      return self._update_ground_state(solver_up, solver_down)
+    return self._update_ground_state(solver)
+
+  def _update_ground_state(self, solver):
+    """Helper function to _solve_ground_state() method.
+
+    Updates the attributes total_energy, wave_function, density, kinetic_energy,
+    potential_enenrgy and _solved from the eigensolver's output (w, v).
+
+    Overides _update_ground_state from `scf_base`.
+    """
+
+    self.kinetic_energy = solver.kinetic_energy
+    self.eps = solver.kinetic_energy
+    self.density = solver.density
+
+    # TODO: remove
+    self.zeta = 0*self.density
+
+    return self
 
   def solve_self_consistent_density(self, mixing_param=0.3, verbose=0):
     """Solve KS equations self-consistently.
@@ -250,8 +267,7 @@ class Spinless_KS_Solver(SCF_SolverBase):
       self._solve_ground_state()
 
       # update total potentials using new density
-      self._update_v_s_up()
-      self._update_v_s_down()
+      self._update_v_s()
 
       if (np.abs(self.eps - final_energy) < self.energy_tol_threshold):
         converged = True
@@ -292,3 +308,38 @@ class Spinless_KS_Solver(SCF_SolverBase):
     self.E_tot = self.T_s + self.V + self.U + self.E_x + self.E_c
 
     return self
+
+
+if __name__ == '__main__':
+  import ks_dft, functionals, ext_potentials
+  import numpy as np
+  import functools
+
+  h = 0.08
+  grids = np.arange(-256, 257) * h
+  num_electrons = 2
+  nuclear_charge = 2
+
+  v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=nuclear_charge)
+  lda_xc = functionals.ExponentialLSDFunctional(grids=grids)
+  solver = Spinless_KS_Solver(grids, v_ext=v_ext, xc=lda_xc,
+                            num_electrons=num_electrons)
+  solver.solve_self_consistent_density()
+
+  # Non-Interacting (Kohn-Sham) Kinetic Energy
+  print("T_s =", solver.T_s)
+
+  # External Potential Energy
+  print("V =", solver.V)
+
+  # Hartree Energy
+  print("U =", solver.U)
+
+  # Exchange Energy
+  print("E_x =", solver.E_x)
+
+  # Correlation Energy
+  print("E_c =", solver.E_c)
+
+  # Total Energy
+  print("E =", solver.E_tot)

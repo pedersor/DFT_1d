@@ -82,18 +82,6 @@ class SCF_SolverBase:
 
         Updates the attributes total_energy, wave_function, density, kinetic_energy,
         potential_enenrgy and _solved from the eigensolver's output (w, v).
-
-        Args:
-          eigenvalues: Numpy array with shape [num_eigenstates,], the eigenvalues in
-              ascending order.
-          eigenvectors: Numpy array with shape [num_grids, num_eigenstates], each
-              column eigenvectors[:, i] is the normalized eigenvector corresponding
-              to the eigenvalue eigenvalues[i].
-          quadratic_function: Callable, compute the quadratic form of matrix and
-              vector.
-
-        Returns:
-          self
         """
 
         self.kinetic_energy = 0

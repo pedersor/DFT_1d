@@ -22,8 +22,8 @@ import functools
 
 
 def lsd_ks_dft_atom(grids, num_electrons, nuclear_charge):
-    """local density approximation (LDA) KS-DFT calculation for a 1D atom with
-        exponential interactions, see ext_potentials.exp_hydrogenic.
+    """local spin density approximation (LSD) KS-DFT calculation for a 1D atom
+    with exponential interactions, see ext_potentials.exp_hydrogenic.
 
     Args:
         grids: grids: numpy array of grid points for evaluating 1d potential.
@@ -39,7 +39,7 @@ def lsd_ks_dft_atom(grids, num_electrons, nuclear_charge):
     lsd_xc = functionals.ExponentialLSDFunctional(grids=grids)
     solver = ks_dft.KS_Solver(grids, v_ext=v_ext, xc=lsd_xc,
                               num_electrons=num_electrons)
-    solver.solve_self_consistent_density()
+    solver.solve_self_consistent_density(verbose=1)
 
     return solver
 
@@ -60,9 +60,9 @@ def lda_ks_dft_atom(grids, num_electrons, nuclear_charge):
 
   v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=nuclear_charge)
   lda_xc = functionals.ExponentialLDAFunctional(grids=grids)
-  solver = ks_dft.KS_Solver(grids, v_ext=v_ext, xc=lda_xc,
+  solver = ks_dft.Spinless_KS_Solver(grids, v_ext=v_ext, xc=lda_xc,
                             num_electrons=num_electrons)
-  solver.solve_self_consistent_density()
+  solver.solve_self_consistent_density(verbose=1)
 
   return solver
 
@@ -142,7 +142,6 @@ if __name__ == '__main__':
     ks_solver = lsd_ks_dft_atom(grids, num_electrons=3, nuclear_charge=3)
     get_ks_dft_energies(ks_solver)
 
-
     # plot example self-consistent LSD density
     plt.plot(grids, ks_solver.density)
     plt.ylabel('$n(x)$', fontsize=16)
@@ -151,13 +150,12 @@ if __name__ == '__main__':
     plt.show()
     sys.exit()
 
-    """He atom LDA calculation example."""
+    """Li atom LDA calculation example."""
     h = 0.08
     grids = np.arange(-256, 257) * h
 
-    ks_solver = lsd_ks_dft_atom(grids, num_electrons=2, nuclear_charge=2)
+    ks_solver = lda_ks_dft_atom(grids, num_electrons=3, nuclear_charge=3)
     get_ks_dft_energies(ks_solver)
-
 
     # plot example self-consistent LSD density
     plt.plot(grids, ks_solver.density)

@@ -120,7 +120,7 @@ if __name__ == '__main__':
     plt.grid(alpha=0.4)
     plt.show()
 
-    # sys.exit()
+    sys.exit()
 
     """ Generate atom table for various (N_e, Z) """
     # use coarser grid for faster computation.

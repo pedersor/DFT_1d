@@ -238,7 +238,7 @@ class Spinless_KS_Solver(KS_Solver):
     """
 
     self.kinetic_energy = solver.kinetic_energy
-    self.eps = solver.kinetic_energy
+    self.eps = solver.total_energy
     self.density = solver.density
 
     return self
@@ -282,6 +282,7 @@ class Spinless_KS_Solver(KS_Solver):
           final_energy))
       if verbose == 2:
         plt.plot(self.grids, prev_densities[-1])
+        plt.plot(self.grids, self.v_s(self.grids))
         plt.show()
 
     # Non-Interacting Kinetic Energy

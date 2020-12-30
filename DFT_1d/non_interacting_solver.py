@@ -100,7 +100,7 @@ class SolverBase:
         self.num_grids = len(grids)
         self.potential_fn = potential_fn
         if self.potential_fn != None:
-            self.vp = potential_fn(grids)
+            self.vp = np.nan_to_num(potential_fn(grids))
         self.perturbation = perturbation
 
         if not isinstance(num_electrons, int):
@@ -197,7 +197,7 @@ class EigenSolver(SolverBase):
         """
 
         self.potential_fn = potential_fn
-        self.vp = potential_fn(self.grids)
+        self.vp = np.nan_to_num(potential_fn(self.grids))
         # Potential matrix
         self._v_mat = self.get_potential_matrix()
         # Hamiltonian matrix
@@ -361,20 +361,16 @@ class EigenSolver(SolverBase):
         Returns:
           self
         """
-        # gather only relevant states/energies
-        eigenvectors = eigenvectors.T[:self.num_electrons]
-        eigenvalues = eigenvalues[:self.num_electrons]
-
-        self.wave_function = np.asarray([eigvector / np.sqrt(self.dx)
-                                        for eigvector in eigenvectors])
-        self.wave_function = np.repeat(self.wave_function,
-                                repeats=occupation_per_state, axis=0)
+        self.wave_function = np.repeat(eigenvectors.T,
+                                       repeats=occupation_per_state,
+                                       axis=0)[:self.num_electrons]
+        self.wave_function /= np.sqrt(self.dx)
+        self.eigenvalues = np.repeat(
+            eigenvalues, repeats=occupation_per_state)[:self.num_electrons]
         self.density = np.sum(self.wave_function ** 2, axis=0)
-        self.total_energy = np.sum(np.repeat(
-            eigenvalues, repeats=occupation_per_state))
+        self.total_energy = np.sum(self.eigenvalues)
         self.potential_energy = np.dot(self.density, self.vp)*self.dx
         self.kinetic_energy = self.get_kinetic_energy(self.wave_function)
-        self.eigenvalues = eigenvalues
 
         self._solved = True
         return self

@@ -40,7 +40,7 @@ def hf_scf_atom(grids, N_e, Z):
 
     solver = hf_scf.HF_Solver(grids, v_ext=v_ext, hf=exponential_hf,
                               num_electrons=N_e)
-    solver.solve_self_consistent_density()
+    solver.solve_self_consistent_density(verbose=1)
     return solver
 
 

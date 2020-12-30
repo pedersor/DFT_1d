@@ -335,6 +335,11 @@ class EigenSolver(SolverBase):
 
         return self._diagonal_matrix('potential')
 
+    def get_kinetic_energy(self, wave_function):
+      return self.quadratic_function(
+        self._t_mat, wave_function) * self.dx
+
+
     def _update_ground_state(self, eigenvalues, eigenvectors, occupation_per_state):
         """Helper function to solve_ground_state() method.
 
@@ -352,9 +357,12 @@ class EigenSolver(SolverBase):
         Returns:
           self
         """
+        # gather only relevant states/energies
+        eigenvectors = eigenvectors.T[:self.num_electrons]
+        eigenvalues = eigenvalues[:self.num_electrons]
 
         self.wave_function = np.asarray([eigvector / np.sqrt(self.dx)
-                                        for eigvector in eigenvectors.T])
+                                        for eigvector in eigenvectors])
         intensities = np.repeat(self.wave_function ** 2,
                                 repeats=occupation_per_state, axis=0)
         self.density = np.sum(intensities[:self.num_electrons], axis=0)
@@ -390,7 +398,8 @@ class EigenSolver(SolverBase):
             eigenvalues = eigenvalues[idx]
             eigenvectors = eigenvectors[:, idx]
 
-        return self._update_ground_state(eigenvalues, eigenvectors, occupation_per_state)
+        return self._update_ground_state(
+            eigenvalues,eigenvectors, occupation_per_state)
 
 
 class SparseEigenSolver(EigenSolver):

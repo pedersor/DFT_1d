@@ -305,38 +305,3 @@ class Spinless_KS_Solver(KS_Solver):
     self.E_tot = self.T_s + self.V + self.U + self.E_x + self.E_c
 
     return self
-
-
-if __name__ == '__main__':
-  import ks_dft, functionals, ext_potentials
-  import numpy as np
-  import functools
-
-  h = 0.08
-  grids = np.arange(-256, 257) * h
-  num_electrons = 2
-  nuclear_charge = 2
-
-  v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=nuclear_charge)
-  lda_xc = functionals.ExponentialLSDFunctional(grids=grids)
-  solver = Spinless_KS_Solver(grids, v_ext=v_ext, xc=lda_xc,
-                            num_electrons=num_electrons)
-  solver.solve_self_consistent_density()
-
-  # Non-Interacting (Kohn-Sham) Kinetic Energy
-  print("T_s =", solver.T_s)
-
-  # External Potential Energy
-  print("V =", solver.V)
-
-  # Hartree Energy
-  print("U =", solver.U)
-
-  # Exchange Energy
-  print("E_x =", solver.E_x)
-
-  # Correlation Energy
-  print("E_c =", solver.E_c)
-
-  # Total Energy
-  print("E =", solver.E_tot)

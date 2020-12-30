@@ -149,8 +149,8 @@ if __name__ == '__main__':
     plt.xlabel('$x$', fontsize=16)
     plt.grid(alpha=0.4)
     plt.show()
-
     sys.exit()
+
     """He atom LDA calculation example."""
     h = 0.08
     grids = np.arange(-256, 257) * h
@@ -165,7 +165,6 @@ if __name__ == '__main__':
     plt.xlabel('$x$', fontsize=16)
     plt.grid(alpha=0.4)
     plt.show()
-
     sys.exit()
 
     """Generate atom table for various (N_e, Z) """

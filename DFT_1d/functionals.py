@@ -13,7 +13,7 @@ Functionals
     `Johnny Kozlowski`
 
 .. todo::
-
+    * extensive renaming/reorganizing.
     * hf: replace with Chris' matrix muliplication code. Cleaner & Jittable.
     * Docs need love.
 """
@@ -244,11 +244,6 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
                                  u1 - n_up * u2))) / (
                       (p1 ** 2) * (u1 ** 2) * self.k)
         return v_x + v_c
-
-    def v_xc(self, n):
-        """TODO: wip.."""
-        return self.v_xc_up(n, n/2, n/2)
-
 
     def v_xc_down(self, n, n_up, n_down):
         """Exchange-Correlation Potential for up electrons,

@@ -151,6 +151,7 @@ class EigenSolver(SolverBase):
                                           k_point, boundary_condition,
                                           n_point_stencil, perturbation)
         self._set_matrices()
+        self.quadratic_function = quadratic
 
     def _diagonal_matrix(self, form):
         """Creates diagonal matrix.
@@ -336,9 +337,12 @@ class EigenSolver(SolverBase):
         return self._diagonal_matrix('potential')
 
     def get_kinetic_energy(self, wave_function):
-      return self.quadratic_function(
-        self._t_mat, wave_function) * self.dx
+      kinetic_energy = 0
+      for phi in self.wave_function:
+          kinetic_energy += self.quadratic_function(
+              self._t_mat, phi) * self.dx
 
+      return kinetic_energy
 
     def _update_ground_state(self, eigenvalues, eigenvectors, occupation_per_state):
         """Helper function to solve_ground_state() method.
@@ -363,13 +367,13 @@ class EigenSolver(SolverBase):
 
         self.wave_function = np.asarray([eigvector / np.sqrt(self.dx)
                                         for eigvector in eigenvectors])
-        intensities = np.repeat(self.wave_function ** 2,
+        self.wave_function = np.repeat(self.wave_function,
                                 repeats=occupation_per_state, axis=0)
-        self.density = np.sum(intensities[:self.num_electrons], axis=0)
+        self.density = np.sum(self.wave_function ** 2, axis=0)
         self.total_energy = np.sum(np.repeat(
-            eigenvalues, repeats=occupation_per_state)[:self.num_electrons])
+            eigenvalues, repeats=occupation_per_state))
         self.potential_energy = np.dot(self.density, self.vp)*self.dx
-        self.kinetic_energy = self.total_energy - self.potential_energy
+        self.kinetic_energy = self.get_kinetic_energy(self.wave_function)
         self.eigenvalues = eigenvalues
 
         self._solved = True
@@ -429,6 +433,7 @@ class SparseEigenSolver(EigenSolver):
                                                 boundary_condition,
                                                 n_point_stencil)
         self._tol = tol
+        self.quadratic_function = self._sparse_quadratic
 
     def _diagonal_matrix(self, form):
         """Creates diagonal matrix.

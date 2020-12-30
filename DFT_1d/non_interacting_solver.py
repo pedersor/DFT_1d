@@ -151,6 +151,7 @@ class EigenSolver(SolverBase):
                                           k_point, boundary_condition,
                                           n_point_stencil, perturbation)
         self._set_matrices()
+        self.quadratic_function = quadratic
 
     def _diagonal_matrix(self, form):
         """Creates diagonal matrix.
@@ -335,8 +336,15 @@ class EigenSolver(SolverBase):
 
         return self._diagonal_matrix('potential')
 
-    def _update_ground_state(self, eigenvalues, eigenvectors,
-                             quadratic_function):
+    def get_kinetic_energy(self, wave_function):
+      kinetic_energy = 0
+      for phi in self.wave_function:
+          kinetic_energy += self.quadratic_function(
+              self._t_mat, phi) * self.dx
+
+      return kinetic_energy
+
+    def _update_ground_state(self, eigenvalues, eigenvectors, occupation_per_state):
         """Helper function to solve_ground_state() method.
 
         Updates the attributes total_energy, wave_function, density,
@@ -349,32 +357,29 @@ class EigenSolver(SolverBase):
           eigenvectors: Numpy array with shape [num_grids, num_eigenstates],
               each column eigenvectors[:, i] is the normalized eigenvector
               corresponding to the eigenvalue eigenvalues[i].
-          quadratic_function: Callable, compute the quadratic form of matrix and
-              vector.
 
         Returns:
           self
         """
-        self.total_energy = 0.
-        self.wave_function = np.zeros((self.num_electrons, self.num_grids))
-        self.density = np.zeros(self.num_grids)
-        self.kinetic_energy = 0.
-        self.potential_energy = 0.
-        self.eigenvalues = eigenvalues
+        # gather only relevant states/energies
+        eigenvectors = eigenvectors.T[:self.num_electrons]
+        eigenvalues = eigenvalues[:self.num_electrons]
 
-        for i in range(self.num_electrons):
-            self.total_energy += eigenvalues[i]
-            self.wave_function[i] = eigenvectors.T[i] / np.sqrt(self.dx)
-            self.density += self.wave_function[i] ** 2
-            self.kinetic_energy += quadratic_function(
-                self._t_mat, self.wave_function[i]) * self.dx
-            self.potential_energy += quadratic_function(
-                self._v_mat, self.wave_function[i]) * self.dx
+        self.wave_function = np.asarray([eigvector / np.sqrt(self.dx)
+                                        for eigvector in eigenvectors])
+        self.wave_function = np.repeat(self.wave_function,
+                                repeats=occupation_per_state, axis=0)
+        self.density = np.sum(self.wave_function ** 2, axis=0)
+        self.total_energy = np.sum(np.repeat(
+            eigenvalues, repeats=occupation_per_state))
+        self.potential_energy = np.dot(self.density, self.vp)*self.dx
+        self.kinetic_energy = self.get_kinetic_energy(self.wave_function)
+        self.eigenvalues = eigenvalues
 
         self._solved = True
         return self
 
-    def solve_ground_state(self):
+    def solve_ground_state(self, occupation_per_state=1):
         """Solve ground state by diagonalize the Hamiltonian matrix directly.
 
         Compute attributes:
@@ -397,7 +402,8 @@ class EigenSolver(SolverBase):
             eigenvalues = eigenvalues[idx]
             eigenvectors = eigenvectors[:, idx]
 
-        return self._update_ground_state(eigenvalues, eigenvectors, quadratic)
+        return self._update_ground_state(
+            eigenvalues,eigenvectors, occupation_per_state)
 
 
 class SparseEigenSolver(EigenSolver):
@@ -427,6 +433,7 @@ class SparseEigenSolver(EigenSolver):
                                                 boundary_condition,
                                                 n_point_stencil)
         self._tol = tol
+        self.quadratic_function = self._sparse_quadratic
 
     def _diagonal_matrix(self, form):
         """Creates diagonal matrix.
@@ -479,4 +486,4 @@ class SparseEigenSolver(EigenSolver):
             eigenvectors = eigenvectors[:, idx]
 
         return self._update_ground_state(
-            eigenvalues, eigenvectors, self._sparse_quadratic)
+            eigenvalues, eigenvectors)

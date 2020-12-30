@@ -8,6 +8,7 @@ Functionals
 
 .. moduleauthor::
     `Ryan Pederson <pedersor@uci.edu>`_ ORCID: `0000-0002-7228-9478 <https://orcid.org/0000-0002-7228-9478>`_,
+    `Li Li`,
     `Chris (Jielun) Chen`,
     `Johnny Kozlowski`
 
@@ -491,14 +492,14 @@ if __name__ == '__main__':
 
   h = 0.08
   grids = np.arange(-156, 157) * h
-  num_electrons = 4
-  nuclear_charge = 4
+  num_electrons = 1
+  nuclear_charge = 2
 
   v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=nuclear_charge)
   lda_xc = functionals.ExponentialLDAFunctional(grids=grids)
   solver = ks_dft.Spinless_KS_Solver(grids, v_ext=v_ext, xc=lda_xc,
                               num_electrons=num_electrons)
-  solver.solve_self_consistent_density()
+  solver.solve_self_consistent_density(verbose=1)
 
   # Non-Interacting (Kohn-Sham) Kinetic Energy
   print("T_s =", solver.T_s)

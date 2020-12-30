@@ -27,14 +27,16 @@ class LDA_atom_dataset():
         self.total_energies = []
         self.densities = []
         self.external_potentials = []
+        self.xc_energies = []
 
     def run_selected_ions(self):
         lda_xc = functionals.ExponentialLDAFunctional(grids=self.grids)
         for (z, center) in zip(self.selected_z, self.locations):
             v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=z,
                                       center=center)
-            solver = ks_dft.KS_Solver(self.grids, v_ext=v_ext, xc=lda_xc,
-                                      num_electrons=self.num_electrons)
+            solver = ks_dft.Spinless_KS_Solver(self.grids, v_ext=v_ext,
+                                               xc=lda_xc,
+                                               num_electrons=self.num_electrons)
             solver.solve_self_consistent_density()
             print(
                 'finished: (z, num_el) = (' + str(z) + ',' +
@@ -44,6 +46,7 @@ class LDA_atom_dataset():
             self.total_energies.append(solver.E_tot)
             self.densities.append(solver.density)
             self.external_potentials.append(v_ext(self.grids))
+            self.xc_energies.append(solver.E_x + solver.E_c)
 
     def save_dataset(self, out_dir):
         if not os.path.exists(out_dir):
@@ -60,18 +63,8 @@ class LDA_atom_dataset():
                 self.densities)
         np.save(os.path.join(out_dir, 'external_potentials.npy'),
                 self.external_potentials)
-
-    def open_dataset(self, in_dir):
-        self.grids = np.load(os.path.join(in_dir, 'grids.npy'))
-        self.external_potentials = np.load(
-            os.path.join(in_dir, 'external_potentials.npy'))
-        self.locations = np.load(os.path.join(in_dir, 'locations.npy'))
-        self.nuclear_charges = np.load(
-            os.path.join(in_dir, 'nuclear_charges.npy'))
-        self.num_electrons = np.load(os.path.join(in_dir, 'num_electrons.npy'))
-        self.densities = np.load(os.path.join(in_dir, 'densities.npy'))
-        self.total_energies = np.load(
-            os.path.join(in_dir, 'total_energies.npy'))
+        np.save(os.path.join(out_dir, 'xc_energies.npy'),
+                self.xc_energies)
 
 
 if __name__ == '__main__':
@@ -79,12 +72,11 @@ if __name__ == '__main__':
     grids = np.arange(-256, 257) * h
 
     # ions are identified by: atomic number Z, number of electrons
-    selected_z = [5]
-    num_electrons = 5
+    selected_z = [1, 2, 3, 4]
+    num_electrons = 1
     out_dir = 'num_electrons_'+str(num_electrons)
     out_dir = os.path.join('atoms', out_dir)
 
     dataset = LDA_atom_dataset(grids, selected_z, num_electrons=num_electrons)
     dataset.run_selected_ions()
     dataset.save_dataset(out_dir=out_dir)
-    sys.exit()

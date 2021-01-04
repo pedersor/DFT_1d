@@ -25,6 +25,8 @@ class LDA_atom_dataset():
     self.densities = []
     self.external_potentials = []
     self.xc_energies = []
+    self.xc_energy_densities = []
+    self.xc_potentials = []
 
   def run_selected_ions(self):
     lda_xc = functionals.ExponentialLDAFunctional(grids=self.grids)
@@ -46,6 +48,9 @@ class LDA_atom_dataset():
       self.densities.append(solver.density)
       self.external_potentials.append(v_ext(self.grids))
       self.xc_energies.append(solver.E_x + solver.E_c)
+      self.xc_energy_densities.append(
+        solver.xc.xc_energy_density(solver.density))
+      self.xc_potentials.append(solver.xc.v_xc(solver.density))
 
   def save_dataset(self, out_dir):
     if not os.path.exists(out_dir):
@@ -64,15 +69,19 @@ class LDA_atom_dataset():
             self.external_potentials)
     np.save(os.path.join(out_dir, 'xc_energies.npy'),
             self.xc_energies)
-
+    np.save(os.path.join(out_dir, 'xc_energy_densities.npy'),
+            self.xc_energy_densities)
+    np.save(os.path.join(out_dir, 'xc_potentials.npy'),
+            self.xc_potentials)
 
 if __name__ == '__main__':
   h = 0.08
   grids = np.arange(-256, 257) * h
 
   # ions are identified by: atomic number Z, number of electrons
-  selected_ions = [(1, 1), (2, 1), (3, 1), (4, 1), (2, 2), (3, 2), (4,2), (3, 3)
-                   , (4, 3), (4, 4)]
+  selected_ions = [(1, 1), (2, 1), (3, 1), (4, 1), (2, 2), (3, 2), (4, 2),
+                   (3, 3)
+    , (4, 3), (4, 4)]
 
   out_dir = os.path.join('ions', 'basic_all')
 

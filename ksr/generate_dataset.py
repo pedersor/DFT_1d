@@ -52,6 +52,32 @@ class LDA_atom_dataset():
         solver.xc.xc_energy_density(solver.density))
       self.xc_potentials.append(solver.xc.v_xc(solver.density))
 
+  def run_lsda_selected_ions(self):
+    lda_xc = functionals.ExponentialLSDFunctional(grids=self.grids)
+    for ((nuclear_charge, num_electron), center) in zip(self.selected_ions,
+                                                        self.locations):
+      v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=nuclear_charge,
+                                center=center)
+      solver = ks_dft.KS_Solver(self.grids, v_ext=v_ext,
+                                xc=lda_xc,
+                                num_electrons=num_electron)
+      solver.solve_self_consistent_density()
+      print(
+        'finished: (Z, N_e) = (' + str(nuclear_charge) + ',' +
+        str(num_electron) + ')')
+
+      self.num_electrons.append(num_electron)
+      self.nuclear_charges.append([nuclear_charge])
+      self.total_energies.append(solver.E_tot)
+      self.densities.append(solver.density)
+      self.external_potentials.append(v_ext(self.grids))
+      self.xc_energies.append(solver.E_x + solver.E_c)
+
+      xc_energy_density = solver.xc.e_x(
+        solver.density, solver.zeta) + solver.xc.e_c(
+        solver.density, solver.zeta)
+      self.xc_energy_densities.append(xc_energy_density / solver.density)
+
   def save_dataset(self, out_dir):
     if not os.path.exists(out_dir):
       os.makedirs(out_dir)
@@ -86,8 +112,8 @@ if __name__ == '__main__':
   out_dir = os.path.join('ions', 'basic_all')
 
   dataset = LDA_atom_dataset(grids, selected_ions)
-  dataset.run_lda_selected_ions()
-  print(dataset.nuclear_charges)
-  print(dataset.num_electrons)
+  dataset.run_lsda_selected_ions()
+  print(dataset.total_energies)
+  print(dataset.xc_energies)
 
   dataset.save_dataset(out_dir=out_dir)

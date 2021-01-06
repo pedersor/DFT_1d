@@ -97,8 +97,6 @@ class LDA_atom_dataset():
             self.xc_energies)
     np.save(os.path.join(out_dir, 'xc_energy_densities.npy'),
             self.xc_energy_densities)
-    np.save(os.path.join(out_dir, 'xc_potentials.npy'),
-            self.xc_potentials)
 
 
 if __name__ == '__main__':

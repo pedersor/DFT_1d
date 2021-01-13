@@ -10,8 +10,6 @@ Kohn-Sham DFT solver
 
 .. todo::
 
-    * Comments in KS solver funciton should be in doc format
-    * *solve_self_consistent_density* needs summary sentence
     * Linting?
 """
 
@@ -152,24 +150,31 @@ class KS_Solver(SCF_SolverBase):
                 plt.show()
 
         # Non-Interacting Kinetic Energy
-        self.T_s = self.kinetic_energy
+        self.ks_kinetic_energy = self.kinetic_energy
 
         # External Potential Energy
-        self.V = (self.v_ext(self.grids) * self.density).sum() * self.dx
+        self.ext_potential_energy = (
+            self.v_ext(self.grids) * self.density).sum() * self.dx
 
         # Hartree Energy
-        v_h = self.xc.v_h()
-        self.U = .5 * (v_h(grids=self.grids,
-                           n=self.density) * self.density).sum() * self.dx
+        hartree_potential = self.xc.v_h()
+        self.hartree_energy = .5 * (
+            hartree_potential(grids=self.grids, n=self.density) * self.density
+            ).sum() * self.dx
 
         # Exchange Energy
-        self.E_x = self.xc.get_E_x(self.density, self.zeta)
+        self.exchange_energy = self.xc.get_E_x(self.density, self.zeta)
 
         # Correlation Energy
-        self.E_c = self.xc.get_E_c(self.density, self.zeta)
+        self.correlation_energy = self.xc.get_E_c(self.density, self.zeta)
 
         # Total Energy
-        self.E_tot = self.T_s + self.V + self.U + self.E_x + self.E_c
+        self.total_energy = (
+            self.ks_kinetic_energy +
+            self.ext_potential_energy +
+            self.hartree_energy +
+            self.exchange_energy +
+            self.correlation_energy)
 
         return self
 
@@ -285,24 +290,31 @@ class Spinless_KS_Solver(KS_Solver):
         plt.plot(self.grids, self.v_s(self.grids))
         plt.show()
 
-    # Non-Interacting Kinetic Energy
-    self.T_s = self.kinetic_energy
+    # Non-Interacting (Kohn-Sham) Kinetic Energy
+    self.ks_kinetic_energy = self.kinetic_energy
 
     # External Potential Energy
-    self.V = (self.v_ext(self.grids) * self.density).sum() * self.dx
+    self.ext_potential_energy = (
+        self.v_ext(self.grids) * self.density).sum() * self.dx
 
     # Hartree Energy
-    v_h = self.xc.v_h()
-    self.U = .5 * (v_h(grids=self.grids,
-                       n=self.density) * self.density).sum() * self.dx
+    hartree_potential = self.xc.v_h()
+    self.hartree_energy = .5 * (
+        hartree_potential(grids=self.grids, n=self.density) * self.density
+        ).sum() * self.dx
 
     # Exchange Energy
-    self.E_x = self.xc.get_E_x(self.density)
+    self.exchange_energy = self.xc.get_E_x(self.density)
 
     # Correlation Energy
-    self.E_c = self.xc.get_E_c(self.density)
+    self.correlation_energy = self.xc.get_E_c(self.density)
 
     # Total Energy
-    self.E_tot = self.T_s + self.V + self.U + self.E_x + self.E_c
+    self.total_energy = (
+        self.ks_kinetic_energy +
+        self.ext_potential_energy +
+        self.hartree_energy +
+        self.exchange_energy +
+        self.correlation_energy)
 
     return self

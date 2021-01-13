@@ -100,12 +100,12 @@ def get_latex_table_atoms(grids):
         print(key, end=" & ")
 
         solver = lsd_ks_dft_atom(grids, atom_dict[key][0], atom_dict[key][1])
-        print(str(round(solver.T_s, 3)), end=" & ")
-        print(str(round(solver.V, 3)), end=" & ")
-        print(str(round(solver.U, 3)), end=" & ")
-        print(str(round(solver.E_x, 3)), end=" & ")
-        print(str(round(solver.E_c, 3)), end=" & ")
-        print(str(round(solver.E_tot, 3)), end=" ")
+        print(str(round(solver.ks_kinetic_energy, 3)), end=" & ")
+        print(str(round(solver.ext_potential_energy, 3)), end=" & ")
+        print(str(round(solver.hartree_energy, 3)), end=" & ")
+        print(str(round(solver.exchange_energy, 3)), end=" & ")
+        print(str(round(solver.correlation_energy, 3)), end=" & ")
+        print(str(round(solver.total_energy, 3)), end=" ")
 
         print(r'\\')
         print('\hline')
@@ -114,22 +114,22 @@ def get_latex_table_atoms(grids):
 def get_ks_dft_energies(solver):
 
     # Non-Interacting (Kohn-Sham) Kinetic Energy
-    print("T_s =", solver.T_s)
+    print("T_s =", solver.ks_kinetic_energy)
 
     # External Potential Energy
-    print("V =", solver.V)
+    print("V =", solver.ext_potential_energy)
 
     # Hartree Energy
-    print("U =", solver.U)
+    print("U =", solver.hartree_energy)
 
     # Exchange Energy
-    print("E_x =", solver.E_x)
+    print("E_x =", solver.exchange_energy)
 
     # Correlation Energy
-    print("E_c =", solver.E_c)
+    print("E_c =", solver.correlation_energy)
 
     # Total Energy
-    print("E =", solver.E_tot)
+    print("E =", solver.total_energy)
 
     return solver
 
@@ -147,8 +147,8 @@ if __name__ == '__main__':
     plt.ylabel('$n(x)$', fontsize=16)
     plt.xlabel('$x$', fontsize=16)
     plt.grid(alpha=0.4)
-    plt.show()
-    sys.exit()
+    #plt.show()
+    #sys.exit()
 
     """Li atom LDA calculation example."""
     h = 0.08

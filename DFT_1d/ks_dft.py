@@ -162,10 +162,10 @@ class KS_Solver(SCF_SolverBase):
             ).sum() * self.dx
 
         # Exchange energy
-        self.exchange_energy = self.xc.get_E_x(self.density, self.zeta)
+        self.exchange_energy = self.xc.get_exchange_energy(self.density, self.zeta)
 
         # Correlation energy
-        self.correlation_energy = self.xc.get_E_c(self.density, self.zeta)
+        self.correlation_energy = self.xc.get_correlation_energy(self.density, self.zeta)
 
         # Total energy
         self.total_energy = (
@@ -301,10 +301,10 @@ class Spinless_KS_Solver(KS_Solver):
         ).sum() * self.dx
 
     # Exchange Energy
-    self.exchange_energy = self.xc.get_E_x(self.density)
+    self.exchange_energy = self.xc.get_exchange_energy(self.density)
 
     # Correlation Energy
-    self.correlation_energy = self.xc.get_E_c(self.density)
+    self.correlation_energy = self.xc.get_correlation_energy(self.density)
 
     # Total Energy
     self.total_energy = (

@@ -91,8 +91,9 @@ class ExponentialHF(BaseHartreeFock):
 
         return mat
 
-    def get_E_x(self, wave_function):
-        """Obtain E_x 'exactly' from double integral over HF orbitals """
+    def get_exchange_energy(self, wave_function):
+        """Obtain exchange energy 'exactly' from double integral over HF
+        orbitals """
         num_electrons = len(wave_function)
 
         E_x = 0
@@ -159,11 +160,11 @@ class BaseExchangeCorrelationFunctional:
     def e_c(self, n, *args):
         raise NotImplementedError()
 
-    def get_E_x(self, n, *args):
+    def get_exchange_energy(self, n, *args):
         """Returns total exchange energy."""
         return self.e_x(n, *args).sum() * self.dx
 
-    def get_E_c(self, n, *args):
+    def get_correlation_energy(self, n, *args):
         """Returns total correlation energy."""
         return self.e_c(n, *args).sum() * self.dx
 
@@ -269,7 +270,7 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
         return v_x + v_c
 
     def e_x(self, n, zeta):
-        """Exchange energy per length. """
+        """Exchange energy per length."""
 
         y = np.pi * n / self.k
         return self.A * self.k * (
@@ -280,7 +281,7 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
                        4 * (np.pi ** 2))
 
     def e_c(self, n, zeta):
-        """Correlation energy per length. """
+        """Correlation energy per length."""
 
         def correlation_expression(n, alpha, beta, gamma, delta, eta,
                                    sigma, nu):

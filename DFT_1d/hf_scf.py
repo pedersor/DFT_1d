@@ -94,12 +94,12 @@ class HF_Solver(SCF_SolverBase):
 
     def get_E_x_HF(self):
         if self.num_down_electrons == 0:
-            return self.hf.get_E_x(
+            return self.hf.get_exchange_energy(
                 wave_function=self.phi_up[:self.num_up_electrons])
         else:
-            E_x_up = self.hf.get_E_x(
+            E_x_up = self.hf.get_exchange_energy(
                 wave_function=self.phi_up[:self.num_up_electrons])
-            E_x_down = self.hf.get_E_x(
+            E_x_down = self.hf.get_exchange_energy(
                 wave_function=self.phi_down[:self.num_down_electrons])
             return E_x_up + E_x_down
 

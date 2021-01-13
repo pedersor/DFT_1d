@@ -75,11 +75,11 @@ def get_latex_table_atoms(grids):
         print(key, end=" & ")
 
         solver = hf_scf_atom(grids, atom_dict[key][0], atom_dict[key][1])
-        print(str(round(solver.T_s, 3)), end=" & ")
-        print(str(round(solver.V, 3)), end=" & ")
-        print(str(round(solver.U, 3)), end=" & ")
-        print(str(round(solver.E_x, 3)), end=" & ")
-        print(str(round(solver.E_tot, 3)), end=" ")
+        print(str(round(solver.hf_kinetic_energy, 3)), end=" & ")
+        print(str(round(solver.ext_potential_energy, 3)), end=" & ")
+        print(str(round(solver.hartree_energy, 3)), end=" & ")
+        print(str(round(solver.exchange_energy, 3)), end=" & ")
+        print(str(round(solver.total_energy, 3)), end=" ")
 
         print(r'\\')
         print('\hline')
@@ -89,19 +89,19 @@ def single_atom(grids, N_e, Z):
     solver = hf_scf_atom(grids, N_e, Z)
 
     # Non-Interacting Kinetic Energy
-    print("T_s =", solver.T_s)
+    print("T_s =", solver.hf_kinetic_energy)
 
     # External Potential Energy
-    print("V =", solver.V)
+    print("V =", solver.ext_potential_energy)
 
     # Hartree Energy
-    print("U =", solver.U)
+    print("U =", solver.hartree_energy)
 
     # Exchange Energy
-    print("E_x =", solver.E_x)
+    print("E_x =", solver.exchange_energy)
 
     # Total Energy
-    print("E =", solver.E_tot)
+    print("E =", solver.total_energy)
 
     return solver
 

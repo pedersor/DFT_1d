@@ -160,11 +160,11 @@ class BaseExchangeCorrelationFunctional:
         raise NotImplementedError()
 
     def get_E_x(self, n, *args):
-        """Total exchange energy functional."""
+        """Returns total exchange energy."""
         return self.e_x(n, *args).sum() * self.dx
 
     def get_E_c(self, n, *args):
-        """Total correlation energy functional."""
+        """Returns total correlation energy."""
         return self.e_c(n, *args).sum() * self.dx
 
 

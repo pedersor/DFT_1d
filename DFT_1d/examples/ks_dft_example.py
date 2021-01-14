@@ -147,8 +147,8 @@ if __name__ == '__main__':
     plt.ylabel('$n(x)$', fontsize=16)
     plt.xlabel('$x$', fontsize=16)
     plt.grid(alpha=0.4)
-    #plt.show()
-    #sys.exit()
+    plt.show()
+    sys.exit()
 
     """Li atom LDA calculation example."""
     h = 0.08

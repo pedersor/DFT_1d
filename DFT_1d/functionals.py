@@ -31,7 +31,7 @@ import jax
 from jax import tree_util
 import jax.numpy as jnp
 
-def hartree_potential(grids, n, v_ee=functools.partial(
+def get_hartree_potential(grids, n, v_ee=functools.partial(
     ext_potentials.exp_hydrogenic)):
     N = len(grids)
     dx = np.abs(grids[1] - grids[0])
@@ -67,7 +67,7 @@ class ExponentialHF(BaseHartreeFock):
         self.dx = get_dx(grids)
 
     def v_h(self):
-        return hartree_potential
+        return get_hartree_potential
 
     def update_fock_matrix(self, wave_function):
         # fock matrix will be implemented as fock operator,
@@ -181,7 +181,7 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
         self.k = k
 
     def v_h(self):
-        return hartree_potential
+        return get_hartree_potential
 
     def _set_pade_approx_params(self, n):
         """Set Pade approximation parameters. They are derived in [Baker2015]_.
@@ -335,7 +335,7 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
             + nu * (jnp.pi * (self.k ** 2) / self.A) * (y ** 3))
 
 
-      # Parameters derived in [Baker2015]_.
+      # Parameters below derived in [Baker2015]_.
       unpol = correlation_expression(n, 2, -1.00077, 6.26099, -11.9041,
                                      9.62614,
                                      -1.48334, 1)
@@ -422,7 +422,7 @@ class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
     super(ExponentialLDAFunctional, self).__init__(grids=grids)
 
   def v_h(self):
-    return hartree_potential
+    return get_hartree_potential
 
   def v_xc(self, n):
     return self.get_xc_potential(n, self.xc_energy_density)

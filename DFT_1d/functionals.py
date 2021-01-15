@@ -127,42 +127,49 @@ class BaseExchangeCorrelationFunctional:
         self.dx = get_dx(grids)
 
     def hartree_potential(self):
+        """Hartree potential."""
         return NotImplementedError()
 
-    def v_xc_up(self, n_up, n_down):
+    def get_hartree_energy(self, n):
+        """Hartree energy."""
+        return NotImplementedError()
+
+    def get_xc_potential_up(self, n_up, n_down):
         raise NotImplementedError()
 
-    def v_xc_down(self, n_up, n_down):
+    def get_xc_potential_down(self, n_up, n_down):
         raise NotImplementedError()
 
-    def v_xc(self, n):
+    def get_xc_potential(self, n):
+        """Spin-free XC potential."""
         raise NotImplementedError()
 
-    def v_s_up(self, grids, n, v_ext, v_xc_up, n_up, n_down):
-        """Total up KS potential, v_{s, up}."""
+    def get_ks_potential_up(self, grids, v_ext, n_up, n_down):
+        """Spin-decomposed 'up' KS potential."""
         v_h = self.hartree_potential()
-        return v_ext(grids) + v_h(grids=grids, n=n) + v_xc_up(n, n_up,
-                                                              n_down)
+        n = n_up + n_down
 
-    def v_s_down(self, grids, n, v_ext, v_xc_down, n_up, n_down):
-        """Total KS potential, v_{s, down}."""
+        return (v_ext(grids)
+          + v_h(grids=grids, n=n)
+          + self.get_xc_potential_up(n_up, n_down))
+
+    def get_ks_potential_down(self, grids, v_ext, n_up, n_down):
+        """Spin-decomposed 'down' KS potential."""
         v_h = self.hartree_potential()
-        return v_ext(grids) + v_h(grids=grids, n=n) + v_xc_down(n, n_up,
-                                                                n_down)
+        n = n_up + n_down
 
-    def v_s(self, grids, n, v_ext, v_xc):
+        return (v_ext(grids)
+          + v_h(grids=grids, n=n)
+          + self.get_xc_potential_down(n_up, n_down))
+
+    def get_ks_potential(self, grids, n, v_ext, v_xc):
+        """Spin-free KS potential."""
         v_h = self.hartree_potential()
         return v_ext(grids) + v_h(grids=grids, n=n) + v_xc(n)
 
+    def get_xc_energy(self, n, *args):
+        raise NotImplementedError()
 
-
-    def get_exchange_energy(self, n, *args):
-        """Returns total exchange energy."""
-        return self.e_x(n, *args).sum() * self.dx
-
-    def get_correlation_energy(self, n, *args):
-        """Returns total correlation energy."""
-        return self.e_c(n, *args).sum() * self.dx
 
 class AnalyticalExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
     """local density approximation (LDA) for exponentially repelling electrons.
@@ -217,7 +224,7 @@ class AnalyticalExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
 
         return u1, p1, u2, p2
 
-    def v_xc_up(self, n, n_up, n_down):
+    def get_xc_potential_up(self, n, n_up, n_down):
         """Exchange-Correlation Potential for up electrons,
         :math:`v_{xc, \\uparrow} = d/dn_{\\uparrow} e_{xc}`.
 
@@ -241,7 +248,7 @@ class AnalyticalExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
                       (p1 ** 2) * (u1 ** 2) * self.k)
         return v_x
 
-    def v_xc_down(self, n, n_up, n_down):
+    def get_xc_potential_down(self, n, n_up, n_down):
         """Exchange-Correlation Potential for up electrons,
         :math:`v_{xc, \\downarrow} = d/dn_{\\downarrow} e_{xc}`.
 
@@ -299,6 +306,7 @@ class AnalyticalExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
         return unpol + (zeta ** 2) * (pol - unpol)
 
 
+# NOTE: Functionals below require JAX.
 
 class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
     """local density approximation (LDA) for exponentially repelling electrons.
@@ -313,6 +321,10 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
 
     def hartree_potential(self):
         return get_hartree_potential
+
+    def get_hartree_energy(self, n):
+      v_h = self.hartree_potential()
+      return 0.5 * jnp.dot(v_h(grids=self.grids, n=n), n) * self.dx
 
     def exchange_energy_density(self, n, zeta):
       """Exchange energy density."""
@@ -433,7 +445,7 @@ class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
   def hartree_potential(self):
     return get_hartree_potential
 
-  def v_xc(self, n):
+  def get_xc_potential(self, n):
     return self.get_xc_potential(n, self.xc_energy_density)
 
   def e_x(self, n):

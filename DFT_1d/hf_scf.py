@@ -177,7 +177,7 @@ class HF_Solver(SCF_SolverBase):
             self.v_ext(self.grids) * self.density).sum() * self.dx
 
         # Hartree Energy
-        hartree_potential = self.hf.v_h()
+        hartree_potential = self.hf.hartree_potential()
         self.hartree_energy = .5 * (
             hartree_potential(grids=self.grids,
                               n=self.density) * self.density

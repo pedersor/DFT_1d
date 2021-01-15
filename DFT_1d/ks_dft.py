@@ -153,7 +153,7 @@ class KS_Solver(SCF_SolverBase):
             self.v_ext(self.grids) * self.density).sum() * self.dx
 
         # Hartree energy
-        hartree_potential = self.xc.v_h()
+        hartree_potential = self.xc.hartree_potential()
         self.hartree_energy = .5 * (
             hartree_potential(grids=self.grids, n=self.density) * self.density
             ).sum() * self.dx
@@ -294,7 +294,7 @@ class Spinless_KS_Solver(KS_Solver):
         self.v_ext(self.grids) * self.density).sum() * self.dx
 
     # Hartree Energy
-    hartree_potential = self.xc.v_h()
+    hartree_potential = self.xc.hartree_potential()
     self.hartree_energy = .5 * (
         hartree_potential(grids=self.grids, n=self.density) * self.density
         ).sum() * self.dx

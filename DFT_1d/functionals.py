@@ -50,10 +50,10 @@ class BaseHartreeFock:
 
     def v_hf(self, grids, n, v_ext):
         """Total HF potential, v_{eff}."""
-        v_h = self.v_h()
+        v_h = self.hartree_potential()
         return v_ext(grids) + v_h(grids=grids, n=n)
 
-    def v_h(self):
+    def hartree_potential(self):
         return NotImplementedError()
 
 
@@ -66,7 +66,7 @@ class ExponentialHF(BaseHartreeFock):
         self.k = k
         self.dx = get_dx(grids)
 
-    def v_h(self):
+    def hartree_potential(self):
         return get_hartree_potential
 
     def update_fock_matrix(self, wave_function):
@@ -126,24 +126,24 @@ class BaseExchangeCorrelationFunctional:
         self.grids = grids
         self.dx = get_dx(grids)
 
+    def hartree_potential(self):
+        return NotImplementedError()
+
     def v_s_up(self, grids, n, v_ext, v_xc_up, n_up, n_down):
         """Total up KS potential, v_{s, up}."""
-        v_h = self.v_h()
+        v_h = self.hartree_potential()
         return v_ext(grids) + v_h(grids=grids, n=n) + v_xc_up(n, n_up,
                                                               n_down)
 
     def v_s_down(self, grids, n, v_ext, v_xc_down, n_up, n_down):
         """Total KS potential, v_{s, down}."""
-        v_h = self.v_h()
+        v_h = self.hartree_potential()
         return v_ext(grids) + v_h(grids=grids, n=n) + v_xc_down(n, n_up,
                                                                 n_down)
 
     def v_s(self, grids, n, v_ext, v_xc):
-        v_h = self.v_h()
+        v_h = self.hartree_potential()
         return v_ext(grids) + v_h(grids=grids, n=n) + v_xc(n)
-
-    def v_h(self):
-        return NotImplementedError()
 
     def v_xc(self, n):
         raise NotImplementedError()
@@ -180,7 +180,7 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
         self.A = A
         self.k = k
 
-    def v_h(self):
+    def hartree_potential(self):
         return get_hartree_potential
 
     def _set_pade_approx_params(self, n):
@@ -398,7 +398,7 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
 
     def get_ks_potential_up(self, grids, v_ext, n_up, n_down):
         """Total up KS potential."""
-        v_h = self.v_h()
+        v_h = self.hartree_potential()
         n = n_up + n_down
 
         return (v_ext(grids)
@@ -407,7 +407,7 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
 
     def get_ks_potential_down(self, grids, v_ext, n_up, n_down):
         """Total up KS potential."""
-        v_h = self.v_h()
+        v_h = self.hartree_potential()
         n = n_up + n_down
 
         return (v_ext(grids)
@@ -421,7 +421,7 @@ class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
                k=constants.EXPONENTIAL_COULOMB_KAPPA):
     super(ExponentialLDAFunctional, self).__init__(grids=grids)
 
-  def v_h(self):
+  def hartree_potential(self):
     return get_hartree_potential
 
   def v_xc(self, n):

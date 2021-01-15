@@ -129,6 +129,15 @@ class BaseExchangeCorrelationFunctional:
     def hartree_potential(self):
         return NotImplementedError()
 
+    def v_xc_up(self, n_up, n_down):
+        raise NotImplementedError()
+
+    def v_xc_down(self, n_up, n_down):
+        raise NotImplementedError()
+
+    def v_xc(self, n):
+        raise NotImplementedError()
+
     def v_s_up(self, grids, n, v_ext, v_xc_up, n_up, n_down):
         """Total up KS potential, v_{s, up}."""
         v_h = self.hartree_potential()
@@ -145,20 +154,7 @@ class BaseExchangeCorrelationFunctional:
         v_h = self.hartree_potential()
         return v_ext(grids) + v_h(grids=grids, n=n) + v_xc(n)
 
-    def v_xc(self, n):
-        raise NotImplementedError()
 
-    def v_xc_up(self, n, n_up, n_down):
-        raise NotImplementedError()
-
-    def v_xc_down(self, n, n_up, n_down):
-        raise NotImplementedError()
-
-    def e_x(self, n, *args):
-        raise NotImplementedError()
-
-    def e_c(self, n, *args):
-        raise NotImplementedError()
 
     def get_exchange_energy(self, n, *args):
         """Returns total exchange energy."""
@@ -168,8 +164,7 @@ class BaseExchangeCorrelationFunctional:
         """Returns total correlation energy."""
         return self.e_c(n, *args).sum() * self.dx
 
-
-class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
+class AnalyticalExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
     """local density approximation (LDA) for exponentially repelling electrons.
     For more details see [Baker2015]_.
     """
@@ -303,7 +298,21 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
                                      88.0733, -4.32708, 8)
         return unpol + (zeta ** 2) * (pol - unpol)
 
-    # JAX below ----
+
+
+class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
+    """local density approximation (LDA) for exponentially repelling electrons.
+    For more details see [Baker2015]_.
+    """
+
+    def __init__(self, grids, A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
+                 k=constants.EXPONENTIAL_COULOMB_KAPPA):
+        super(ExponentialLSDFunctional, self).__init__(grids=grids)
+        self.A = A
+        self.k = k
+
+    def hartree_potential(self):
+        return get_hartree_potential
 
     def exchange_energy_density(self, n, zeta):
       """Exchange energy density."""

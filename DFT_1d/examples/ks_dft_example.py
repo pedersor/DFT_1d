@@ -135,14 +135,14 @@ def get_ks_dft_energies(solver):
 
 
 if __name__ == '__main__':
-    """Li atom LSD calculation example."""
+    """Li atom LSDA calculation example."""
     h = 0.08
     grids = np.arange(-256, 257) * h
 
     ks_solver = lsd_ks_dft_atom(grids, num_electrons=3, nuclear_charge=3)
     get_ks_dft_energies(ks_solver)
 
-    # plot example self-consistent LSD density
+    # plot example self-consistent LSDA density
     plt.plot(grids, ks_solver.density)
     plt.ylabel('$n(x)$', fontsize=16)
     plt.xlabel('$x$', fontsize=16)
@@ -157,13 +157,16 @@ if __name__ == '__main__':
     ks_solver = lda_ks_dft_atom(grids, num_electrons=3, nuclear_charge=3)
     get_ks_dft_energies(ks_solver)
 
-    # plot example self-consistent LSD density
+    # plot example self-consistent LDA density
     plt.plot(grids, ks_solver.density)
     plt.ylabel('$n(x)$', fontsize=16)
     plt.xlabel('$x$', fontsize=16)
     plt.grid(alpha=0.4)
     plt.show()
     sys.exit()
+
+
+
 
     """Generate atom table for various (N_e, Z) """
     # use coarser grid for faster computation.

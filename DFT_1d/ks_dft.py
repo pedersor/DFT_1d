@@ -211,8 +211,7 @@ class Spinless_KS_Solver(KS_Solver):
     """
 
     self.v_s = functools.partial(self.xc.get_ks_potential,
-                                 n=self.density, v_ext=self.v_ext,
-                                 v_xc=self.xc.get_xc_potential)
+                                 n=self.density, v_ext=self.v_ext)
     return self
 
   def _solve_ground_state(self):
@@ -291,10 +290,7 @@ class Spinless_KS_Solver(KS_Solver):
         self.v_ext(self.grids) * self.density).sum() * self.dx
 
     # Hartree Energy
-    hartree_potential = self.xc.hartree_potential()
-    self.hartree_energy = .5 * (
-        hartree_potential(grids=self.grids, n=self.density) * self.density
-        ).sum() * self.dx
+    self.hartree_energy = self.xc.get_hartree_energy(self.density)
 
     # Exchange Energy
     self.exchange_energy = self.xc.get_exchange_energy(self.density)

@@ -165,9 +165,6 @@ if __name__ == '__main__':
     plt.show()
     sys.exit()
 
-
-
-
     """Generate atom table for various (N_e, Z) """
     # use coarser grid for faster computation.
     grids = np.linspace(-10, 10, 201)

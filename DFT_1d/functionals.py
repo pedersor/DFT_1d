@@ -390,8 +390,9 @@ class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
   def hartree_potential(self):
     return get_hartree_potential
 
-  def get_xc_potential(self, n):
-    return self.get_xc_potential(n, self.xc_energy_density)
+  def get_hartree_energy(self, n):
+    v_h = self.hartree_potential()
+    return 0.5 * jnp.dot(v_h(grids=self.grids, n=n), n) * self.dx
 
   def e_x(self, n):
     return self.exchange_energy_density(n)*n
@@ -523,22 +524,26 @@ class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
         self.exchange_energy_density(density)
         + self.correlation_energy_density(density))
 
-  def get_xc_energy(self, density, xc_energy_density_fn):
+  def get_exchange_energy(self, density):
+    return jnp.dot(self.exchange_energy_density(density), density) * self.dx
+
+  def get_correlation_energy(self, density):
+    return jnp.dot(self.correlation_energy_density(density), density) * self.dx
+
+  def get_xc_energy(self, density):
     r"""Gets xc energy.
 
     E_xc = \int density * xc_energy_density_fn(density) dx.
 
     Args:
       density: Float numpy array with shape (num_grids,).
-      xc_energy_density_fn: function takes density and returns float numpy array
-          with shape (num_grids,).
 
     Returns:
       Float.
     """
-    return jnp.dot(xc_energy_density_fn(density), density) * self.dx
+    return jnp.dot(self.xc_energy_density(density), density) * self.dx
 
-  def get_xc_potential(self, density, xc_energy_density_fn):
+  def get_xc_potential(self, density):
     """Gets xc potential.
 
     The xc potential is derived from xc_energy_density through automatic
@@ -546,13 +551,9 @@ class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
 
     Args:
       density: Float numpy array with shape (num_grids,).
-      xc_energy_density_fn: function takes density and returns float numpy array
-          with shape (num_grids,).
+
     Returns:
       Float numpy array with shape (num_grids,).
     """
     return jax.grad(self.get_xc_energy)(
-      density, xc_energy_density_fn) / self.dx
-
-
-
+      density) / self.dx

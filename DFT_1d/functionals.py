@@ -244,7 +244,7 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
                                  p1 ** 2) * n_down * (
                                  u1 - n_up * u2))) / (
                       (p1 ** 2) * (u1 ** 2) * self.k)
-        return v_x + v_c
+        return v_x
 
     def v_xc_down(self, n, n_up, n_down):
         """Exchange-Correlation Potential for up electrons,
@@ -267,7 +267,7 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
                                  p1 ** 2) * n_up * (
                                  u1 - n_down * u2))) / (
                       (p1 ** 2) * (u1 ** 2) * self.k)
-        return v_x + v_c
+        return v_x
 
     def e_x(self, n, zeta):
         """Exchange energy per length."""
@@ -302,6 +302,99 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
         pol = correlation_expression(n, 180.891, -541.124, 651.615, -356.504,
                                      88.0733, -4.32708, 8)
         return unpol + (zeta ** 2) * (pol - unpol)
+
+    # JAX below ----
+
+    def exchange_energy_density(self, n, zeta):
+      """Exchange energy density."""
+      y = jnp.pi * n / self.k
+      e_x = self.A * self.k * (
+          jnp.log(1 + (y ** 2) * ((1 + zeta) ** 2))
+          - 2 * y * (1 + zeta) * jnp.arctan(y * (1 + zeta))
+          + jnp.log(1 + (y ** 2) * ((-1 + zeta) ** 2))
+          - 2 * y * (-1 + zeta) * jnp.arctan(y * (-1 + zeta))
+          ) / (4 * (jnp.pi ** 2))
+
+      return e_x / n
+
+    def correlation_energy_density(self, n, zeta):
+      """Correlation energy density. Parameters derived in [Baker2015]_."""
+
+      def correlation_expression(n, alpha, beta, gamma, delta, eta,
+                                 sigma, nu):
+        """
+        Pade approximate with parameters.
+        """
+        y = jnp.pi * n / self.k
+        return (-self.A * self.k * (y ** 2) / (jnp.pi ** 2)) / (
+            alpha
+            + beta * (y ** (1. / 2.))
+            + gamma * y + delta * (y ** (3. / 2.))
+            + eta * (y ** 2)
+            + sigma * (y ** (5. / 2.))
+            + nu * (jnp.pi * (self.k ** 2) / self.A) * (y ** 3)
+        )
+
+
+      # Parameters derived in [Baker2015]_.
+      unpol = correlation_expression(n, 2, -1.00077, 6.26099, -11.9041,
+                                     9.62614,
+                                     -1.48334, 1)
+      pol = correlation_expression(n, 180.891, -541.124, 651.615, -356.504,
+                                   88.0733, -4.32708, 8)
+      e_c = unpol + (zeta ** 2) * (pol - unpol)
+      return e_c / n
+
+    def xc_energy_density(self, n, zeta):
+      return (
+          self.exchange_energy_density(n, zeta)
+          + self.correlation_energy_density(n, zeta))
+
+    def get_exchange_energy(self, n_up, n_down):
+      n = n_up + n_down
+      zeta = (n_up - n_down)/n
+
+      return jnp.dot(self.exchange_energy_density(n, zeta), n) * self.dx
+
+    def get_correlation_energy(self, n_up, n_down):
+      n = n_up + n_down
+      zeta = (n_up - n_down) / n
+
+      return jnp.dot(self.correlation_energy_density(n, zeta), n) * self.dx
+
+    def get_xc_energy(self, n_up, n_down):
+      n = n_up + n_down
+      zeta = (n_up - n_down) / n
+
+      return jnp.dot(self.xc_energy_density(n, zeta), n) * self.dx
+
+    def get_exchange_potential(self, n_up, n_down):
+      x_potential_up = jax.grad(self.get_exchange_energy, argnums=0)(
+        n_up, n_down) / self.dx
+
+      x_potential_down = jax.grad(self.get_exchange_energy, argnums=1)(
+        n_up, n_down) / self.dx
+
+      return x_potential_up, x_potential_down
+
+    def get_correlation_potential(self, n_up, n_down):
+      c_potential_up = jax.grad(self.get_correlation_energy, argnums=0)(
+        n_up, n_down) / self.dx
+
+      c_potential_down = jax.grad(self.get_correlation_energy, argnums=1)(
+        n_up, n_down) / self.dx
+
+      return c_potential_up, c_potential_down
+
+    def get_xc_potential(self, n_up, n_down):
+      xc_potential_up = jax.grad(self.get_xc_energy, argnums=0)(
+        n_up, n_down) / self.dx
+
+      xc_potential_down = jax.grad(self.get_xc_energy, argnums=1)(
+        n_up, n_down) / self.dx
+
+      return xc_potential_up, xc_potential_down
+
 
 class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
 
@@ -475,4 +568,24 @@ class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
     """
     return jax.grad(self.get_xc_energy)(
       density, xc_energy_density_fn) / self.dx
+
+if __name__ == '__main__':
+  import matplotlib.pyplot as plt
+
+  grids = np.arange(-256, 257) * 0.08
+  exp_lsd = ExponentialLSDFunctional(grids)
+
+  densities = np.load('../ksr/ions/exch_only/basic_all/densities.npy')
+  xc_energies = np.load('../ksr/ions/exch_only/basic_all/xc_energies.npy')
+  xc_energy_densities = np.load('../ksr/ions/exch_only/basic_all/xc_energy_densities.npy')
+
+  # H atom
+  n = densities[0]
+  xc_energy = xc_energies[0]
+  xc_energy_density = xc_energy_densities[0]
+
+  plt.plot(grids, exp_lsd.get_xc_potential(n, 0.*grids)[0])
+  plt.plot(grids, exp_lsd.get_xc_potential(n, 0.*grids)[1])
+
+  plt.savefig('temp.pdf')
 

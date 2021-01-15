@@ -171,143 +171,6 @@ class BaseExchangeCorrelationFunctional:
         raise NotImplementedError()
 
 
-class AnalyticalExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
-    """local density approximation (LDA) for exponentially repelling electrons.
-    For more details see [Baker2015]_.
-    """
-
-    def __init__(self, grids, A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
-                 k=constants.EXPONENTIAL_COULOMB_KAPPA):
-        super(ExponentialLSDFunctional, self).__init__(grids=grids)
-        self.A = A
-        self.k = k
-
-    def hartree_potential(self):
-        return get_hartree_potential
-
-    def _set_pade_approx_params(self, n):
-        """Set Pade approximation parameters. They are derived in [Baker2015]_.
-
-        Args:
-            n: system density on a grid.
-        Returns:
-            u1, p1, u2, p2: parameters to be used.
-        """
-
-        def expression_1(n, alpha, beta, gamma, delta, eta, sigma, nu):
-            y = np.pi * n / self.k
-            return alpha + beta * (y ** (1. / 2.)) + gamma * y + delta * (
-                    y ** (3. / 2.)) + eta * (y ** 2) + sigma * (
-                           y ** (5. / 2.)) + nu * (
-                           np.pi * (self.k ** 2) / self.A) * (y ** 3)
-
-        def expression_2(n, alpha, beta, gamma, delta, eta, sigma, nu):
-            return (6 * (n ** 3) * (
-                    np.pi ** 4) * self.k * nu + self.A * np.sqrt(
-                np.pi) * (4 * (n ** 2) * (
-                    np.pi ** (3. / 2.)) * eta + 2 * n * np.sqrt(
-                np.pi) * gamma * self.k + 3 * n * np.pi * delta * np.sqrt(
-                n / self.k) * self.k + beta * np.sqrt(
-                n / self.k) * (self.k ** 2) + 5 * n * (np.pi ** 2) * (
-                                  (n / self.k) ** (
-                                  3. / 2.)) * self.k * sigma)) / (
-                           2 * self.A * n * (self.k ** 2))
-
-        u1 = expression_1(n, 2, -1.00077, 6.26099, -11.9041, 9.62614,
-                          -1.48334, 1)
-        p1 = expression_1(n, 180.891, -541.124, 651.615, -356.504, 88.0733,
-                          -4.32708, 8)
-        u2 = expression_2(n, 2, -1.00077, 6.26099, -11.9041, 9.62614,
-                          -1.48334, 1)
-        p2 = expression_2(n, 180.891, -541.124, 651.615, -356.504, 88.0733,
-                          -4.32708, 8)
-
-        return u1, p1, u2, p2
-
-    def get_xc_potential_up(self, n, n_up, n_down):
-        """Exchange-Correlation Potential for up electrons,
-        :math:`v_{xc, \\uparrow} = d/dn_{\\uparrow} e_{xc}`.
-
-        Args:
-            n: system density on a grid.
-            n_up: up spin density on a grid.
-            n_down: down spin density on a grid.
-        Returns:
-            `ndarray`: the up XC potential on a grid.
-        """
-
-        pi = np.pi
-        u1, p1, u2, p2 = self._set_pade_approx_params(n)
-
-        v_x = -(self.A / (pi)) * (np.arctan(2 * pi * n_up / self.k))
-        v_c = (self.A * (2 * p1 * (u1 ** 2) * (n_down - n_up) + (
-                u1 ** 2) * (
-                                 (n_down - n_up) ** 2) * p2 - 4 * (
-                                 p1 ** 2) * n_down * (
-                                 u1 - n_up * u2))) / (
-                      (p1 ** 2) * (u1 ** 2) * self.k)
-        return v_x
-
-    def get_xc_potential_down(self, n, n_up, n_down):
-        """Exchange-Correlation Potential for up electrons,
-        :math:`v_{xc, \\downarrow} = d/dn_{\\downarrow} e_{xc}`.
-
-        Args:
-            n: system density on a grid.
-            n_up: up spin density on a grid.
-            n_down: down spin density on a grid.
-        Returns:
-            `ndarray`: the down XC potential on a grid.
-        """
-
-        pi = np.pi
-        u1, p1, u2, p2 = self._set_pade_approx_params(n)
-
-        v_x = -(self.A / (pi)) * (np.arctan(2 * pi * n_down / self.k))
-        v_c = (self.A * (2 * p1 * (u1 ** 2) * (-n_down + n_up) + (
-                u1 ** 2) * ((n_down - n_up) ** 2) * p2 - 4 * (
-                                 p1 ** 2) * n_up * (
-                                 u1 - n_down * u2))) / (
-                      (p1 ** 2) * (u1 ** 2) * self.k)
-        return v_x
-
-    def e_x(self, n, zeta):
-        """Exchange energy per length."""
-
-        y = np.pi * n / self.k
-        return self.A * self.k * (
-                np.log(1 + (y ** 2) * ((1 + zeta) ** 2)) - 2 * y * (
-                1 + zeta) * np.arctan(y * (1 + zeta)) + np.log(
-            1 + (y ** 2) * ((-1 + zeta) ** 2)) - 2 * y * (
-                        -1 + zeta) * np.arctan(y * (-1 + zeta))) / (
-                       4 * (np.pi ** 2))
-
-    def e_c(self, n, zeta):
-        """Correlation energy per length."""
-
-        def correlation_expression(n, alpha, beta, gamma, delta, eta,
-                                   sigma, nu):
-            """
-            Parameters are derived in [Baker2015]_
-            """
-
-            y = np.pi * n / self.k
-            return (-self.A * self.k * (y ** 2) / (np.pi ** 2)) / (
-                    alpha + beta * (y ** (1. / 2.)) + gamma * y + delta * (
-                    y ** (3. / 2.)) + eta * (y ** 2) + sigma * (
-                            y ** (5. / 2.)) + nu * (
-                            np.pi * (self.k ** 2) / self.A) * (y ** 3))
-
-        unpol = correlation_expression(n, 2, -1.00077, 6.26099, -11.9041,
-                                       9.62614,
-                                       -1.48334, 1)
-        pol = correlation_expression(n, 180.891, -541.124, 651.615, -356.504,
-                                     88.0733, -4.32708, 8)
-        return unpol + (zeta ** 2) * (pol - unpol)
-
-
-# NOTE: Functionals below require JAX.
-
 class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
     """local density approximation (LDA) for exponentially repelling electrons.
     For more details see [Baker2015]_.
@@ -435,6 +298,103 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
           + v_h(grids=grids, n=n)
           + self.get_xc_potential_down(n_up, n_down))
 
+class AnalyticalLSD(ExponentialLSDFunctional):
+  """local density approximation (LDA) for exponentially repelling electrons.
+  For more details see [Baker2015]_. Here we use analytical expressions only
+  and do not require automatic differentiation or JAX.
+  """
+
+  def __init__(self, grids):
+    super(AnalyticalLSD, self).__init__(grids=grids)
+
+  def _set_pade_approx_params(self, n):
+    """Set Pade approximation parameters. They are derived in [Baker2015]_.
+
+    Args:
+        n: system density on a grid.
+    Returns:
+        u1, p1, u2, p2: parameters to be used.
+    """
+
+    def expression_1(n, alpha, beta, gamma, delta, eta, sigma, nu):
+      y = np.pi * n / self.k
+      return alpha + beta * (y ** (1. / 2.)) + gamma * y + delta * (
+          y ** (3. / 2.)) + eta * (y ** 2) + sigma * (
+                 y ** (5. / 2.)) + nu * (
+                 np.pi * (self.k ** 2) / self.A) * (y ** 3)
+
+    def expression_2(n, alpha, beta, gamma, delta, eta, sigma, nu):
+      return (6 * (n ** 3) * (
+          np.pi ** 4) * self.k * nu + self.A * np.sqrt(
+        np.pi) * (4 * (n ** 2) * (
+          np.pi ** (3. / 2.)) * eta + 2 * n * np.sqrt(
+        np.pi) * gamma * self.k + 3 * n * np.pi * delta * np.sqrt(
+        n / self.k) * self.k + beta * np.sqrt(
+        n / self.k) * (self.k ** 2) + 5 * n * (np.pi ** 2) * (
+                      (n / self.k) ** (
+                      3. / 2.)) * self.k * sigma)) / (
+                 2 * self.A * n * (self.k ** 2))
+
+    u1 = expression_1(n, 2, -1.00077, 6.26099, -11.9041, 9.62614,
+                      -1.48334, 1)
+    p1 = expression_1(n, 180.891, -541.124, 651.615, -356.504, 88.0733,
+                      -4.32708, 8)
+    u2 = expression_2(n, 2, -1.00077, 6.26099, -11.9041, 9.62614,
+                      -1.48334, 1)
+    p2 = expression_2(n, 180.891, -541.124, 651.615, -356.504, 88.0733,
+                      -4.32708, 8)
+
+    return u1, p1, u2, p2
+
+  def get_xc_potential_up(self, n_up, n_down):
+    """Exchange-Correlation Potential for up electrons,
+    :math:`v_{xc, \\uparrow} = d/dn_{\\uparrow} e_{xc}`.
+
+    Args:
+        n: system density on a grid.
+        n_up: up spin density on a grid.
+        n_down: down spin density on a grid.
+    Returns:
+        `ndarray`: the up XC potential on a grid.
+    """
+
+    n = n_up + n_down
+
+    pi = np.pi
+    u1, p1, u2, p2 = self._set_pade_approx_params(n)
+
+    v_x = -(self.A / (pi)) * (np.arctan(2 * pi * n_up / self.k))
+    v_c = (self.A * (2 * p1 * (u1 ** 2) * (n_down - n_up) + (
+        u1 ** 2) * (
+                         (n_down - n_up) ** 2) * p2 - 4 * (
+                         p1 ** 2) * n_down * (
+                         u1 - n_up * u2))) / (
+              (p1 ** 2) * (u1 ** 2) * self.k)
+    return v_x + v_c
+
+  def get_xc_potential_down(self, n_up, n_down):
+    """Exchange-Correlation Potential for up electrons,
+    :math:`v_{xc, \\downarrow} = d/dn_{\\downarrow} e_{xc}`.
+
+    Args:
+        n: system density on a grid.
+        n_up: up spin density on a grid.
+        n_down: down spin density on a grid.
+    Returns:
+        `ndarray`: the down XC potential on a grid.
+    """
+    n = n_up + n_down
+
+    pi = np.pi
+    u1, p1, u2, p2 = self._set_pade_approx_params(n)
+
+    v_x = -(self.A / (pi)) * (np.arctan(2 * pi * n_down / self.k))
+    v_c = (self.A * (2 * p1 * (u1 ** 2) * (-n_down + n_up) + (
+        u1 ** 2) * ((n_down - n_up) ** 2) * p2 - 4 * (
+                         p1 ** 2) * n_up * (
+                         u1 - n_down * u2))) / (
+              (p1 ** 2) * (u1 ** 2) * self.k)
+    return v_x + v_c
 
 class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
 
@@ -609,23 +569,5 @@ class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
     return jax.grad(self.get_xc_energy)(
       density, xc_energy_density_fn) / self.dx
 
-if __name__ == '__main__':
-  import matplotlib.pyplot as plt
 
-  grids = np.arange(-256, 257) * 0.08
-  exp_lsd = ExponentialLSDFunctional(grids)
-
-  densities = np.load('../ksr/ions/exch_only/basic_all/densities.npy')
-  xc_energies = np.load('../ksr/ions/exch_only/basic_all/xc_energies.npy')
-  xc_energy_densities = np.load('../ksr/ions/exch_only/basic_all/xc_energy_densities.npy')
-
-  # H atom
-  n = densities[0]
-  xc_energy = xc_energies[0]
-  xc_energy_density = xc_energy_densities[0]
-
-  plt.plot(grids, exp_lsd.get_xc_potential(n, 0.*grids)[0])
-  plt.plot(grids, exp_lsd.get_xc_potential(n, 0.*grids)[1])
-
-  plt.savefig('temp.pdf')
 

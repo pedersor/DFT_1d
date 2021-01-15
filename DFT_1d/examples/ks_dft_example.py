@@ -36,7 +36,7 @@ def lsd_ks_dft_atom(grids, num_electrons, nuclear_charge):
     """
 
     v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=nuclear_charge)
-    lsd_xc = functionals.ExponentialLSDFunctional(grids=grids)
+    lsd_xc = functionals.AnalyticalLSD(grids=grids)
     solver = ks_dft.KS_Solver(grids, v_ext=v_ext, xc=lsd_xc,
                               num_electrons=num_electrons)
     solver.solve_self_consistent_density(verbose=1)

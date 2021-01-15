@@ -60,10 +60,9 @@ class KS_Solver(SCF_SolverBase):
         KS system.
         """
 
-        self.v_s_up = functools.partial(self.xc.v_s_up,
-                                        n=self.density, n_up=self.n_up,
-                                        n_down=self.n_down, v_ext=self.v_ext,
-                                        v_xc_up=self.xc.v_xc_up)
+        self.v_s_up = functools.partial(self.xc.get_ks_potential_up,
+                                        n_up=self.n_up, n_down=self.n_down,
+                                        v_ext=self.v_ext)
         return self
 
     def _update_v_s_down(self):
@@ -71,11 +70,9 @@ class KS_Solver(SCF_SolverBase):
         KS system.
         """
 
-        self.v_s_down = functools.partial(self.xc.v_s_down,
-                                          n=self.density, n_up=self.n_up,
-                                          n_down=self.n_down,
-                                          v_ext=self.v_ext,
-                                          v_xc_down=self.xc.v_xc_down)
+        self.v_s_down = functools.partial(self.xc.get_ks_potential_down,
+                                        n_up=self.n_up, n_down=self.n_down,
+                                        v_ext=self.v_ext)
         return self
 
     def _update_v_s(self):
@@ -162,10 +159,12 @@ class KS_Solver(SCF_SolverBase):
             ).sum() * self.dx
 
         # Exchange energy
-        self.exchange_energy = self.xc.get_exchange_energy(self.density, self.zeta)
+        self.exchange_energy = self.xc.get_exchange_energy(self.n_up,
+                                                           self.n_down)
 
         # Correlation energy
-        self.correlation_energy = self.xc.get_correlation_energy(self.density, self.zeta)
+        self.correlation_energy = self.xc.get_correlation_energy(self.n_up,
+                                                                 self.n_down)
 
         # Total energy
         self.total_energy = (

@@ -332,8 +332,7 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
             + gamma * y + delta * (y ** (3. / 2.))
             + eta * (y ** 2)
             + sigma * (y ** (5. / 2.))
-            + nu * (jnp.pi * (self.k ** 2) / self.A) * (y ** 3)
-        )
+            + nu * (jnp.pi * (self.k ** 2) / self.A) * (y ** 3))
 
 
       # Parameters derived in [Baker2015]_.
@@ -386,14 +385,34 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
 
       return c_potential_up, c_potential_down
 
-    def get_xc_potential(self, n_up, n_down):
+    def get_xc_potential_up(self, n_up, n_down):
       xc_potential_up = jax.grad(self.get_xc_energy, argnums=0)(
         n_up, n_down) / self.dx
 
+      return xc_potential_up
+
+    def get_xc_potential_down(self, n_up, n_down):
       xc_potential_down = jax.grad(self.get_xc_energy, argnums=1)(
         n_up, n_down) / self.dx
+      return xc_potential_down
 
-      return xc_potential_up, xc_potential_down
+    def get_ks_potential_up(self, grids, v_ext, n_up, n_down):
+        """Total up KS potential."""
+        v_h = self.v_h()
+        n = n_up + n_down
+
+        return (v_ext(grids)
+          + v_h(grids=grids, n=n)
+          + self.get_xc_potential_up(n_up, n_down))
+
+    def get_ks_potential_down(self, grids, v_ext, n_up, n_down):
+        """Total up KS potential."""
+        v_h = self.v_h()
+        n = n_up + n_down
+
+        return (v_ext(grids)
+          + v_h(grids=grids, n=n)
+          + self.get_xc_potential_down(n_up, n_down))
 
 
 class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):

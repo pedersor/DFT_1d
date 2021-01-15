@@ -162,10 +162,12 @@ class BaseExchangeCorrelationFunctional:
           + v_h(grids=grids, n=n)
           + self.get_xc_potential_down(n_up, n_down))
 
-    def get_ks_potential(self, grids, n, v_ext, v_xc):
+    def get_ks_potential(self, grids, n, v_ext):
         """Spin-free KS potential."""
         v_h = self.hartree_potential()
-        return v_ext(grids) + v_h(grids=grids, n=n) + v_xc(n)
+        return (v_ext(grids)
+          + v_h(grids=grids, n=n)
+          + self.get_xc_potential(n))
 
     def get_xc_energy(self, n, *args):
         raise NotImplementedError()
@@ -280,23 +282,6 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
         n_up, n_down) / self.dx
       return xc_potential_down
 
-    def get_ks_potential_up(self, grids, v_ext, n_up, n_down):
-        """Total up KS potential."""
-        v_h = self.hartree_potential()
-        n = n_up + n_down
-
-        return (v_ext(grids)
-          + v_h(grids=grids, n=n)
-          + self.get_xc_potential_up(n_up, n_down))
-
-    def get_ks_potential_down(self, grids, v_ext, n_up, n_down):
-        """Total up KS potential."""
-        v_h = self.hartree_potential()
-        n = n_up + n_down
-
-        return (v_ext(grids)
-          + v_h(grids=grids, n=n)
-          + self.get_xc_potential_down(n_up, n_down))
 
 class AnalyticalLSD(ExponentialLSDFunctional):
   """local density approximation (LDA) for exponentially repelling electrons.

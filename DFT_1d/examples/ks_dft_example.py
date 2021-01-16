@@ -106,7 +106,7 @@ if __name__ == '__main__':
     grids = np.arange(-256, 257) * h
     nuclear_charge = 3
     num_electrons = 3
-    num_unpaired_electrons = None
+    num_unpaired_electrons = 1
 
     if num_unpaired_electrons == 0 or num_unpaired_electrons is None:
       ks_solver = lda_ks_dft_atom(grids, num_electrons, nuclear_charge)

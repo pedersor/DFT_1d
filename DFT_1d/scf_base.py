@@ -21,7 +21,7 @@ from utils import get_dx
 class SCF_SolverBase:
     """Base Solver for self-consistent field (SCF) calculations."""
 
-    def __init__(self, grids, v_ext, num_electrons=1,
+    def __init__(self, grids, v_ext, num_electrons, num_unpaired_electrons,
                  boundary_condition="open"):
         """Initialize the solver with external potential function and grid.
 
@@ -51,26 +51,30 @@ class SCF_SolverBase:
 
         # Solver is not co nverged by default.
         self._converged = False
-        self._init_default_spin_config()
+        self._init_spin_config(num_unpaired_electrons)
         self.set_energy_tol_threshold()
 
+    # TODO: remove and just add in self-consistent fn
     def set_energy_tol_threshold(self, energy_tol_threshold=1e-4):
         self.energy_tol_threshold = energy_tol_threshold
         return self
 
-    def _init_default_spin_config(self):
-        """Default spin configuration: all up/down spins are paired if
-        possible. All unpaired electrons are defaulted to spin-up.
+    def _init_spin_config(self, num_unpaired_electrons):
+        """Default spin configuration. All unpaired electrons are defaulted to
+        spin-up by convention.
         """
 
-        num_up_electrons = self.num_electrons // 2
-        num_down_electrons = self.num_electrons // 2
-        if self.num_electrons % 2 == 1:
-            num_up_electrons += 1
+        if num_unpaired_electrons is None:
+          return self
+        elif (self.num_electrons - num_unpaired_electrons) % 2 != 0:
+          raise ValueError('(num_electrons - num_unpaired_electrons) must be'
+            'divisible by 2.')
+        elif num_unpaired_electrons > self.num_electrons:
+          raise ValueError('Cannot have num_unpaired_electrons > num_electrons')
 
-        self.num_up_electrons = num_up_electrons
-        self.num_down_electrons = num_down_electrons
-
+        self.num_down_electrons = (self.num_electrons
+                                   - num_unpaired_electrons) // 2
+        self.num_up_electrons = self.num_down_electrons + num_unpaired_electrons
         return self
 
     def is_converged(self):

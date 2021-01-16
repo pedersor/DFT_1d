@@ -24,7 +24,7 @@ from scf_base import SCF_SolverBase
 class KS_Solver(SCF_SolverBase):
     """KS-DFT solver for non-periodic systems."""
 
-    def __init__(self, grids, v_ext, xc, num_electrons=1,
+    def __init__(self, grids, v_ext, xc, num_electrons, num_unpaired_electrons,
                  boundary_condition='open'):
         """Initialize the solver with an exchange-correlation (XC) functional.
 
@@ -33,8 +33,10 @@ class KS_Solver(SCF_SolverBase):
         """
 
         super(KS_Solver, self).__init__(grids, v_ext, num_electrons,
+                                        num_unpaired_electrons,
                                         boundary_condition)
-        self.xc = xc
+        # TODO: self.xc = xc(grids)..
+        self.xc = xc(grids)
         self.init_v_s()
 
     def init_v_s(self, v_s_up=None, v_s_down=None):
@@ -177,7 +179,7 @@ class KS_Solver(SCF_SolverBase):
 class Spinless_KS_Solver(KS_Solver):
   """spinless KS-DFT solver for non-periodic systems."""
 
-  def __init__(self, grids, v_ext, xc, num_electrons=1,
+  def __init__(self, grids, v_ext, xc, num_electrons,
                boundary_condition='open'):
     """Initialize the solver with an exchange-correlation (XC) functional.
 
@@ -186,8 +188,9 @@ class Spinless_KS_Solver(KS_Solver):
     """
 
     super(KS_Solver, self).__init__(grids, v_ext, num_electrons,
-                                    boundary_condition)
-    self.xc = xc
+                                    num_unpaired_electrons=None,
+                                    boundary_condition=boundary_condition)
+    self.xc = xc(grids)
     self.init_v_s()
 
   def init_v_s(self, v_s=None):

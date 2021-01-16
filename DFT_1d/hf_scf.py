@@ -27,7 +27,7 @@ from scf_base import SCF_SolverBase
 class HF_Solver(SCF_SolverBase):
     """HF solver for non-periodic systems."""
 
-    def __init__(self, grids, v_ext, hf, num_electrons=1,
+    def __init__(self, grids, v_ext, hf, num_electrons, num_unpaired_electrons,
                  boundary_condition='open'):
         """Initialize the solver with potential function and grid.
 
@@ -38,9 +38,10 @@ class HF_Solver(SCF_SolverBase):
           num_electrons: Integer, the number of electrons in the system.
         """
         super(HF_Solver, self).__init__(grids, v_ext, num_electrons,
+                                        num_unpaired_electrons,
                                         boundary_condition)
 
-        self.hf = hf
+        self.hf = hf(grids)
         self.init_v_eff()
 
     def init_v_eff(self, v_eff_up=None, v_eff_down=None, fock_mat_up=None,
@@ -94,12 +95,12 @@ class HF_Solver(SCF_SolverBase):
 
     def get_E_x_HF(self):
         if self.num_down_electrons == 0:
-            return self.hf.get_E_x(
+            return self.hf.get_exchange_energy(
                 wave_function=self.phi_up[:self.num_up_electrons])
         else:
-            E_x_up = self.hf.get_E_x(
+            E_x_up = self.hf.get_exchange_energy(
                 wave_function=self.phi_up[:self.num_up_electrons])
-            E_x_down = self.hf.get_E_x(
+            E_x_down = self.hf.get_exchange_energy(
                 wave_function=self.phi_down[:self.num_down_electrons])
             return E_x_up + E_x_down
 
@@ -138,9 +139,8 @@ class HF_Solver(SCF_SolverBase):
         # TODO: use prev_densities for DIIS mixing
         prev_densities = []
 
-        final_energy = 1E100
+        previous_energy = None
         converged = False
-
         while not converged:
             # solve HF eqs. -> obtain new new density
             self._solve_ground_state()
@@ -153,39 +153,45 @@ class HF_Solver(SCF_SolverBase):
             self._update_fock_matrix_up()
             self._update_fock_matrix_down()
 
-            if (np.abs(self.eps - final_energy) < self.energy_tol_threshold):
+            if previous_energy is None:
+                pass
+            elif (np.abs(self.eps - previous_energy) < self.energy_tol_threshold):
                 converged = True
                 self._converged = True
-
-            final_energy = self.eps
-            if prev_densities and mixing_param:
+            elif prev_densities and mixing_param:
                 self.density = (1 - mixing_param) * self.density + \
                                mixing_param * prev_densities[-1]
 
+            previous_energy = self.eps
             prev_densities.append(self.density)
 
-            if verbose == 1 or verbose == 2:
+            # TODO: add more verbose options
+            if verbose == 1:
                 print("i = " + str(len(prev_densities)) + ": eps = " + str(
-                    final_energy))
-            if verbose == 2:
-                plt.plot(self.grids, prev_densities[-1])
-                plt.show()
+                    previous_energy))
 
         # Non-Interacting Kinetic Energy
-        self.T_s = self.kinetic_energy
+        self.hf_kinetic_energy = self.kinetic_energy
 
         # External Potential Energy
-        self.V = (self.v_ext(self.grids) * self.density).sum() * self.dx
+        self.ext_potential_energy = (
+            self.v_ext(self.grids) * self.density).sum() * self.dx
 
         # Hartree Energy
-        v_h = self.hf.v_h()
-        self.U = .5 * (v_h(grids=self.grids,
-                           n=self.density) * self.density).sum() * self.dx
+        hartree_potential = self.hf.hartree_potential()
+        self.hartree_energy = .5 * (
+            hartree_potential(grids=self.grids,
+                              n=self.density) * self.density
+            ).sum() * self.dx
 
         # Exchange Energy
-        self.E_x = self.get_E_x_HF()
+        self.exchange_energy = self.get_E_x_HF()
 
         # Total Energy
-        self.E_tot = self.T_s + self.V + self.U + self.E_x
+        self.total_energy = (
+            self.hf_kinetic_energy +
+            self.ext_potential_energy +
+            self.hartree_energy +
+            self.exchange_energy)
 
         return self

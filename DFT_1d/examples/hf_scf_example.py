@@ -11,6 +11,7 @@ Summary:
 
 import sys
 import os
+import warnings
 
 currentpath = os.path.abspath('.')
 sys.path.insert(0, os.path.dirname(currentpath))
@@ -21,87 +22,52 @@ import numpy as np
 import functools
 
 
-def hf_scf_atom(grids, N_e, Z):
+def hf_scf_atom(grids, num_electrons, num_unpaired_electrons, nuclear_charge):
     """ Example HF-SCF calculation for a 1D atom with
         exponential interactions, see ext_potentials.exp_hydrogenic.
 
     Args:
         grids: grids: numpy array of grid points for evaluating 1d potential.
         (num_grids,)
-        N_e: the number of electrons in the atom.
-        Z: the nuclear charge Z of the atom.
+        num_electrons: the number of electrons in the atom.
+        nuclear_charge: the nuclear charge Z of the atom.
 
     Returns:
         HF-SCF solver class.
     """
 
-    v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=Z)
-    exponential_hf = functionals.ExponentialHF(grids=grids)
-
+    v_ext = functools.partial(ext_potentials.exp_hydrogenic, Z=nuclear_charge)
+    exponential_hf = functionals.ExponentialHF
     solver = hf_scf.HF_Solver(grids, v_ext=v_ext, hf=exponential_hf,
-                              num_electrons=N_e)
+                              num_electrons=num_electrons,
+                              num_unpaired_electrons=num_unpaired_electrons)
     solver.solve_self_consistent_density(verbose=1)
     return solver
 
 
-def get_latex_table_atoms(grids):
-    """ Example Reproduce HF results in table 2 of [Baker2015]_.
+def get_hf_energies(solver):
 
-    Args:
-        grids: grids: numpy array of grid points for evaluating 1d potential.
-        (num_grids,)
-
-    Prints:
-        copyable latex-formatted table.
-    """
-
-    atom_dict = {"H": [1, 1], "He$^+$": [1, 2], "Li$^{2+}$": [1, 3],
-                 "Be$^{3+}$": [1, 4], "He": [2, 2], "Li$^+$": [2, 3],
-                 "Be$^{2+}$": [2, 4], "Li": [3, 3], "Be$^+$": [3, 4],
-                 "Be": [4, 4]}
-
-    print("$N_e$", end=" & ")
-    print("Atom/Ion", end=" & ")
-    print("$T_s$", end=" & ")
-    print("$V$", end=" & ")
-    print("$U$", end=" & ")
-    print(r"$E_x$", end=" & ")
-    print(r"$E^{\text{HF}}$", end=" ")
-    print(r'\\')
-    print('\hline')
-
-    for key in atom_dict.keys():
-        print(atom_dict[key][0], end=" & ")
-        print(key, end=" & ")
-
-        solver = hf_scf_atom(grids, atom_dict[key][0], atom_dict[key][1])
-        print(str(round(solver.T_s, 3)), end=" & ")
-        print(str(round(solver.V, 3)), end=" & ")
-        print(str(round(solver.U, 3)), end=" & ")
-        print(str(round(solver.E_x, 3)), end=" & ")
-        print(str(round(solver.E_tot, 3)), end=" ")
-
-        print(r'\\')
-        print('\hline')
-
-
-def single_atom(grids, N_e, Z):
-    solver = hf_scf_atom(grids, N_e, Z)
+    if solver.is_converged():
+      print()
+      print('Converged results:')
+    else:
+      print()
+      warnings.warn('results are not converged!')
 
     # Non-Interacting Kinetic Energy
-    print("T_s =", solver.T_s)
+    print("T_s =", solver.hf_kinetic_energy)
 
     # External Potential Energy
-    print("V =", solver.V)
+    print("V =", solver.ext_potential_energy)
 
     # Hartree Energy
-    print("U =", solver.U)
+    print("U =", solver.hartree_energy)
 
     # Exchange Energy
-    print("E_x =", solver.E_x)
+    print("E_x =", solver.exchange_energy)
 
     # Total Energy
-    print("E =", solver.E_tot)
+    print("E =", solver.total_energy)
 
     return solver
 
@@ -110,19 +76,17 @@ if __name__ == '__main__':
     """ Li atom HF calculation example. """
     h = 0.08
     grids = np.arange(-256, 257) * h
+    nuclear_charge = 3
+    num_electrons = 3
+    num_unpaired_electrons = 1
 
-    example = single_atom(grids, 3, 3)
+    hf_solver = hf_scf_atom(grids, num_electrons, num_unpaired_electrons,
+                            nuclear_charge)
+    get_hf_energies(hf_solver)
 
     # plot example self-consistent HF density
-    plt.plot(grids, example.density)
+    plt.plot(grids, hf_solver.density)
     plt.ylabel('$n(x)$', fontsize=16)
     plt.xlabel('$x$', fontsize=16)
     plt.grid(alpha=0.4)
     plt.show()
-
-    sys.exit()
-
-    """ Generate atom table for various (N_e, Z) """
-    # use coarser grid for faster computation.
-    grids = np.linspace(-10, 10, 201)
-    get_latex_table_atoms(grids)

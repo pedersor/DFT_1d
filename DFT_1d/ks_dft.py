@@ -10,8 +10,6 @@ Kohn-Sham DFT solver
 
 .. todo::
 
-    * Comments in KS solver funciton should be in doc format
-    * *solve_self_consistent_density* needs summary sentence
     * Linting?
 """
 
@@ -26,7 +24,7 @@ from scf_base import SCF_SolverBase
 class KS_Solver(SCF_SolverBase):
     """KS-DFT solver for non-periodic systems."""
 
-    def __init__(self, grids, v_ext, xc, num_electrons=1,
+    def __init__(self, grids, v_ext, xc, num_electrons, num_unpaired_electrons,
                  boundary_condition='open'):
         """Initialize the solver with an exchange-correlation (XC) functional.
 
@@ -35,8 +33,10 @@ class KS_Solver(SCF_SolverBase):
         """
 
         super(KS_Solver, self).__init__(grids, v_ext, num_electrons,
+                                        num_unpaired_electrons,
                                         boundary_condition)
-        self.xc = xc
+        # TODO: self.xc = xc(grids)..
+        self.xc = xc(grids)
         self.init_v_s()
 
     def init_v_s(self, v_s_up=None, v_s_down=None):
@@ -62,10 +62,9 @@ class KS_Solver(SCF_SolverBase):
         KS system.
         """
 
-        self.v_s_up = functools.partial(self.xc.v_s_up,
-                                        n=self.density, n_up=self.n_up,
-                                        n_down=self.n_down, v_ext=self.v_ext,
-                                        v_xc_up=self.xc.v_xc_up)
+        self.v_s_up = functools.partial(self.xc.get_ks_potential_up,
+                                        n_up=self.n_up, n_down=self.n_down,
+                                        v_ext=self.v_ext)
         return self
 
     def _update_v_s_down(self):
@@ -73,11 +72,9 @@ class KS_Solver(SCF_SolverBase):
         KS system.
         """
 
-        self.v_s_down = functools.partial(self.xc.v_s_down,
-                                          n=self.density, n_up=self.n_up,
-                                          n_down=self.n_down,
-                                          v_ext=self.v_ext,
-                                          v_xc_down=self.xc.v_xc_down)
+        self.v_s_down = functools.partial(self.xc.get_ks_potential_down,
+                                        n_up=self.n_up, n_down=self.n_down,
+                                        v_ext=self.v_ext)
         return self
 
     def _update_v_s(self):
@@ -124,7 +121,7 @@ class KS_Solver(SCF_SolverBase):
         # TODO: use prev_densities for DIIS mixing
         prev_densities = []
 
-        final_energy = 1E100
+        previous_energy = None
         converged = False
         while not converged:
             # solve KS system -> obtain new density
@@ -133,43 +130,48 @@ class KS_Solver(SCF_SolverBase):
             # update KS potential(s) using new density
             self._update_v_s()
 
-            if (np.abs(self.eps - final_energy) < self.energy_tol_threshold):
+            if previous_energy is None:
+                pass
+            elif (np.abs(self.eps - previous_energy) < self.energy_tol_threshold):
                 converged = True
                 self._converged = True
-
-            final_energy = self.eps
-            if prev_densities and mixing_param:
+            elif prev_densities and mixing_param:
                 self.density = (1 - mixing_param) * self.density + \
                                mixing_param * prev_densities[-1]
 
+            previous_energy = self.eps
             prev_densities.append(self.density)
 
-            if verbose == 1 or verbose == 2:
+            # TODO: add more verbose options
+            if verbose == 1:
                 print("i = " + str(len(prev_densities)) + ": eps = " + str(
-                    final_energy))
-            if verbose == 2:
-                plt.plot(self.grids, prev_densities[-1])
-                plt.show()
+                    previous_energy))
 
-        # Non-Interacting Kinetic Energy
-        self.T_s = self.kinetic_energy
+        # Non-interacting (Kohn-Shame) kinetic energy
+        self.ks_kinetic_energy = self.kinetic_energy
 
-        # External Potential Energy
-        self.V = (self.v_ext(self.grids) * self.density).sum() * self.dx
+        # External potential energy
+        self.ext_potential_energy = (
+            self.v_ext(self.grids) * self.density).sum() * self.dx
 
-        # Hartree Energy
-        v_h = self.xc.v_h()
-        self.U = .5 * (v_h(grids=self.grids,
-                           n=self.density) * self.density).sum() * self.dx
+        # Hartree energy
+        self.hartree_energy = self.xc.get_hartree_energy(self.density)
 
-        # Exchange Energy
-        self.E_x = self.xc.get_E_x(self.density, self.zeta)
+        # Exchange energy
+        self.exchange_energy = self.xc.get_exchange_energy(self.n_up,
+                                                           self.n_down)
 
-        # Correlation Energy
-        self.E_c = self.xc.get_E_c(self.density, self.zeta)
+        # Correlation energy
+        self.correlation_energy = self.xc.get_correlation_energy(self.n_up,
+                                                                 self.n_down)
 
-        # Total Energy
-        self.E_tot = self.T_s + self.V + self.U + self.E_x + self.E_c
+        # Total energy
+        self.total_energy = (
+            self.ks_kinetic_energy +
+            self.ext_potential_energy +
+            self.hartree_energy +
+            self.exchange_energy +
+            self.correlation_energy)
 
         return self
 
@@ -177,7 +179,7 @@ class KS_Solver(SCF_SolverBase):
 class Spinless_KS_Solver(KS_Solver):
   """spinless KS-DFT solver for non-periodic systems."""
 
-  def __init__(self, grids, v_ext, xc, num_electrons=1,
+  def __init__(self, grids, v_ext, xc, num_electrons,
                boundary_condition='open'):
     """Initialize the solver with an exchange-correlation (XC) functional.
 
@@ -186,8 +188,9 @@ class Spinless_KS_Solver(KS_Solver):
     """
 
     super(KS_Solver, self).__init__(grids, v_ext, num_electrons,
-                                    boundary_condition)
-    self.xc = xc
+                                    num_unpaired_electrons=None,
+                                    boundary_condition=boundary_condition)
+    self.xc = xc(grids)
     self.init_v_s()
 
   def init_v_s(self, v_s=None):
@@ -210,9 +213,8 @@ class Spinless_KS_Solver(KS_Solver):
     KS system.
     """
 
-    self.v_s = functools.partial(self.xc.v_s,
-                                 n=self.density, v_ext=self.v_ext,
-                                 v_xc=self.xc.v_xc)
+    self.v_s = functools.partial(self.xc.get_ks_potential,
+                                 n=self.density, v_ext=self.v_ext)
     return self
 
   def _solve_ground_state(self):
@@ -257,52 +259,54 @@ class Spinless_KS_Solver(KS_Solver):
     # TODO: use prev_densities for DIIS mixing
     prev_densities = []
 
-    final_energy = 1E100
+    previous_energy = None
     converged = False
     while not converged:
       # solve KS system -> obtain new density
       self._solve_ground_state()
 
-      # update total potentials using new density
+      # update KS potential(s) using new density
       self._update_v_s()
 
-      if (np.abs(self.eps - final_energy) < self.energy_tol_threshold):
+      if previous_energy is None:
+        pass
+      elif (np.abs(self.eps - previous_energy) < self.energy_tol_threshold):
         converged = True
         self._converged = True
-
-      final_energy = self.eps
-      if prev_densities and mixing_param:
+      elif prev_densities and mixing_param:
         self.density = (1 - mixing_param) * self.density + \
                        mixing_param * prev_densities[-1]
 
+      previous_energy = self.eps
       prev_densities.append(self.density)
 
-      if verbose == 1 or verbose == 2:
+      # TODO: add more verbose options
+      if verbose == 1:
         print("i = " + str(len(prev_densities)) + ": eps = " + str(
-          final_energy))
-      if verbose == 2:
-        plt.plot(self.grids, prev_densities[-1])
-        plt.plot(self.grids, self.v_s(self.grids))
-        plt.show()
+          previous_energy))
 
-    # Non-Interacting Kinetic Energy
-    self.T_s = self.kinetic_energy
+    # Non-Interacting (Kohn-Sham) Kinetic Energy
+    self.ks_kinetic_energy = self.kinetic_energy
 
     # External Potential Energy
-    self.V = (self.v_ext(self.grids) * self.density).sum() * self.dx
+    self.ext_potential_energy = (
+        self.v_ext(self.grids) * self.density).sum() * self.dx
 
     # Hartree Energy
-    v_h = self.xc.v_h()
-    self.U = .5 * (v_h(grids=self.grids,
-                       n=self.density) * self.density).sum() * self.dx
+    self.hartree_energy = self.xc.get_hartree_energy(self.density)
 
     # Exchange Energy
-    self.E_x = self.xc.get_E_x(self.density)
+    self.exchange_energy = self.xc.get_exchange_energy(self.density)
 
     # Correlation Energy
-    self.E_c = self.xc.get_E_c(self.density)
+    self.correlation_energy = self.xc.get_correlation_energy(self.density)
 
     # Total Energy
-    self.E_tot = self.T_s + self.V + self.U + self.E_x + self.E_c
+    self.total_energy = (
+        self.ks_kinetic_energy +
+        self.ext_potential_energy +
+        self.hartree_energy +
+        self.exchange_energy +
+        self.correlation_energy)
 
     return self

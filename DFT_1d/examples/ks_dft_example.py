@@ -11,6 +11,7 @@ Summary:
 
 import sys
 import os
+import warnings
 
 currentpath = os.path.abspath('.')
 sys.path.insert(0, os.path.dirname(currentpath))
@@ -69,51 +70,14 @@ def lda_ks_dft_atom(grids, num_electrons, nuclear_charge):
   return solver
 
 
-def get_latex_table_atoms(grids):
-    """Reproduce LSD results in table 2 of [Baker2015]_.
-
-    Args:
-        grids: grids: numpy array of grid points for evaluating 1d potential.
-        (num_grids,)
-
-    Prints:
-        copyable latex-formatted table.
-    """
-
-    atom_dict = {"H": [1, 1], "He$^+$": [1, 2], "Li$^{2+}$": [1, 3],
-                 "Be$^{3+}$": [1, 4], "He": [2, 2], "Li$^+$": [2, 3],
-                 "Be$^{2+}$": [2, 4], "Li": [3, 3], "Be$^+$": [3, 4],
-                 "Be": [4, 4]}
-
-    # table headers
-    print("$N_e$", end=" & ")
-    print("Atom/Ion", end=" & ")
-    print("$T_s$", end=" & ")
-    print("$V$", end=" & ")
-    print("$U$", end=" & ")
-    print(r"$E^{\text{LDA}}_x$", end=" & ")
-    print(r"$E^{\text{LDA}}_c$", end=" & ")
-    print(r"$E^{\text{LDA}}$", end=" ")
-    print(r'\\')
-    print('\hline')
-
-    for key in atom_dict.keys():
-        print(atom_dict[key][0], end=" & ")
-        print(key, end=" & ")
-
-        solver = lsd_ks_dft_atom(grids, atom_dict[key][0], atom_dict[key][1])
-        print(str(round(solver.ks_kinetic_energy, 3)), end=" & ")
-        print(str(round(solver.ext_potential_energy, 3)), end=" & ")
-        print(str(round(solver.hartree_energy, 3)), end=" & ")
-        print(str(round(solver.exchange_energy, 3)), end=" & ")
-        print(str(round(solver.correlation_energy, 3)), end=" & ")
-        print(str(round(solver.total_energy, 3)), end=" ")
-
-        print(r'\\')
-        print('\hline')
-
-
 def get_ks_dft_energies(solver):
+
+    if solver.is_converged():
+      print()
+      print('Converged results:')
+    else:
+      print()
+      warnings.warn('results are not converged!')
 
     # Non-Interacting (Kohn-Sham) Kinetic Energy
     print("T_s =", solver.ks_kinetic_energy)
@@ -142,7 +106,7 @@ if __name__ == '__main__':
     grids = np.arange(-256, 257) * h
     nuclear_charge = 3
     num_electrons = 3
-    num_unpaired_electrons = 1
+    num_unpaired_electrons = None
 
     if num_unpaired_electrons == 0 or num_unpaired_electrons is None:
       ks_solver = lda_ks_dft_atom(grids, num_electrons, nuclear_charge)
@@ -158,9 +122,4 @@ if __name__ == '__main__':
     plt.xlabel('$x$', fontsize=16)
     plt.grid(alpha=0.4)
     plt.show()
-    sys.exit()
 
-    """Generate atom table for various (N_e, Z) """
-    # use coarser grid for faster computation.
-    grids = np.linspace(-10, 10, 201)
-    get_latex_table_atoms(grids)

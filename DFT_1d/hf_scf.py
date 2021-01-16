@@ -27,7 +27,7 @@ from scf_base import SCF_SolverBase
 class HF_Solver(SCF_SolverBase):
     """HF solver for non-periodic systems."""
 
-    def __init__(self, grids, v_ext, hf, num_electrons=1,
+    def __init__(self, grids, v_ext, hf, num_electrons, num_unpaired_electrons,
                  boundary_condition='open'):
         """Initialize the solver with potential function and grid.
 
@@ -38,9 +38,10 @@ class HF_Solver(SCF_SolverBase):
           num_electrons: Integer, the number of electrons in the system.
         """
         super(HF_Solver, self).__init__(grids, v_ext, num_electrons,
+                                        num_unpaired_electrons,
                                         boundary_condition)
 
-        self.hf = hf
+        self.hf = hf(grids)
         self.init_v_eff()
 
     def init_v_eff(self, v_eff_up=None, v_eff_down=None, fock_mat_up=None,

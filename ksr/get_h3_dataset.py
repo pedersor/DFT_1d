@@ -16,8 +16,9 @@ grids = np.arange(-256, 257) * h
 external_potentials = np.load('h3_external_potentials.npy')
 num_samples = len(external_potentials)
 num_electrons = 3
+num_unpaired_electrons = 1
 
-lda_xc = functionals.ExponentialLDAFunctional
+lsda_xc = functionals.ExponentialLSDFunctional
 
 total_energies = []
 densities = []
@@ -27,8 +28,9 @@ for i, potential in enumerate(external_potentials):
 
   v_ext = lambda grids: potential
 
-  solver = ks_dft.Spinless_KS_Solver(grids, v_ext=v_ext, xc=lda_xc,
-                                     num_electrons=num_electrons)
+  solver = ks_dft.KS_Solver(grids, v_ext=v_ext, xc=lsda_xc,
+                            num_unpaired_electrons=num_unpaired_electrons,
+                            num_electrons=num_electrons)
   solver.solve_self_consistent_density(max_iterations=30,
                                        energy_converge_tolerance=-1)
 

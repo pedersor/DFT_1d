@@ -250,7 +250,12 @@ class Spinless_KS_Solver(KS_Solver):
 
     return self
 
-  def solve_self_consistent_density(self, mixing_param=0.3, verbose=0):
+  def solve_self_consistent_density(
+      self,
+      energy_converge_tolerance=1e-6,
+      mixing_param=0.3,
+      max_iterations=50,
+      verbose=0):
     """Solve KS equations self-consistently.
 
     Args:
@@ -265,53 +270,53 @@ class Spinless_KS_Solver(KS_Solver):
     prev_densities = []
 
     previous_energy = None
-    converged = False
-    while not converged:
+    for i in range(max_iterations):
       # solve KS system -> obtain new density
       self._solve_ground_state()
 
-      # update KS potential(s) using new density
-      self._update_v_s()
+      # Non-interacting (Kohn-Shame) kinetic energy
+      self.ks_kinetic_energy = self.kinetic_energy
+
+      # External potential energy
+      self.ext_potential_energy = (self.v_ext(
+        self.grids) * self.density).sum() * self.dx
+
+      # Hartree energy
+      self.hartree_energy = self.xc.get_hartree_energy(self.density)
+
+      # Exchange energy
+      self.exchange_energy = self.xc.get_exchange_energy(self.density)
+
+      # Correlation energy
+      self.correlation_energy = self.xc.get_correlation_energy(self.density)
+
+      # Total energy
+      self.total_energy = (
+          self.ks_kinetic_energy +
+          self.ext_potential_energy +
+          self.hartree_energy +
+          self.exchange_energy +
+          self.correlation_energy)
 
       if previous_energy is None:
         pass
-      elif (np.abs(self.eps - previous_energy) < self.energy_tol_threshold):
-        converged = True
+      elif (np.abs(self.total_energy - previous_energy) <
+            energy_converge_tolerance):
         self._converged = True
+        break
       elif prev_densities and mixing_param:
         self.density = (1 - mixing_param) * self.density + \
                        mixing_param * prev_densities[-1]
 
-      previous_energy = self.eps
+      # update KS potential(s) using new density
+      # TODO: mix spin densities?
+      self._update_v_s()
+
+      previous_energy = self.total_energy
       prev_densities.append(self.density)
 
       # TODO: add more verbose options
       if verbose == 1:
-        print("i = " + str(len(prev_densities)) + ": eps = " + str(
-          previous_energy))
-
-    # Non-Interacting (Kohn-Sham) Kinetic Energy
-    self.ks_kinetic_energy = self.kinetic_energy
-
-    # External Potential Energy
-    self.ext_potential_energy = (
-        self.v_ext(self.grids) * self.density).sum() * self.dx
-
-    # Hartree Energy
-    self.hartree_energy = self.xc.get_hartree_energy(self.density)
-
-    # Exchange Energy
-    self.exchange_energy = self.xc.get_exchange_energy(self.density)
-
-    # Correlation Energy
-    self.correlation_energy = self.xc.get_correlation_energy(self.density)
-
-    # Total Energy
-    self.total_energy = (
-        self.ks_kinetic_energy +
-        self.ext_potential_energy +
-        self.hartree_energy +
-        self.exchange_energy +
-        self.correlation_energy)
+        print(f"i = {i}: E = {previous_energy}")
 
     return self

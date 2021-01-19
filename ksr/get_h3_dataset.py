@@ -21,7 +21,7 @@ lda_xc = functionals.ExponentialLDAFunctional
 total_energies = []
 densities = []
 time_per_molecule = []
-for v_ext in external_potentials:
+for i, v_ext in enumerate(external_potentials):
   start_time = time.time()
 
   solver = ks_dft.Spinless_KS_Solver(grids, v_ext=v_ext, xc=lda_xc,

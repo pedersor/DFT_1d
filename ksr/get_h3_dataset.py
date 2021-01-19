@@ -1,6 +1,7 @@
 import os
 import sys
 sys.path.append('../')
+sys.path.append('../DFT_1d')
 
 import numpy as np
 from DFT_1d import ks_dft

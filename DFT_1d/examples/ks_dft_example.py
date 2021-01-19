@@ -22,7 +22,7 @@ import numpy as np
 import functools
 
 
-def lsd_ks_dft_atom(
+def lsda_ks_dft_atom(
     grids, num_electrons, num_unpaired_electrons, nuclear_charge):
     """local spin density approximation (LSD) KS-DFT calculation for a 1D atom
     with exponential interactions, see ext_potentials.exp_hydrogenic.
@@ -112,7 +112,7 @@ if __name__ == '__main__':
       ks_solver = lda_ks_dft_atom(grids, num_electrons, nuclear_charge)
       get_ks_dft_energies(ks_solver)
     else:
-      ks_solver = lsd_ks_dft_atom(grids, num_electrons, num_unpaired_electrons,
+      ks_solver = lsda_ks_dft_atom(grids, num_electrons, num_unpaired_electrons,
                                   nuclear_charge)
       get_ks_dft_energies(ks_solver)
 

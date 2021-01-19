@@ -112,7 +112,7 @@ class Generate_dataset():
             self.total_energies)
     np.save(os.path.join(out_dir, 'densities.npy'),
             self.densities)
-    np.save(os.path.join(out_dir, 'external_potentials.npy'),
+    np.save(os.path.join(out_dir, 'h3_external_potentials.npy'),
             self.external_potentials)
     np.save(os.path.join(out_dir, 'xc_energies.npy'),
             self.xc_energies)

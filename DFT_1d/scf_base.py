@@ -52,12 +52,7 @@ class SCF_SolverBase:
         # Solver is not co nverged by default.
         self._converged = False
         self._init_spin_config(num_unpaired_electrons)
-        self.set_energy_tol_threshold()
 
-    # TODO: remove and just add in self-consistent fn
-    def set_energy_tol_threshold(self, energy_tol_threshold=1e-4):
-        self.energy_tol_threshold = energy_tol_threshold
-        return self
 
     def _init_spin_config(self, num_unpaired_electrons):
         """Default spin configuration. All unpaired electrons are defaulted to

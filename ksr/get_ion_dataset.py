@@ -1,8 +1,10 @@
-import numpy as np
-import ks_dft, hf_scf, functionals, ext_potentials
-import functools
-import os
 import sys
+import os
+import numpy as np
+import functools
+
+sys.path.append('../')
+import ks_dft, hf_scf, functionals, ext_potentials
 
 
 class Generate_dataset():

@@ -36,7 +36,7 @@ for i, potential in enumerate(external_potentials):
 
   time_elapsed = time.time() - start_time
   time_per_molecule.append(time_elapsed)
-  if i == 0:
+  if i == 1:
     est_time_remain = time_elapsed * num_samples
     hours, rem = divmod(est_time_remain, 3600)
     minutes, seconds = divmod(rem, 60)

@@ -41,7 +41,8 @@ def hf_scf_atom(grids, num_electrons, num_unpaired_electrons, nuclear_charge):
     solver = hf_scf.HF_Solver(grids, v_ext=v_ext, hf=exponential_hf,
                               num_electrons=num_electrons,
                               num_unpaired_electrons=num_unpaired_electrons)
-    solver.solve_self_consistent_density(verbose=1)
+    solver.solve_self_consistent_density(verbose=1,
+                                         energy_converge_tolerance=1e-4)
     return solver
 
 

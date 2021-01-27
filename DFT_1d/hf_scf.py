@@ -93,7 +93,7 @@ class HF_Solver(SCF_SolverBase):
 
             return self
 
-    def get_E_x_HF(self):
+    def get_hf_exchange_energy(self):
         if self.num_down_electrons == 0:
             return self.hf.get_exchange_energy(
                 wave_function=self.phi_up[:self.num_up_electrons])
@@ -126,25 +126,64 @@ class HF_Solver(SCF_SolverBase):
             solver_down.solve_ground_state()
             return self._update_ground_state(solver_up, solver_down)
 
-    def solve_self_consistent_density(self, mixing_param=0.3, verbose=0):
-        """
+    def solve_self_consistent_density(
+        self,
+        energy_converge_tolerance=1e-6,
+        mixing_param=0.3,
+        max_iterations=50,
+        verbose=0):
+        """Solve HF equations self-consistently.
 
         Args:
             mixing_param: linear mixing parameter, where 0.0 denotes no mixing.
             verbose: convergence debug printing.
 
         Returns:
-            self.
+            `KS_Solver`: converged/non-converged `KS_Solver` with results.
         """
         # TODO: use prev_densities for DIIS mixing
         prev_densities = []
 
         previous_energy = None
-        converged = False
-        while not converged:
+        for i in range(max_iterations):
             # solve HF eqs. -> obtain new new density
             self._solve_ground_state()
 
+            # Non-Interacting Kinetic Energy
+            self.hf_kinetic_energy = self.kinetic_energy
+
+            # External Potential Energy
+            self.ext_potential_energy = (
+                self.v_ext(self.grids) * self.density).sum() * self.dx
+
+            # Hartree Energy
+            hartree_potential = self.hf.hartree_potential()
+            self.hartree_energy = .5 * (
+                hartree_potential(grids=self.grids,
+                                  n=self.density) * self.density
+            ).sum() * self.dx
+
+            # Exchange Energy
+            self.exchange_energy = self.get_hf_exchange_energy()
+
+            # Total Energy
+            self.total_energy = (
+                self.hf_kinetic_energy +
+                self.ext_potential_energy +
+                self.hartree_energy +
+                self.exchange_energy)
+
+            if previous_energy is None:
+              pass
+            elif (np.abs(self.total_energy - previous_energy) <
+                  energy_converge_tolerance):
+              self._converged = True
+              break
+            elif prev_densities and mixing_param:
+              self.density = ((1 - mixing_param) * self.density
+                              + mixing_param * prev_densities[-1])
+
+            # TODO: mix spin densities?
             # update eff potentials using new density
             self._update_v_eff_up()
             self._update_v_eff_down()
@@ -153,45 +192,11 @@ class HF_Solver(SCF_SolverBase):
             self._update_fock_matrix_up()
             self._update_fock_matrix_down()
 
-            if previous_energy is None:
-                pass
-            elif (np.abs(self.eps - previous_energy) < self.energy_tol_threshold):
-                converged = True
-                self._converged = True
-            elif prev_densities and mixing_param:
-                self.density = (1 - mixing_param) * self.density + \
-                               mixing_param * prev_densities[-1]
-
-            previous_energy = self.eps
+            previous_energy = self.total_energy
             prev_densities.append(self.density)
 
             # TODO: add more verbose options
             if verbose == 1:
-                print("i = " + str(len(prev_densities)) + ": eps = " + str(
-                    previous_energy))
-
-        # Non-Interacting Kinetic Energy
-        self.hf_kinetic_energy = self.kinetic_energy
-
-        # External Potential Energy
-        self.ext_potential_energy = (
-            self.v_ext(self.grids) * self.density).sum() * self.dx
-
-        # Hartree Energy
-        hartree_potential = self.hf.hartree_potential()
-        self.hartree_energy = .5 * (
-            hartree_potential(grids=self.grids,
-                              n=self.density) * self.density
-            ).sum() * self.dx
-
-        # Exchange Energy
-        self.exchange_energy = self.get_E_x_HF()
-
-        # Total Energy
-        self.total_energy = (
-            self.hf_kinetic_energy +
-            self.ext_potential_energy +
-            self.hartree_energy +
-            self.exchange_energy)
+                print(f"i = {i}: E = {previous_energy}")
 
         return self

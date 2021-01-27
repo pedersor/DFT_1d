@@ -119,7 +119,7 @@ class KS_Solver(SCF_SolverBase):
             verbose: convergence debug printing.
 
         Returns:
-            `KS_Solver`: converged `KS_Solver` with results.
+            `KS_Solver`: converged/non-converged `KS_Solver` with results.
         """
 
         # TODO: use prev_densities for DIIS mixing
@@ -164,8 +164,8 @@ class KS_Solver(SCF_SolverBase):
                 self._converged = True
                 break
             elif prev_densities and mixing_param:
-                self.density = (1 - mixing_param) * self.density + \
-                               mixing_param * prev_densities[-1]
+                self.density = ((1 - mixing_param) * self.density
+                                + mixing_param * prev_densities[-1])
 
             # update KS potential(s) using new density
             # TODO: mix spin densities?
@@ -263,7 +263,7 @@ class Spinless_KS_Solver(KS_Solver):
         verbose: convergence debug printing.
 
     Returns:
-        `KS_Solver`: converged `KS_Solver` with results.
+        `KS_Solver`: converged/non-converged `KS_Solver` with results.
     """
 
     # TODO: use prev_densities for DIIS mixing
@@ -305,8 +305,8 @@ class Spinless_KS_Solver(KS_Solver):
         self._converged = True
         break
       elif prev_densities and mixing_param:
-        self.density = (1 - mixing_param) * self.density + \
-                       mixing_param * prev_densities[-1]
+        self.density = ((1 - mixing_param) * self.density
+                        + mixing_param * prev_densities[-1])
 
       # update KS potential(s) using new density
       # TODO: mix spin densities?

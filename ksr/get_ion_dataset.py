@@ -146,7 +146,7 @@ class Generate_dataset():
 
 
 if __name__ == '__main__':
-  """Get example dataset for KSR calculations."""
+  """Get dataset for KSR calculations."""
   h = 0.08
   grids = np.arange(-256, 257) * h
 

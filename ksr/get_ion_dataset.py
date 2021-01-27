@@ -4,7 +4,7 @@ import numpy as np
 import functools
 
 sys.path.append('../')
-import ks_dft, hf_scf, functionals, ext_potentials
+from DFT_1d import ks_dft, hf_scf, functionals, ext_potentials
 
 
 class Generate_dataset():

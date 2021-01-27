@@ -18,11 +18,9 @@ Functionals
     * Docs need love.
 """
 
-import ext_potentials
-import constants
-import numpy as np
 import functools
-from utils import get_dx
+
+import numpy as np
 
 # Jax is used for automatic differentiation
 # to compute functional derivatives of arbitrary functions.
@@ -30,6 +28,11 @@ from utils import get_dx
 import jax
 from jax import tree_util
 import jax.numpy as jnp
+
+from DFT_1d import ext_potentials
+from DFT_1d import constants
+from DFT_1d.utils import get_dx
+
 
 def get_hartree_potential(grids, n, v_ee=functools.partial(
     ext_potentials.exp_hydrogenic)):

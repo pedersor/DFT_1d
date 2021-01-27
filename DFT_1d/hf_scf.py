@@ -16,12 +16,13 @@ Hartree-Fock solver
     * linting?
 """
 
-import non_interacting_solver, functionals
-import numpy as np
 import functools
-import math
-from utils import get_dx, quadratic
-from scf_base import SCF_SolverBase
+
+import numpy as np
+
+from DFT_1d import non_interacting_solver, functionals
+from DFT_1d.utils import get_dx, quadratic
+from DFT_1d.scf_base import SCF_SolverBase
 
 
 class HF_Solver(SCF_SolverBase):

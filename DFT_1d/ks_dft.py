@@ -13,12 +13,13 @@ Kohn-Sham DFT solver
     * Linting?
 """
 
-import non_interacting_solver, functionals
-import numpy as np
 import functools
-import matplotlib.pyplot as plt
-from utils import quadratic
-from scf_base import SCF_SolverBase
+
+import numpy as np
+
+from DFT_1d import non_interacting_solver, functionals
+from DFT_1d.utils import quadratic
+from DFT_1d.scf_base import SCF_SolverBase
 
 
 class KS_Solver(SCF_SolverBase):

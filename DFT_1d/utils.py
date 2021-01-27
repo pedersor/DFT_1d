@@ -1,6 +1,7 @@
 import numpy as np
-import ext_potentials
-import constants
+
+from DFT_1d import ext_potentials
+from DFT_1d import constants
 
 
 def get_dx(grids):

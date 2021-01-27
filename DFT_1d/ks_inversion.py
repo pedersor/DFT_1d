@@ -5,6 +5,7 @@ Kohn-Sham Inversion
 
 .. todo::
 
+    * NOT up to date...
     * Needs code documentation
     * Needs more specific name (since there are many inversions)
     * Needs ref

@@ -3,8 +3,9 @@ External Potentials
 ###################
 """
 
-import constants
 import numpy as np
+
+from DFT_1d import constants
 
 
 def gaussian_dips(grids, coeff, sigma, mu):

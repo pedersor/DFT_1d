@@ -15,7 +15,7 @@ SCF solver base
     * Linting?
 """
 
-from utils import get_dx
+from DFT_1d.utils import get_dx
 
 
 class SCF_SolverBase:

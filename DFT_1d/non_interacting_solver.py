@@ -40,7 +40,8 @@ Non-interacting Solver
 import numpy as np
 from scipy import sparse
 from scipy.sparse import linalg
-from utils import get_dx, quadratic
+
+from DFT_1d.utils import get_dx, quadratic
 
 
 class SolverBase:

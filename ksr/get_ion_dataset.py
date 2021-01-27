@@ -157,6 +157,7 @@ if __name__ == '__main__':
   dataset = Generate_dataset(grids, selected_ions)
   dataset.run_hf_selected_ions()
 
+  print()
   print('Total energies:')
   print(dataset.total_energies)
   print('XC energies:')

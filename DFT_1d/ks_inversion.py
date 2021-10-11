@@ -14,15 +14,10 @@ Kohn-Sham Inversion
 
 """
 
-import functools
-
 import numpy as np
-import scipy
-import matplotlib.pyplot as plt
 
-from non_interacting_solver import SparseEigenSolver
-from utils import IntegralTool, DerivativeTool
-from ext_potentials import exp_hydrogenic
+from DFT_1d.non_interacting_solver import SparseEigenSolver
+from DFT_1d.utils import IntegralTool, DerivativeTool
 
 
 # https://link.springer.com/article/10.1007%2Fs00214-018-2209-0
@@ -394,72 +389,3 @@ def two_iter_KS_inversion(f_grids, f_v_Z_fn, f_tar_density, num_electrons,
     print('done!')
     return ksi
 
-
-if __name__ == '__main__':
-    f_grids = (np.arange(-256, 257) * 0.08)
-    example_dir = 'H4'
-
-    f_v_Z_fn = lambda _: \
-    np.load('ks_inversion_npy/' + example_dir + '/potentials.npy')[74]
-    f_tar_density = \
-    np.load('ks_inversion_npy/' + example_dir + '/densities.npy')[74]
-    num_electrons = 4
-
-    ksi = two_iter_KS_inversion(f_grids, f_v_Z_fn, f_tar_density, num_electrons)
-
-    f_v_XC = ksi.f_v_XC
-    step_list = ksi.step_list
-    cost_list = ksi.cost_list
-    truncation = ksi.truncation
-
-    # Example plot
-    v_s = ksi._get_v_eff()
-    n = ksi.f_density
-    plt.plot(f_grids, v_s)
-    plt.plot(f_grids, n)
-    plt.plot(f_grids, f_tar_density)
-    plt.show()
-
-    '''
-    folder = f'ks_inversion_plots/Be_{truncation}_test'
-    from plot_tools import plot_and_save, plot_multiple_and_save
-
-    ip = 6 #ignored points
-    t = truncation
-    
-    plot_and_save(f_grids, f_v_Z_fn(f_grids), 'x', 'v_Z', 'v_Z', folder=folder)
-    
-    t_grids = ksi.t_grids
-    t1 = t+ip
-    t2 = len(t_grids)-ip*2
-    vl = list(ksi.f_v_XC)
-    plot_multiple_and_save([['truncated v_XC', f_grids, [None]*t1+vl[t1:t1+t2]+[None]*t1, '-', 'blue'],
-                            ['exponential decay', f_grids, vl[:t1]+[None]*t2+vl[t1+t2:], '-', 'red']],
-                            f'full_v_XC_{truncation}_truncated_{ip}_ignored_2', 'step', 'cost', 
-                            legend_loc=3, folder=folder)
-    
-    d = ksi.f_v_XC[-t-ip-1]-ksi.t_v_XC[-ip-1]
-    
-    plot_multiple_and_save([['kept', f_grids[-t-15:-t-ip], ksi.t_v_XC[-15:-ip]+d, '-', 'blue'],
-                            ['ignored', f_grids[-t-ip-1:-t], ksi.t_v_XC[-ip-1:]+d, '-', 'green'],
-                            ['exponential decay', f_grids[-t-ip-1:-t+5], ksi.f_v_XC[-t-ip-1:-t+5], '-', 'red']],
-                            f'what_happens_at_the_ends', marker='o', legend_loc=1, folder=folder)
-    
-    plot_multiple_and_save([['full v_XC', f_grids, ksi.f_v_XC, '-', 'blue'],
-                            ['truncated v_XC', t_grids, ksi.t_v_XC+d, '--', 'green']],
-                            f'truncated vs. full', legend_loc=3, folder=folder)
-    
-    plot_multiple_and_save([['target_density_cost', step_list, cost_list[0], '-', 'red'],
-                            ['density_cost', step_list, cost_list[1], '-', 'blue'],
-                            ['KE_cost', step_list, cost_list[2], '-', 'green']],
-                            'step&cost1', 'step', 'cost', folder=folder)
-    
-    plot_multiple_and_save([['target_density_cost', step_list, cost_list[0], '-', 'red'],
-                            ['density_cost', step_list, cost_list[1], '-', 'blue'],
-                            ['KE_cost', step_list, cost_list[2], '-', 'green']],
-                            'step&cost2', 'step', 'cost', ylim=(0, 0.0001), folder=folder)
-    
-    plot_multiple_and_save([['solved density', f_grids, ksi.f_density, '-', 'blue'],
-                            ['target density', f_grids, f_tar_density, '--', 'orange']], 
-                            'densities', 'x', 'density', folder=folder)
-    '''

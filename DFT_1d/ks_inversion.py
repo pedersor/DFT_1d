@@ -14,13 +14,15 @@ Kohn-Sham Inversion
 
 """
 
+import functools
+
 import numpy as np
+import scipy
+import matplotlib.pyplot as plt
+
 from non_interacting_solver import SparseEigenSolver
 from utils import IntegralTool, DerivativeTool
 from ext_potentials import exp_hydrogenic
-import functools
-import scipy
-import matplotlib.pyplot as plt
 
 
 # https://link.springer.com/article/10.1007%2Fs00214-018-2209-0

@@ -13,13 +13,13 @@ import sys
 import os
 import warnings
 
-currentpath = os.path.abspath('.')
-sys.path.insert(0, os.path.dirname(currentpath))
-
-import hf_scf, functionals, ext_potentials
 import matplotlib.pyplot as plt
 import numpy as np
 import functools
+
+from DFT_1d import hf_scf
+from DFT_1d import functionals
+from DFT_1d import ext_potentials
 
 
 def hf_scf_atom(grids, num_electrons, num_unpaired_electrons, nuclear_charge):

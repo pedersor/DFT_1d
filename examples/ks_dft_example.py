@@ -13,13 +13,13 @@ import sys
 import os
 import warnings
 
-currentpath = os.path.abspath('.')
-sys.path.insert(0, os.path.dirname(currentpath))
-
-import ks_dft, functionals, ext_potentials
 import matplotlib.pyplot as plt
 import numpy as np
 import functools
+
+from DFT_1d import ks_dft
+from DFT_1d import functionals
+from DFT_1d import ext_potentials
 
 
 def lsda_ks_dft_atom(

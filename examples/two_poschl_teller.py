@@ -8,17 +8,15 @@ Summary:
     Calculates a system with two Poschl-Teller wells
 """
 
-
 import sys
 import os
-currentpath = os.path.abspath('.')
-sys.path.insert(0, os.path.dirname(currentpath))
 
 import numpy as np
-from ext_potentials import poschl_teller
-from non_interacting_solver import SparseEigenSolver
 import functools
 import matplotlib.pyplot as plt
+
+from DFT_1d.ext_potentials import poschl_teller
+from DFT_1d.non_interacting_solver import SparseEigenSolver
 
 
 def get_plotting_params():

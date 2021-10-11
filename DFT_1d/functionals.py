@@ -204,7 +204,7 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
           - 2 * y * (-1 + zeta) * jnp.arctan(y * (-1 + zeta))
           ) / (4 * (jnp.pi ** 2))
 
-      return e_x / n
+      return jnp.nan_to_num(e_x / n)
 
     def correlation_energy_density(self, n, zeta):
       """Correlation energy density. Parameters derived in [Baker2015]_."""
@@ -231,7 +231,7 @@ class ExponentialLSDFunctional(BaseExchangeCorrelationFunctional):
       pol = correlation_expression(n, 180.891, -541.124, 651.615, -356.504,
                                    88.0733, -4.32708, 8)
       e_c = unpol + (zeta ** 2) * (pol - unpol)
-      return e_c / n
+      return jnp.nan_to_num(e_c / n)
 
     def xc_energy_density(self, n, zeta):
       return (

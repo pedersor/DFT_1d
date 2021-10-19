@@ -1,0 +1,19 @@
+=================================== SLURM JOB ===================================
+Sun Dec  6 20:16:29 PST 2020
+
+The job will be started on the following node(s):
+c-17-22
+
+Slurm User:         pedersor
+Run Directory:      /work/pedersor/3629341
+Job ID:             3629341
+Job Name:           bats
+Partition:          nes2.8
+Number of nodes:    1
+Number of tasks:    1
+Submitted From:     gplogin2.gp.local:/DFS-B/DATA/burke/pedersor/dmrg/atoms/hookes_atom_lin_ext/lam_300
+=================================== SLURM JOB ===================================
+
+--- SLURM job-script output ---
+g++ -m64 -std=c++11 -fPIC -c -I. -I/DFS-B/DATA/burke/pedersor/itensor2 -I/sopt/OpenBLAS/0.3.6/gnu-9.1.0/include -fpermissive -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -O2 -DNDEBUG -Wall -Wno-unused-variable -o electronBO.o electronBO.cc
+g++ -m64 -std=c++11 -fPIC -I. -I/DFS-B/DATA/burke/pedersor/itensor2 -I/sopt/OpenBLAS/0.3.6/gnu-9.1.0/include -fpermissive -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -O2 -DNDEBUG -Wall -Wno-unused-variable electronBO.o -o electronBO -L/DFS-B/DATA/burke/pedersor/itensor2/lib -litensor -lpthread -L/sopt/OpenBLAS/0.3.6/gnu-9.1.0/lib -lopenblas

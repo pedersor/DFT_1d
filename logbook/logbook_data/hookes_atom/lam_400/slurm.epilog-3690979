@@ -1,0 +1,13 @@
+-------------- slurm.epilog ---------------
+Job ID:    3690979
+User:      pedersor
+Group:     burke
+Job Name:  bats
+Partition: brd2.4
+QOS:       normal 
+Account:   burke
+Reason:    None,c-14-12
+Nodelist:  c-14-12
+Command:   /DFS-B/DATA/burke/pedersor/dmrg/atoms/hookes_atom/kieron_lam_tests/lam_400/jobscript
+WorkDir:   /DFS-B/DATA/burke/pedersor/dmrg/atoms/hookes_atom/kieron_lam_tests/lam_400
+BatchHost: c-14-12

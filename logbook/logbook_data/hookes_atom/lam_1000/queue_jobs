@@ -1,0 +1,15 @@
+#!/bin/bash
+
+
+for d in */ ; do
+    cd $d/
+	ml purge
+	ml gnu/9.1.0
+	ml openblas/0.3.6
+		
+	make
+	./electronBO input > output.txt
+	cd ../
+done
+
+

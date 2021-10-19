@@ -1,0 +1,22 @@
+#!/bin/bash
+
+lam_lst=( 700 1000 1300 1600 2000 2300 2600 3000 )
+for j in "${lam_lst[@]}"
+do
+	mkdir lam_$j
+		
+
+	cp * lam_$j/
+	
+	cd lam_$j/
+	
+	sed -i "s/^lam = .*/lam = ${j}/" hoppingVMaker.jl
+	
+	julia hoppingVMaker.jl
+	julia compressMPO.jl Vuncomp
+	
+	sbatch jobscript
+	
+	cd ../
+	
+done

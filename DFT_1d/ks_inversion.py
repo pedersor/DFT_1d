@@ -5,7 +5,6 @@ Kohn-Sham Inversion
 
 .. todo::
 
-    * NOT up to date...
     * Needs code documentation
     * Needs more specific name (since there are many inversions)
     * Needs ref
@@ -18,7 +17,7 @@ import numpy as np
 
 from DFT_1d.non_interacting_solver import SparseEigenSolver
 from DFT_1d.utils import IntegralTool, DerivativeTool
-
+from DFT_1d import constants
 
 # https://link.springer.com/article/10.1007%2Fs00214-018-2209-0
 class KSInversion:
@@ -32,6 +31,7 @@ class KSInversion:
                  init_v_XC_fn=lambda x: 0 * x,
                  Solver=SparseEigenSolver,
                  num_electrons=1,
+                 num_unpaired_electrons=0,
                  tol=0.1):
 
         # get truncation based on the tolerance
@@ -68,7 +68,7 @@ class KSInversion:
         # initialize solver
         self.n_point_stencil = n_point_stencil
         self.solver = Solver(self.f_grids, n_point_stencil=n_point_stencil,
-                             num_electrons=num_electrons // 2)
+                             num_electrons=num_electrons)
 
         # initialize density and kinetic energy
         self.previous_f_density = None
@@ -98,11 +98,11 @@ class KSInversion:
         # d2_mat = self.f_derivative_tool.d2_mat
         potential_fn = lambda _: self._get_v_eff()
         self.solver.update_potential(potential_fn)
-        self.solver.solve_ground_state()
+        self.solver.solve_ground_state(occupation_per_state=2)
         self.previous_KE = self.KE
-        self.KE = self.solver.kinetic_energy * 2
+        self.KE = self.solver.kinetic_energy
         self.previous_f_density = self.f_density
-        self.f_density = self.solver.density * 2
+        self.f_density = self.solver.density
         self.t_density = self.f_density[
                          self.truncation:self.num_f_grids - self.truncation]
 
@@ -146,7 +146,7 @@ class KSInversion:
 
         ip = ignored_points
         # k_value
-        k = 1. / 2.385345
+        k = constants.EXPONENTIAL_COULOMB_KAPPA
 
         # grid value at right end
         xr = self.t_grids[-ip - 1]
@@ -210,7 +210,7 @@ class KSInversion:
             d1 = np.array([0., -0.5, 0., 0.5, 0.]) / self.dx
 
         # k_value
-        k = 1. / 2.385345
+        k = constants.EXPONENTIAL_COULOMB_KAPPA
 
         # grid value at right end
         xr = self.t_grids[-ip - 1]
@@ -258,7 +258,7 @@ class KSInversion:
         d1_r = -d1_l[::-1]
 
         # k_value
-        k = 1. / 2.385345
+        k = constants.EXPONENTIAL_COULOMB_KAPPA
 
         # grid value at right end
         xr = self.t_grids[-ip - 1]

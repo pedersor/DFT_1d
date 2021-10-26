@@ -1,9 +1,18 @@
+# byte-compiled
+__pycache__/
 
-*.pyc
-*.xml
-*.iml
+# Mac OS
 .DS_Store
-.idea/.name
-*.npy
 
-logbook/logbook_data/
+# VScode
+.vscode/
+
+# IntelliJ
+.idea/
+
+# virtual envs
+venv_*
+
+# doc builds
+docs/rst_source/_build
+docs/rst_source/_static

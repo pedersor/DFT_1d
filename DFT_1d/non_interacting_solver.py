@@ -104,7 +104,9 @@ class SolverBase:
             self.vp = np.nan_to_num(potential_fn(grids))
         self.perturbation = perturbation
 
-        if not isinstance(num_electrons, int):
+        if (not isinstance(num_electrons, int) 
+                and not isinstance(num_electrons, np.int64) 
+                and not isinstance(num_electrons, np.int32)) :
             raise ValueError('num_electrons is not an integer.')
         elif num_electrons < 1:
             raise ValueError(
@@ -460,7 +462,7 @@ class SparseEigenSolver(EigenSolver):
         """
         return np.dot(vector, sparse_matrix.dot(vector))
 
-    def solve_ground_state(self):
+    def solve_ground_state(self, occupation_per_state=1):
         """Solve ground state by sparse eigensolver.
 
         Compute attributes:
@@ -483,4 +485,4 @@ class SparseEigenSolver(EigenSolver):
             eigenvectors = eigenvectors[:, idx]
 
         return self._update_ground_state(
-            eigenvalues, eigenvectors)
+            eigenvalues, eigenvectors, occupation_per_state)

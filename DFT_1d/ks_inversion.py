@@ -15,7 +15,7 @@ Kohn-Sham Inversion
 
 import numpy as np
 
-from DFT_1d.non_interacting_solver import SparseEigenSolver
+from DFT_1d.non_interacting_solver import EigenSolver
 from DFT_1d.utils import IntegralTool, DerivativeTool
 from DFT_1d import constants
 
@@ -29,10 +29,10 @@ class KSInversion:
                  truncation,
                  n_point_stencil=5,
                  init_v_XC_fn=lambda x: 0 * x,
-                 Solver=SparseEigenSolver,
+                 Solver=EigenSolver,
                  num_electrons=1,
-                 num_unpaired_electrons=0,
-                 tol=0.1):
+                 tol=1e-5,
+                 max_iters=200):
 
         # get truncation based on the tolerance
         self.truncation = truncation
@@ -79,6 +79,9 @@ class KSInversion:
 
         # whether has solved full v_XC
         self._solved = False
+
+        # set max number of iterations
+        self.max_iters = max_iters
 
     def _get_v_eff(self):
         f_v_Z = self.f_v_Z
@@ -304,14 +307,12 @@ class KSInversion:
             self._append_exp_cfexp(x0, ignored_points)
 
     def solve_v_XC(self, x0=0, ignored_points=0, f='cfexp', truncated=False):
-        step = 0
         self.step_list = []
         self.cost_list = [[], [], []]
         f_density_cost = None
         tar_density_cost = 1
-        while True:
+        for step in range(self.max_iters):
             self._update_density()
-            step += 1
             tar_density_cost = self._get_tar_density_cost()
             f_density_cost = self._get_f_density_cost()
             KE_cost = self._get_KE_cost()
@@ -325,8 +326,8 @@ class KSInversion:
             print(f'Step {step}: current KE cost {KE_cost}')
             print()
             if f_density_cost != None and KE_cost != None:
-                if (
-                        tar_density_cost <= self.tol or not truncated) and KE_cost <= self.tol:
+                if (((tar_density_cost <= self.tol or not truncated) 
+                        and KE_cost <= self.tol) or step > self.max_iters):
                     break
 
             self._update_v_XC(x0, ignored_points, f)

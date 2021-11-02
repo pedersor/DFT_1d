@@ -316,15 +316,6 @@ class KSInversion:
 
     def solve_v_XC(self, x0=0, ignored_points=0, f='cfexp', truncated=False):
 
-        if (self.num_electrons == 1 and 
-                np.isclose(self.f_integral_tool.simpson_vector.dot(self.total_density), 1)):
-            # single electron system case
-            self.f_v_XC = -self.f_v_H
-            self._update_density()
-            self._solved = True
-
-            return self
-
         self.step_list = []
         self.cost_list = [[], [], []]
         f_density_cost = None

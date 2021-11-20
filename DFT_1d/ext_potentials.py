@@ -9,7 +9,7 @@ from DFT_1d import constants
 
 
 def gaussian_dips(grids, coeff, sigma, mu):
-    """Potential of sum of Gaussian dips.
+  """Potential of sum of Gaussian dips.
 
     The i-th Gaussian dip is
       -coeff[i] * np.exp(-(grids - mu[i]) ** 2 / (2 * sigma[i] ** 2))
@@ -28,18 +28,18 @@ def gaussian_dips(grids, coeff, sigma, mu):
       vp: Potential on grid.
         (num_grids,)
     """
-    grids = np.expand_dims(grids, axis=0)
-    coeff = np.expand_dims(coeff, axis=1)
-    sigma = np.expand_dims(sigma, axis=1)
-    mu = np.expand_dims(mu, axis=1)
+  grids = np.expand_dims(grids, axis=0)
+  coeff = np.expand_dims(coeff, axis=1)
+  sigma = np.expand_dims(sigma, axis=1)
+  mu = np.expand_dims(mu, axis=1)
 
-    vps = -coeff * np.exp(-(grids - mu) ** 2 / (2 * sigma ** 2))
-    vp = np.sum(vps, axis=0)
-    return vp
+  vps = -coeff * np.exp(-(grids - mu)**2 / (2 * sigma**2))
+  vp = np.sum(vps, axis=0)
+  return vp
 
 
 def harmonic_oscillator(grids, k=1.):
-    """Potential of quantum harmonic oscillator.
+  """Potential of quantum harmonic oscillator.
 
     Args:
       grids: numpy array of grid points for evaluating 1d potential.
@@ -50,12 +50,12 @@ def harmonic_oscillator(grids, k=1.):
       vp: Potential on grid.
         (num_grid,)
     """
-    vp = 0.5 * k * grids ** 2
-    return vp
+  vp = 0.5 * k * grids**2
+  return vp
 
 
 def quartic_oscillator(grids, k=1.):
-    """Potential of quantum quartic oscillator.
+  """Potential of quantum quartic oscillator.
 
     Args:
       grids: numpy array of grid points for evaluating 1d potential.
@@ -66,12 +66,12 @@ def quartic_oscillator(grids, k=1.):
       vp: Potential on grid.
         (num_grid,)
     """
-    vp = 0.5 * k * grids ** 4
-    return vp
+  vp = 0.5 * k * grids**4
+  return vp
 
 
 def kronig_penney(grids, a, b, v0):
-    """Kronig-Penney model potential. For more information, see:
+  """Kronig-Penney model potential. For more information, see:
 
     https://en.wikipedia.org/wiki/Particle_in_a_one-dimensional_lattice#Kronig%E2%80%93Penney_model
 
@@ -86,24 +86,27 @@ def kronig_penney(grids, a, b, v0):
       vp: Potential on grid.
         (num_grid,)
     """
-    if v0 >= 0:
-        raise ValueError('v0 is expected to be negative but got %4.2f.' % v0)
-    if b >= a:
-        raise ValueError('b is expected to be less than a but got %4.2f.' % b)
+  if v0 >= 0:
+    raise ValueError('v0 is expected to be negative but got %4.2f.' % v0)
+  if b >= a:
+    raise ValueError('b is expected to be less than a but got %4.2f.' % b)
 
-    vp = []
-    for x in grids:
-        if x < (a - b):
-            vp.append(0.)
-        else:
-            vp.append(v0)
+  vp = []
+  for x in grids:
+    if x < (a - b):
+      vp.append(0.)
+    else:
+      vp.append(v0)
 
-    return np.asarray(vp)
+  return np.asarray(vp)
 
 
-def exp_hydrogenic(grids, A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
-                   k=constants.EXPONENTIAL_COULOMB_KAPPA, center=0, Z=1):
-    """Exponential potential for 1D Hydrogenic atom.
+def exp_hydrogenic(grids,
+                   A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
+                   k=constants.EXPONENTIAL_COULOMB_KAPPA,
+                   center=0,
+                   Z=1):
+  """Exponential potential for 1D Hydrogenic atom.
 
     A 1D potential which can be used to mimic corresponding 3D
     electronic structure. Similar in form to the soft-Coulomb
@@ -129,12 +132,12 @@ def exp_hydrogenic(grids, A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
       vp: Potential on grid.
         (num_grid,)
     """
-    vp = -Z * A * np.exp(-k * np.abs(grids - center))
-    return vp
+  vp = -Z * A * np.exp(-k * np.abs(grids - center))
+  return vp
 
 
 def poschl_teller(grids, lam, a=1., center=0.):
-    r"""Poschl-Teller potential.
+  r"""Poschl-Teller potential.
 
     Poschl-Teller potential is a special class of potentials for which the
     one-dimensional Schrodinger equation can be solved in terms of Special
@@ -161,13 +164,13 @@ def poschl_teller(grids, lam, a=1., center=0.):
     Raises:
       ValueError: If lam is not positive.
     """
-    if lam <= 0:
-        raise ValueError('lam is expected to be positive but got %4.2f.' % lam)
-    return -lam * (lam + 1) * a ** 2 / (2 * np.cosh(a * (grids - center)) ** 2)
+  if lam <= 0:
+    raise ValueError('lam is expected to be positive but got %4.2f.' % lam)
+  return -lam * (lam + 1) * a**2 / (2 * np.cosh(a * (grids - center))**2)
 
 
 def _valid_poschl_teller_level_lambda(level, lam):
-    """Checks whether level and lambda is valid.
+  """Checks whether level and lambda is valid.
 
     Args:
         level: positive integer, the ground state is level=1.
@@ -177,20 +180,19 @@ def _valid_poschl_teller_level_lambda(level, lam):
         ValueError: If lam is not positive; level is less than 1 or level is greater
             than the total number of levels the potential can hold.
     """
-    if lam <= 0:
-        raise ValueError('lam is expected to be positive but got %4.2f.' % lam)
-    level = int(level)
-    if level < 1:
-        raise ValueError(
-            'level is expected to be greater or equal to 1, but got %d.' % level)
-    if level > np.ceil(lam):
-        raise ValueError(
-            'lam %4.2f can hold %d levels, but got level %d.'
-            % (lam, np.ceil(lam), level))
+  if lam <= 0:
+    raise ValueError('lam is expected to be positive but got %4.2f.' % lam)
+  level = int(level)
+  if level < 1:
+    raise ValueError(
+        'level is expected to be greater or equal to 1, but got %d.' % level)
+  if level > np.ceil(lam):
+    raise ValueError('lam %4.2f can hold %d levels, but got level %d.' %
+                     (lam, np.ceil(lam), level))
 
 
 def poschl_teller_energy(level, lam, a=1.):
-    """Analytic solution of the total energy filled up to level-th eigenstate.
+  """Analytic solution of the total energy filled up to level-th eigenstate.
 
     The solution can be found in second row of Table 1 in
 
@@ -206,14 +208,14 @@ def poschl_teller_energy(level, lam, a=1.):
     Returns:
         Float, the total energy from first to the level-th eigenstate.
     """
-    total_energy = 0.
-    for i in range(1, int(level) + 1):
-        total_energy += poschl_teller_eigen_energy(i, lam, a)
-    return total_energy
+  total_energy = 0.
+  for i in range(1, int(level) + 1):
+    total_energy += poschl_teller_eigen_energy(i, lam, a)
+  return total_energy
 
 
 def poschl_teller_eigen_energy(level, lam, a=1.):
-    """Analytic solution of the level-th eigen energy for Poschl-Teller potential.
+  """Analytic solution of the level-th eigen energy for Poschl-Teller potential.
 
     This is the energy level for Poschl-Teller potential with float lambda. The
     solution can be found in second row of Table 1 in
@@ -230,7 +232,7 @@ def poschl_teller_eigen_energy(level, lam, a=1.):
     Returns:
         Float, the energy of the level-th eigenstate.
     """
-    level = int(level)
-    _valid_poschl_teller_level_lambda(level, lam)
-    a2 = a ** 2
-    return -a2 * (np.sqrt(lam * (lam + 1) / a2 + 0.25) - level + 0.5) ** 2 / 2
+  level = int(level)
+  _valid_poschl_teller_level_lambda(level, lam)
+  a2 = a**2
+  return -a2 * (np.sqrt(lam * (lam + 1) / a2 + 0.25) - level + 0.5)**2 / 2

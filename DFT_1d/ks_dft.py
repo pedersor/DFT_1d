@@ -31,6 +31,7 @@ class KS_Solver(SCF_SolverBase):
                xc,
                num_electrons,
                num_unpaired_electrons,
+               occupation_per_state=2,
                boundary_condition='open'):
     """Initialize the solver with an exchange-correlation (XC) functional.
 
@@ -38,8 +39,9 @@ class KS_Solver(SCF_SolverBase):
             xc: exchange correlation `functional` class object.
         """
 
-    super(KS_Solver, self).__init__(grids, v_ext, num_electrons,
-                                    num_unpaired_electrons, boundary_condition)
+    super(KS_Solver,
+          self).__init__(grids, v_ext, num_electrons, num_unpaired_electrons,
+                         occupation_per_state, boundary_condition)
     self.xc = xc(grids)
     self.init_v_s()
 
@@ -190,6 +192,7 @@ class Spinless_KS_Solver(KS_Solver):
                v_ext,
                xc,
                num_electrons,
+               occupation_per_state=2,
                boundary_condition='open'):
     """Initialize the solver with an exchange-correlation (XC) functional.
 
@@ -201,6 +204,7 @@ class Spinless_KS_Solver(KS_Solver):
                                     v_ext,
                                     num_electrons,
                                     num_unpaired_electrons=None,
+                                    occupation_per_state=occupation_per_state,
                                     boundary_condition=boundary_condition)
     self.xc = xc(grids)
     self.init_v_s()
@@ -239,7 +243,7 @@ class Spinless_KS_Solver(KS_Solver):
         potential_fn=self.v_s,
         num_electrons=self.num_electrons,
         boundary_condition=self.boundary_condition)
-    solver.solve_ground_state(occupation_per_state=2)
+    solver.solve_ground_state(occupation_per_state=self.occupation_per_state)
 
     return self._update_ground_state(solver)
 

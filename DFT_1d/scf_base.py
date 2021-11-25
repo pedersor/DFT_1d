@@ -26,6 +26,7 @@ class SCF_SolverBase:
                v_ext,
                num_electrons,
                num_unpaired_electrons,
+               occupation_per_state=2,
                boundary_condition="open"):
     """Initialize the solver with external potential function and grid.
 
@@ -40,6 +41,7 @@ class SCF_SolverBase:
           ValueError: If num_electrons is less than 1; or num_electrons is not
               an integer.
         """
+    self.occupation_per_state = occupation_per_state
     self.boundary_condition = boundary_condition
     self.grids = grids
     self.dx = get_dx(grids)
@@ -54,7 +56,7 @@ class SCF_SolverBase:
     else:
       self.num_electrons = num_electrons
 
-    # Solver is not co nverged by default.
+    # Solver is not converged by default.
     self._converged = False
     self._init_spin_config(num_unpaired_electrons)
 

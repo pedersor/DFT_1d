@@ -349,28 +349,34 @@ def two_iter_KS_inversion(f_grids,
                           num_electrons,
                           total_density=None,
                           occupation_per_state=2,
+                          init_v_xc=None,
                           n_point_stencil=5,
                           tol=0.00001,
                           t_tol=0.0001):
+
+  if init_v_xc is None:
+    init_v_xc = np.zeros_like(f_grids)
 
   def find_truncation(density, t_tol):
     for t in range(len(density)):
       if density[t] > t_tol:
         return t
 
-  def set_up_truncation(f_grids, f_v_Z_fn, density, truncation):
+  def set_up_truncation(f_grids, f_v_Z_fn, density, init_v_xc, truncation):
     t_grids = f_grids[truncation:-truncation]
     t_v_Z_fn = lambda grids: f_v_Z_fn(grids)[truncation:-truncation]
     t_density = density[truncation:-truncation]
-    return t_grids, t_v_Z_fn, t_density
+    t_init_v_xc = init_v_xc[truncation:-truncation]
+    return t_grids, t_v_Z_fn, t_density, t_init_v_xc
 
   truncation = find_truncation(f_tar_density, t_tol)
-  t_grids, t_v_Z_fn, t_tar_density = \
-      set_up_truncation(f_grids, f_v_Z_fn, f_tar_density, truncation)
+  t_grids, t_v_Z_fn, t_tar_density, t_init_v_xc = set_up_truncation(
+      f_grids, f_v_Z_fn, f_tar_density, init_v_xc, truncation)
 
   if total_density is not None:
-    _, _, t_total_density = set_up_truncation(f_grids, f_v_Z_fn, total_density,
-                                              truncation)
+    _, _, t_total_density, _ = set_up_truncation(f_grids, f_v_Z_fn,
+                                                 total_density, t_init_v_xc,
+                                                 truncation)
   else:
     t_total_density = None
 
@@ -384,6 +390,7 @@ def two_iter_KS_inversion(f_grids,
                       tol=tol,
                       num_electrons=num_electrons,
                       total_density=t_total_density,
+                      init_v_XC_fn=lambda _: t_init_v_xc,
                       occupation_per_state=occupation_per_state)
 
   t_ksi.solve_v_XC(f='cfexp')
@@ -391,8 +398,8 @@ def two_iter_KS_inversion(f_grids,
   old_truncation = truncation
   truncation += find_truncation(t_ksi.f_density, t_tol)
   print(f'truncation updated from {old_truncation} to {truncation}.')
-  t_grids, t_v_Z_fn, t_tar_density = \
-      set_up_truncation(f_grids, f_v_Z_fn, f_tar_density, truncation)
+  t_grids, t_v_Z_fn, t_tar_density, t_init_v_xc = set_up_truncation(
+      f_grids, f_v_Z_fn, f_tar_density, t_init_v_xc, truncation)
 
   ksi = KSInversion(f_grids,
                     f_v_Z_fn,
@@ -402,6 +409,7 @@ def two_iter_KS_inversion(f_grids,
                     tol=tol,
                     num_electrons=num_electrons,
                     total_density=total_density,
+                    init_v_XC_fn=lambda _: init_v_xc,
                     occupation_per_state=occupation_per_state)
 
   delta = truncation - old_truncation

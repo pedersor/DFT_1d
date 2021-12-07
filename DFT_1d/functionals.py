@@ -32,18 +32,26 @@ from DFT_1d import constants
 from DFT_1d.utils import get_dx
 
 
-def get_hartree_potential(grids,
-                          n,
-                          v_ee=functools.partial(
-                              ext_potentials.exp_hydrogenic)):
-  N = len(grids)
-  dx = np.abs(grids[1] - grids[0])
-  v_h = np.zeros(N)
-  for i in range(N):
-    for j in range(N):
-      v_h[i] += n[j] * (-1) * v_ee(grids[i] - grids[j])
-  v_h *= dx
-  return v_h
+def v_ee(
+    grids,
+    A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
+    k=constants.EXPONENTIAL_COULOMB_KAPPA,
+):
+  vp = A * jnp.exp(-k * jnp.abs(grids))
+  return vp
+
+
+@functools.partial(jax.jit, static_argnums=(2,))
+def _get_hartree_potential(grids, n, v_ee):
+  dx = grids[1] - grids[0]
+  n1 = jnp.expand_dims(n, axis=0)
+  r1 = jnp.expand_dims(grids, axis=0)
+  r2 = jnp.expand_dims(grids, axis=1)
+  return jnp.sum(n1 * v_ee(r1 - r2), axis=1) * dx
+
+
+def get_hartree_potential(grids, n, v_ee=v_ee):
+  return _get_hartree_potential(grids, n, v_ee)
 
 
 class BaseHartreeFock:

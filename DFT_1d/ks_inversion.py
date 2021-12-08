@@ -35,7 +35,7 @@ class KSInversion:
                Solver=EigenSolver,
                num_electrons=1,
                tol=1e-5,
-               max_iters=200):
+               max_iters=50):
 
     # get truncation based on the tolerance
     self.truncation = truncation

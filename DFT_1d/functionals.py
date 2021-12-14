@@ -20,9 +20,6 @@ Functionals
 
 import functools
 
-# Jax is used for automatic differentiation
-# to compute functional derivatives of arbitrary functions.
-# Comment out if not needed.
 import jax
 import jax.numpy as jnp
 import numpy as np

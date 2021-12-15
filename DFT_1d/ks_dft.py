@@ -179,7 +179,7 @@ class KS_Solver(SCF_SolverBase):
 
       # TODO: add more verbose options
       if verbose == 1:
-        print(f"i = {i}: E = {previous_energy}")
+        print(f"i = {i}: E = {previous_energy}", flush=True)
 
     return self
 
@@ -325,6 +325,6 @@ class Spinless_KS_Solver(KS_Solver):
 
       # TODO: add more verbose options
       if verbose == 1:
-        print(f"i = {i}: E = {previous_energy}")
+        print(f"i = {i}: E = {previous_energy}", flush=True)
 
     return self

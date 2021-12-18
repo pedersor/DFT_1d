@@ -185,10 +185,12 @@ class HF_Solver(SCF_SolverBase):
         self._converged = True
         break
       elif prev_densities and mixing_param:
-        self.density = ((1 - mixing_param) * self.density +
-                        mixing_param * prev_densities[-1])
+        self.n_up = ((1 - mixing_param) * self.n_up +
+                     mixing_param * prev_densities[-1][0])
+        self.n_down = ((1 - mixing_param) * self.n_down +
+                       mixing_param * prev_densities[-1][1])
+        self.density = self.n_up + self.n_down
 
-      # TODO: mix spin densities?
       # update eff potentials using new density
       self._update_v_eff_up()
       self._update_v_eff_down()
@@ -198,7 +200,7 @@ class HF_Solver(SCF_SolverBase):
       self._update_fock_matrix_down()
 
       previous_energy = self.total_energy
-      prev_densities.append(self.density)
+      prev_densities.append((self.n_up, self.n_down))
 
       # TODO: add more verbose options
       if verbose == 1:

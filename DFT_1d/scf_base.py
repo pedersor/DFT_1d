@@ -14,6 +14,7 @@ SCF solver base
     * *solve_self_consistent_density* needs summary sentence
     * Linting?
 """
+import numpy as np
 
 from DFT_1d.utils import get_dx
 
@@ -47,7 +48,7 @@ class SCF_SolverBase:
     self.dx = get_dx(grids)
     self.v_ext = v_ext
 
-    if not isinstance(num_electrons, int):
+    if not np.issubdtype(type(num_electrons), np.integer):
       raise ValueError('num_electrons is not an integer.')
     elif num_electrons < 1:
       raise ValueError(

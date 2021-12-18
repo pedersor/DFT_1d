@@ -8,12 +8,11 @@ Kohn-Sham DFT Example
 Summary:
     Generates LDA DFT values from a tabel from the [Baker2015]_ paper which includes Li atom and Li, Be, He, and H atoms.
 """
-
+import functools
 import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
-import functools
 
 from DFT_1d import ks_dft
 from DFT_1d import functionals

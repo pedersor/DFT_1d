@@ -23,19 +23,22 @@ from DFT_1d import constants
 # https://link.springer.com/article/10.1007%2Fs00214-018-2209-0
 class KSInversion:
 
-  def __init__(self,
-               full_grids,
-               v_Z_fn,
-               full_target_density,
-               truncation,
-               total_density=None,
-               occupation_per_state=2,
-               n_point_stencil=5,
-               init_v_XC_fn=lambda x: 0 * x,
-               Solver=EigenSolver,
-               num_electrons=1,
-               tol=1e-5,
-               max_iters=50):
+  def __init__(
+      self,
+      full_grids,
+      v_Z_fn,
+      full_target_density,
+      truncation,
+      total_density=None,
+      occupation_per_state=2,
+      n_point_stencil=5,
+      init_v_XC_fn=lambda x: 0 * x,
+      Solver=EigenSolver,
+      num_electrons=1,
+      mixing_param=0,
+      tol=1e-5,
+      max_iters=50,
+  ):
 
     # get truncation based on the tolerance
     self.truncation = truncation
@@ -71,8 +74,9 @@ class KSInversion:
     self.f_v_XC = init_v_XC_fn(self.f_grids)
     self.t_v_XC = self.f_v_XC[truncation:self.num_f_grids - truncation]
 
-    # set tolerance
+    # set tolerance and mixing param
     self.tol = tol
+    self.mixing_param = mixing_param
 
     # initialize solver
     self.n_point_stencil = n_point_stencil
@@ -115,7 +119,11 @@ class KSInversion:
     self.previous_KE = self.KE
     self.KE = self.solver.kinetic_energy
     self.previous_f_density = self.f_density
-    self.f_density = self.solver.density
+    if self.previous_f_density is None:
+      self.f_density = self.solver.density
+    else:
+      self.f_density = self.solver.density * (
+          1 - self.mixing_param) + self.previous_f_density * self.mixing_param
     self.t_density = self.f_density[self.truncation:self.num_f_grids -
                                     self.truncation]
 
@@ -343,16 +351,20 @@ class KSInversion:
 
 # Kohn-Sham inversion with two iterations: one with truncated region
 # and the other with full region
-def two_iter_KS_inversion(f_grids,
-                          f_v_Z_fn,
-                          f_tar_density,
-                          num_electrons,
-                          total_density=None,
-                          occupation_per_state=2,
-                          init_v_xc=None,
-                          n_point_stencil=5,
-                          tol=0.00001,
-                          t_tol=0.0001):
+def two_iter_KS_inversion(
+    f_grids,
+    f_v_Z_fn,
+    f_tar_density,
+    num_electrons,
+    total_density=None,
+    occupation_per_state=2,
+    init_v_xc=None,
+    n_point_stencil=5,
+    mixing_param=0,
+    tol=0.00001,
+    t_tol=0.0001,
+    max_iters=50,
+):
 
   if init_v_xc is None:
     init_v_xc = np.zeros_like(f_grids)
@@ -382,16 +394,20 @@ def two_iter_KS_inversion(f_grids,
 
   print(f'Running truncation {truncation}')
 
-  t_ksi = KSInversion(t_grids,
-                      t_v_Z_fn,
-                      t_tar_density,
-                      truncation=0,
-                      n_point_stencil=n_point_stencil,
-                      tol=tol,
-                      num_electrons=num_electrons,
-                      total_density=t_total_density,
-                      init_v_XC_fn=lambda _: t_init_v_xc,
-                      occupation_per_state=occupation_per_state)
+  t_ksi = KSInversion(
+      t_grids,
+      t_v_Z_fn,
+      t_tar_density,
+      truncation=0,
+      n_point_stencil=n_point_stencil,
+      tol=tol,
+      num_electrons=num_electrons,
+      total_density=t_total_density,
+      init_v_XC_fn=lambda _: t_init_v_xc,
+      occupation_per_state=occupation_per_state,
+      mixing_param=mixing_param,
+      max_iters=max_iters,
+  )
 
   t_ksi.solve_v_XC(f='cfexp')
 
@@ -401,16 +417,20 @@ def two_iter_KS_inversion(f_grids,
   t_grids, t_v_Z_fn, t_tar_density, t_init_v_xc = set_up_truncation(
       f_grids, f_v_Z_fn, f_tar_density, t_init_v_xc, truncation)
 
-  ksi = KSInversion(f_grids,
-                    f_v_Z_fn,
-                    f_tar_density,
-                    truncation=truncation,
-                    n_point_stencil=n_point_stencil,
-                    tol=tol,
-                    num_electrons=num_electrons,
-                    total_density=total_density,
-                    init_v_XC_fn=lambda _: init_v_xc,
-                    occupation_per_state=occupation_per_state)
+  ksi = KSInversion(
+      f_grids,
+      f_v_Z_fn,
+      f_tar_density,
+      truncation=truncation,
+      n_point_stencil=n_point_stencil,
+      tol=tol,
+      num_electrons=num_electrons,
+      total_density=total_density,
+      init_v_XC_fn=lambda _: init_v_xc,
+      occupation_per_state=occupation_per_state,
+      mixing_param=mixing_param,
+      max_iters=max_iters,
+  )
 
   delta = truncation - old_truncation
   ksi.t_v_XC = t_ksi.t_v_XC[delta:-delta]

@@ -43,7 +43,7 @@ def get_plotting_params():
 
 def rsquared(x, y):
   """ Return R^2 where x and y are array-like."""
-  slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+  _, _, r_value, _, _ = stats.linregress(x, y)
   return r_value**2
 
 
@@ -51,23 +51,11 @@ def convergence_test(Solver,
                      test_range,
                      potential_fn,
                      boundary_condition,
-                     n_point_stencil,
+                     n_point_stencil=5,
                      k_point=None,
                      num_grids_list=None,
                      analytical_energy=None,
                      plot_index=''):
-  """Description.
-
-    .. todo::
-
-        * Please fill out docs
-
-    Args:
-      ...
-
-    Returns:
-      ...
-    """
   # start timer
   t0 = time.time()
 
@@ -156,7 +144,7 @@ def convergence_test(Solver,
   linfit = ax.plot(num_grids_list[size_diff:],
                    yfit,
                    alpha=0.4,
-                   label='$p$ = ' + p + ', $r^2$ = ' + r2,
+                   label='$O(N^p)$ fit: \n $p$ = ' + p + ', $r^2$ = ' + r2,
                    linewidth=3)
   # matplotlib trick to obtain same color of a previous plot
   ax.plot(num_grids_list,
@@ -183,15 +171,15 @@ def convergence_test(Solver,
   plt.gca().yaxis.grid(True, which='minor', alpha=0.4)
 
   # create folder if no such directory
-  if not os.path.isdir('convergence_test'):
-    os.mkdir('convergence_test')
-  if not os.path.isdir(f'convergence_test/{Solver.__name__}'):
-    os.mkdir(f'convergence_test/{Solver.__name__}')
+  if not os.path.isdir('grid_convergence_tests_out'):
+    os.mkdir('grid_convergence_tests_out')
+  if not os.path.isdir(f'grid_convergence_tests_out/{Solver.__name__}'):
+    os.mkdir(f'grid_convergence_tests_out/{Solver.__name__}')
 
   # save fig
-  plt.savefig(f'convergence_test/{Solver.__name__}/{func_name}_'
+  plt.savefig(f'grid_convergence_tests_out/{Solver.__name__}/{func_name}_'
               f'{boundary_condition}_{test_range}_{n_point_stencil}_'
-              f'{energy_form}{plot_index}.png')
+              f'{energy_form}{plot_index}.pdf')
   plt.close()
 
   # stop timer
@@ -204,72 +192,19 @@ def convergence_test(Solver,
   timer_str = f'Time: {t1 - t0}'
   all_str = time_str + '\n' + finish_str + '\n' + timer_str + '\n\n'
 
-  with open("convergence_test/test_log.txt", "a") as text_file:
+  with open("grid_convergence_tests_out/test_log.txt", "a") as text_file:
     text_file.write(all_str)
 
   print(all_str)
 
 
-# plot the dispersion relation for a periodic potential
-# TODO: move this to an example (not a test)
-def plot_dispersion(Solver,
-                    test_range,
-                    potential_fn,
-                    k_range=(-np.pi, np.pi),
-                    eigenvalue_index=0,
-                    n_point_stencil=5,
-                    num_grids=1000,
-                    num_k_grids=100):
-  warnings.warn('Warning: make sure potential_fn is a periodic function!')
-
-  # grids = np.linspace(*test_range, num_grids, endpoint = False)
-  k_list = np.linspace(*k_range, num_k_grids)
-  E_list = []
-
-  for k in k_list:
-    grids = np.linspace(*test_range, num_grids, endpoint=False)
-    solver = Solver(grids,
-                    potential_fn=potential_fn,
-                    k_point=k,
-                    boundary_condition='periodic',
-                    n_point_stencil=n_point_stencil,
-                    tol=0)
-
-    solver.solve_ground_state()
-
-    # obtain lowest eigenvalue from FDM
-    energy = solver.eigenvalues[eigenvalue_index]
-
-    E_list.append(energy)
-
-  # initialize figure for plots
-  fig, ax = get_plotting_params()
-  # matplotlib trick to obtain same color of a previous plot
-  ax.plot(k_list, E_list, marker='o', linestyle='solid', color='blue')
-
-  ax.set_xlabel("k", fontsize=18)
-  ax.set_ylabel("E", fontsize=18)
-
-  # plt.legend(fontsize=16)
-  # plt.title(f'Dispersion relation {k_range} {eigenvalue_index}', fontsize=20)
-  plt.grid(alpha=0.4)
-  plt.gca().xaxis.grid(True, which='minor', alpha=0.4)
-  plt.gca().yaxis.grid(True, which='minor', alpha=0.4)
-
-  # create folder if no such directory
-  if not os.path.isdir('dispersion_plots'):
-    os.mkdir('dispersion_plots')
-
-  # save fig
-  plt.savefig(f'dispersion_plots/dispersion_relation_{k_range}_'
-              f'{eigenvalue_index}.png')
-  plt.close()
-
-  print(f'dispersion_relation_{k_range}_{eigenvalue_index} done')
-
-
 if __name__ == "__main__":
-  """ Test convergence rates for various systems."""
+  """ Test rate of convergence for various systems.
+  
+  note: This is not the DFT convergence! ALso, discontinuous potentials, 
+  e.g Kronig Penney model, will not have desired convergence rates!
+
+  """
 
   test_potential_fn_list = [
       ((0, 3), functools.partial(ext_potentials.kronig_penney,
@@ -288,6 +223,19 @@ if __name__ == "__main__":
       non_interacting_solver.EigenSolver
   ]
 
-  # convergence test for the sin periodic potential on arbitrary k_point
-  r, p, b = test_potential_fn_list[3]
-  convergence_test(solvers[0], r, p, b, 5, k_point=1)
+  for solver in solvers:
+    for (test_range, potential_fn,
+         boundary_condition) in test_potential_fn_list:
+
+      if boundary_condition == 'periodic':
+        k_point = 1
+      else:
+        k_point = None
+
+      convergence_test(
+          solver,
+          test_range,
+          potential_fn,
+          boundary_condition,
+          k_point=k_point,
+      )

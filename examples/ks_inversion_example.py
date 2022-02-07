@@ -48,5 +48,5 @@ if __name__ == '__main__':
 
   ax.set_xlabel(r'$x$')
   ax.set_xlim(-10, 10)
-  plt.legend()
-  plt.show()
+  ax.legend()
+  fig.savefig("ks_inversion_example.pdf")

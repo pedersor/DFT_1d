@@ -1,6 +1,4 @@
 """
-.. _two_poschl_teller:
-
 Poschl-Teller potentials
 ########################
 
@@ -46,14 +44,14 @@ def plot_and_save(x_list,
                   xlim=(None, None),
                   ylim=(None, None),
                   folder=None):
-  r'''Plot a single curve on a graph and save it as .png file.
+  r'''Plot a single curve on a graph and save it as .pdf file.
     
     Args:
       x_list: list (or array), specify the x-axis points.
       y_list: list (or array), specify the y-axis points.
       x_label: label for x-axis.
       y_label: label for y-axis.
-      name: str, name of the image saved (without .png).
+      name: str, name of the image saved (without .pdf).
       folder: str, the path to the folder to save the image in. Does not need
           to pre-exist before running.
     '''
@@ -93,11 +91,11 @@ def plot_and_save(x_list,
     if not os.path.isdir(folder):
       os.mkdir(folder)
     # save fig
-    plt.savefig(f'{folder}/{name}.png')
+    plt.savefig(f'{folder}/{name}.pdf')
     plt.close()
   else:
     # save fig
-    plt.savefig(f'{name}.png')
+    plt.savefig(f'{name}.pdf')
     plt.close()
 
 
@@ -105,13 +103,13 @@ def plot_multiple_and_save(plot_list,
                            name,
                            xlim=(None, None),
                            ylim=(None, None),
-                           folder=None):
-  r'''Plot mutiple curves on a single graph and save it as .png file.
+                           folder='two_poschl_teller_wells_out'):
+  r'''Plot mutiple curves on a single graph and save it as .pdf file.
     
     Args:
       plot_list: list of lists, specify plotting parameters for each curve
           in the form of [label, x_list, y_list, linestyle, color].
-      name: str, name of the image saved (without .png).
+      name: str, name of the image saved (without .pdf).
       xlim: tuple, xlim[0] == left limit, xlim[1] == right limit; setting to
           None means flexible ranges.
       ylim: tuple, ylim[0] == bottom limit, ylim[1] == top limit; setting to
@@ -157,18 +155,12 @@ def plot_multiple_and_save(plot_list,
   # set legend
   plt.legend(loc=2)
 
-  # save image
-  if folder != None:
-    # create folder if no such directory
-    if not os.path.isdir(folder):
-      os.mkdir(folder)
-    # save fig
-    plt.savefig(f'{folder}/{name}.png')
-    plt.close()
-  else:
-    # save fig
-    plt.savefig(f'{name}.png')
-    plt.close()
+  # create folder if no such directory
+  if not os.path.isdir(folder):
+    os.mkdir(folder)
+  # save fig
+  plt.savefig(f'{folder}/{name}.pdf')
+  plt.close()
 
 
 def two_poschl_teller(grids, d, lam=1., a=1.):

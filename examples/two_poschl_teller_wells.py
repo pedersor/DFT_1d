@@ -85,25 +85,21 @@ def plot_and_save(x_list,
   plt.gca().xaxis.grid(True, which='minor', alpha=0.4)
   plt.gca().yaxis.grid(True, which='minor', alpha=0.4)
 
-  # save image
-  if folder != None:
-    # create folder if no such directory
-    if not os.path.isdir(folder):
-      os.mkdir(folder)
-    # save fig
-    plt.savefig(f'{folder}/{name}.pdf')
-    plt.close()
-  else:
-    # save fig
-    plt.savefig(f'{name}.pdf')
-    plt.close()
+  # create folder if no such directory
+  if not os.path.isdir(folder):
+    os.mkdir(folder)
+  # save fig
+  plt.savefig(f'{folder}/{name}.pdf')
+  plt.close()
 
 
-def plot_multiple_and_save(plot_list,
-                           name,
-                           xlim=(None, None),
-                           ylim=(None, None),
-                           folder='two_poschl_teller_wells_out'):
+def plot_multiple_and_save(
+    plot_list,
+    name,
+    folder,
+    xlim=(None, None),
+    ylim=(None, None),
+):
   r'''Plot mutiple curves on a single graph and save it as .pdf file.
     
     Args:
@@ -188,6 +184,9 @@ def two_poschl_teller(grids, d, lam=1., a=1.):
 
 if __name__ == '__main__':
 
+  # folder to save results
+  folder = 'two_poschl_teller_wells_out'
+
   # initialize variables
   test_range = (-20, 20)
   grids = np.linspace(*test_range, 1000)
@@ -208,16 +207,8 @@ if __name__ == '__main__':
     energy = solver.eigenvalues[0]
     E_list.append(energy)
 
-  # save E vs. d into d_E_table.dat
-  import csv
-
-  with open('d_E_table.csv', 'w', newline='') as f:
-    writer = csv.writer(f)
-    writer.writerow(['d', 'E'])
-    writer.writerows(zip(d_list, E_list))
-
   # plot E vs d
-  plot_and_save(d_list, E_list, 'd', 'E', 'E vs d')
+  plot_and_save(d_list, E_list, 'd', 'E', 'E vs d', folder=folder)
 
   # plot potential, wave function and eigenvalue at d = test_d
   test_d = 2
@@ -231,4 +222,4 @@ if __name__ == '__main__':
                    'eigenvalue', grids,
                    np.full(len(grids), solver.eigenvalues[0]), '--', 'green'
                ]]
-  plot_multiple_and_save(plot_list, f'd={test_d}', ylim=(-2, 1))
+  plot_multiple_and_save(plot_list, f'd={test_d}', ylim=(-2, 1), folder=folder)

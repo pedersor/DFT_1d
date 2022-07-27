@@ -8,4 +8,4 @@ systems.
 https://pedersor.github.io/DFT_1d/rst_source/_build/html/index.html
 
 ## Disclaimer
-This library is in *alpha* and is not currently intended for public use.
+This library is in *alpha*.

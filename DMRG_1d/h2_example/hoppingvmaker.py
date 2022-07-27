@@ -40,13 +40,7 @@ def get_ham1c(grids, external_potential):
     return
 
 
-def exponential_coulomb(displacements,
-                        amplitude=utils.EXPONENTIAL_COULOMB_AMPLITUDE,
-                        kappa=utils.EXPONENTIAL_COULOMB_KAPPA):
-  return amplitude * np.exp(-np.abs(displacements) * kappa)
-
-
-def get_vuncomp(grids, interaction_fn=exponential_coulomb):
+def get_vuncomp(grids, interaction_fn=utils.exponential_interaction):
   """Gets 2-body Vee potential file.
   Note(pedersor): pretty slow.. could be improved..?
   """

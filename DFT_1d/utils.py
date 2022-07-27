@@ -2,7 +2,6 @@ import numpy as np
 
 from DFT_1d import ext_potentials
 from DFT_1d import constants
-from DFT_1d.functionals import v_ee
 
 
 def get_dx(grids):
@@ -19,6 +18,15 @@ def get_dx(grids):
     return h
   else:
     raise ValueError('grids is not uniformly spaced.')
+
+
+def exponential_interaction(
+    grids,
+    A=constants.EXPONENTIAL_COULOMB_AMPLITUDE,
+    k=constants.EXPONENTIAL_COULOMB_KAPPA,
+):
+  vp = A * np.exp(-k * np.abs(grids))
+  return vp
 
 
 def vw_grid(density, dx):
@@ -95,7 +103,7 @@ def get_atomic_chain_potential(
     grids,
     locations,
     nuclear_charges,
-    interaction_fn=v_ee,
+    interaction_fn=exponential_interaction,
 ):
   """Gets atomic chain potential.
 

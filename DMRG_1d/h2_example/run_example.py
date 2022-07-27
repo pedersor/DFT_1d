@@ -88,9 +88,6 @@ if __name__ == '__main__':
     os.remove('electronBO')
     os.remove('electronBO.o')
     os.remove('rm sites')
-
-    # queue runfile and cd out of dir
-    os.system('''sbatch jobscript ''')
     os.chdir(cwd)
 
   # create dataset

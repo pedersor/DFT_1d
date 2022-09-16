@@ -103,7 +103,7 @@ class KSInversion:
     if verbose:
       logging.basicConfig(level=logging.DEBUG)
 
-  def _get_v_eff(self):
+  def get_v_s(self):
     f_v_Z = self.f_v_Z
     f_v_H = self.f_v_H
     f_v_XC = self.f_v_XC
@@ -119,7 +119,7 @@ class KSInversion:
 
   def _update_density(self):
     # d2_mat = self.f_derivative_tool.d2_mat
-    potential_fn = lambda _: self._get_v_eff()
+    potential_fn = lambda _: self.get_v_s()
     self.solver.update_potential(potential_fn)
     self.solver.solve_ground_state(self.occ_per_state)
     self.previous_KE = self.KE

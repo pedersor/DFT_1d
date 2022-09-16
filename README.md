@@ -12,6 +12,9 @@ $ cd DFT_1d
 $ pip install .
 ```
 
+Tutorial
+------------
+We recommend to first follow the tutorial in `examples/tutorial.py`.
 
 ## Documentation
 (in progress)

@@ -17,8 +17,7 @@ import functools
 
 import numpy as np
 
-from DFT_1d import non_interacting_solver, functionals
-from DFT_1d.utils import quadratic
+from DFT_1d import non_interacting_solver
 from DFT_1d.scf_base import SCF_SolverBase
 
 

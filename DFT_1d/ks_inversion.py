@@ -12,6 +12,7 @@ Kohn-Sham Inversion
     * Who was original author of this code?
 
 """
+import logging
 
 import numpy as np
 
@@ -38,6 +39,7 @@ class KSInversion:
       mixing_param=0,
       tol=1e-5,
       max_iters=50,
+      verbose=False,
   ):
 
     # get truncation based on the tolerance
@@ -97,7 +99,11 @@ class KSInversion:
     # set max number of iterations
     self.max_iters = max_iters
 
-  def _get_v_eff(self):
+    # print debug information
+    if verbose:
+      logging.basicConfig(level=logging.DEBUG)
+
+  def get_v_s(self):
     f_v_Z = self.f_v_Z
     f_v_H = self.f_v_H
     f_v_XC = self.f_v_XC
@@ -113,7 +119,7 @@ class KSInversion:
 
   def _update_density(self):
     # d2_mat = self.f_derivative_tool.d2_mat
-    potential_fn = lambda _: self._get_v_eff()
+    potential_fn = lambda _: self.get_v_s()
     self.solver.update_potential(potential_fn)
     self.solver.solve_ground_state(self.occ_per_state)
     self.previous_KE = self.KE
@@ -305,8 +311,6 @@ class KSInversion:
     vl = self.t_v_XC[ip] + offset_m
     offset_l = vl - exp_l(xl)
 
-    # print(dl, k*exp_l(xl))
-
     # append left exponential
     self.l_grids = self.f_grids[:self.truncation + ip]
     self.f_v_XC = np.append(exp_l(self.l_grids) + offset_l, self.f_v_XC)
@@ -334,10 +338,11 @@ class KSInversion:
       self.cost_list[0].append(tar_density_cost)
       self.cost_list[1].append(f_density_cost)
       self.cost_list[2].append(KE_cost)
-      print(f'Step {step}: current target density cost {tar_density_cost}')
-      print(f'Step {step}: current full density cost {f_density_cost}')
-      print(f'Step {step}: current KE cost {KE_cost}')
-      print()
+      logging.debug(
+          f'Step {step}: current target density cost {tar_density_cost}')
+      logging.debug(f'Step {step}: current full density cost {f_density_cost}')
+      logging.debug(f'Step {step}: current KE cost {KE_cost}')
+      logging.debug('')
       if f_density_cost != None and KE_cost != None:
         if (((tar_density_cost <= self.tol or not truncated) and
              KE_cost <= self.tol) or step > self.max_iters):
@@ -392,7 +397,7 @@ def two_iter_KS_inversion(
   else:
     t_total_density = None
 
-  print(f'Running truncation {truncation}')
+  logging.debug(f'Running truncation {truncation}')
 
   t_ksi = KSInversion(
       t_grids,
@@ -413,7 +418,7 @@ def two_iter_KS_inversion(
 
   old_truncation = truncation
   truncation += find_truncation(t_ksi.f_density, t_tol)
-  print(f'truncation updated from {old_truncation} to {truncation}.')
+  logging.debug(f'truncation updated from {old_truncation} to {truncation}.')
   t_grids, t_v_Z_fn, t_tar_density, t_init_v_xc = set_up_truncation(
       f_grids, f_v_Z_fn, f_tar_density, t_init_v_xc, truncation)
 
@@ -438,5 +443,5 @@ def two_iter_KS_inversion(
   ksi.append_exp(x0=0, ignored_points=6, f='cfexp')
   ksi.solve_v_XC(ignored_points=6, f='cfexp', truncated=True)
 
-  print('done!')
+  logging.debug('done!')
   return ksi

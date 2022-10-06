@@ -260,6 +260,7 @@ class Spinless_KS_Solver(KS_Solver):
     self.kinetic_energy = solver.kinetic_energy
     self.eps = solver.total_energy
     self.density = solver.density
+    self.phi = solver.wave_function
 
     return self
 

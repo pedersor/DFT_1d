@@ -10,8 +10,11 @@ __pycache__/
 # IntelliJ
 .idea/
 
+# pip install eggs
+*.egg-info
+
 # virtual envs
-venv_*
+venv*
 
 # doc builds
 docs/rst_source/_build

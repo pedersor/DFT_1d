@@ -54,7 +54,7 @@ class SolverBase:
                num_electrons=1,
                k_point=None,
                boundary_condition='open',
-               n_point_stencil=3,
+               n_point_stencil=5,
                perturbation=None):
     """Initialize the solver with potential function and grid.
 
@@ -142,7 +142,7 @@ class EigenSolver(SolverBase):
                num_electrons=1,
                k_point=None,
                boundary_condition='open',
-               n_point_stencil=3,
+               n_point_stencil=5,
                perturbation=None):
     """Initialize the solver with potential function and grid.
 
@@ -416,7 +416,7 @@ class SparseEigenSolver(EigenSolver):
                num_electrons=1,
                k_point=None,
                boundary_condition='open',
-               n_point_stencil=3,
+               n_point_stencil=5,
                tol=10**-6):
     """Initialize the solver with potential function and grid.
 

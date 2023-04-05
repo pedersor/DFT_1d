@@ -22,11 +22,15 @@ import functools
 
 import jax
 import jax.numpy as jnp
+from jax.config import config
 import numpy as np
 
 from DFT_1d import ext_potentials
 from DFT_1d import constants
 from DFT_1d.utils import get_dx
+
+# Set the default dtype as float64
+config.update('jax_enable_x64', True)
 
 
 def v_ee(
@@ -547,4 +551,4 @@ class ExponentialLDAFunctional(BaseExchangeCorrelationFunctional):
     Returns:
       Float numpy array with shape (num_grids,).
     """
-    return jax.grad(self.get_xc_energy)(density) / self.dx
+    return jnp.nan_to_num(jax.grad(self.get_xc_energy)(density) / self.dx)
